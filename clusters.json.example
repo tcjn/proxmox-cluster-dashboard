@@ -1,0 +1,55 @@
+{
+  "AMER": [
+    {
+      "name": "us-nyc1-prod",
+      "url": "https://us-nyc1-prod.example.com:8006",
+      "node1": "node1.us-nyc1-prod.example.local",
+      "node2": "node2.us-nyc1-prod.example.local",
+      "node3": "node3.us-nyc1-prod.example.local"
+    },
+    {
+      "name": "us-chi1",
+      "url": "https://us-chi1.example.com:8006",
+      "node1": "node1.us-chi1.example.local",
+      "node2": "node2.us-chi1.example.local"
+    }
+  ],
+  "APAC": [
+    {
+      "name": "sg-sin1-prod",
+      "url": "https://sg-sin1-prod.example.com:8006",
+      "node1": "node1.sg-sin1-prod.example.local",
+      "node2": "node2.sg-sin1-prod.example.local",
+      "node3": "node3.sg-sin1-prod.example.local"
+    },
+    {
+      "name": "au-syd1",
+      "url": "https://au-syd1.example.com:8006",
+      "node1": "node1.au-syd1.example.local",
+      "node2": "node2.au-syd1.example.local"
+    }
+  ],
+  "EMEA": [
+    {
+      "name": "nl-ams1-prod",
+      "url": "https://nl-ams1-prod.example.com:8006",
+      "node1": "node1.nl-ams1-prod.example.local",
+      "node2": "node2.nl-ams1-prod.example.local",
+      "node3": "node3.nl-ams1-prod.example.local"
+    },
+    {
+      "name": "uk-lon1",
+      "url": "https://uk-lon1.example.com:8006",
+      "node1": "node1.uk-lon1.example.local",
+      "node2": "node2.uk-lon1.example.local"
+    }
+  ],
+  "CME": [
+    {
+      "name": "cme-cluster1-prod",
+      "url": "https://cme-cluster1-prod.example.com:8006",
+      "node1": "node1.cme-cluster1.example.local",
+      "node2": "node2.cme-cluster1.example.local"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "enabled": true,
+  "amer": "No scheduled maintenance",
+  "amerNotes": "",
+  "apac": "Scheduled: Feb 15, 2026 22:00-02:00 UTC",
+  "apacNotes": "Singapore datacenter network upgrade. Expected 2-hour downtime.",
+  "emea": "Scheduled: Feb 20, 2026 01:00-04:00 UTC",
+  "emeaNotes": "Amsterdam cluster storage expansion"
+}

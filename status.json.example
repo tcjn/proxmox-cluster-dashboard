@@ -1,0 +1,76 @@
+{
+  "lastUpdate": "2026-02-09T15:30:00Z",
+  "clusterStatus": {
+    "us-nyc1-prod": "online",
+    "us-chi1": "online",
+    "sg-sin1-prod": "online",
+    "au-syd1": "degraded",
+    "nl-ams1-prod": "online",
+    "uk-lon1": "offline",
+    "cme-cluster1-prod": "online"
+  },
+  "nodeStatus": {
+    "node1.us-nyc1-prod.example.local": "online",
+    "node2.us-nyc1-prod.example.local": "online",
+    "node3.us-nyc1-prod.example.local": "online",
+    "node1.sg-sin1-prod.example.local": "online",
+    "node2.sg-sin1-prod.example.local": "online",
+    "node3.sg-sin1-prod.example.local": "degraded"
+  },
+  "nodeData": {
+    "node1.us-nyc1-prod.example.local": {
+      "cpu": 0.45,
+      "mem": 68719476736,
+      "maxmem": 137438953472,
+      "disk": 107374182400,
+      "maxdisk": 536870912000,
+      "uptime": 2592000,
+      "pveversion": "8.4.8",
+      "vms": [
+        {
+          "vmid": 100,
+          "name": "web-server-01",
+          "status": "running",
+          "cpu": 0.12,
+          "mem": 4294967296,
+          "uptime": 604800
+        },
+        {
+          "vmid": 101,
+          "name": "database-01",
+          "status": "running",
+          "cpu": 0.35,
+          "mem": 8589934592,
+          "uptime": 1209600
+        },
+        {
+          "vmid": 102,
+          "name": "backup-server",
+          "status": "stopped",
+          "cpu": 0,
+          "mem": 0,
+          "uptime": 0
+        }
+      ]
+    },
+    "node2.us-nyc1-prod.example.local": {
+      "cpu": 0.32,
+      "mem": 51539607552,
+      "maxmem": 137438953472,
+      "disk": 96636764160,
+      "maxdisk": 536870912000,
+      "uptime": 2678400,
+      "pveversion": "8.4.8",
+      "vms": [
+        {
+          "vmid": 200,
+          "name": "app-server-01",
+          "status": "running",
+          "cpu": 0.22,
+          "mem": 6442450944,
+          "uptime": 518400
+        }
+      ]
+    }
+  }
+}
