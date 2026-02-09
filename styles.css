@@ -97,53 +97,27 @@
 }
 
 body {
-  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg);
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: url('https://i.gremicdn.pl/image/free/c24482dbeaf5c39e775e6a3bf0d74843/?t=resize%3Afill%3A1200%3A716%2Cenlarge%3A1') no-repeat center center fixed;
+  background-size: cover;
   color: var(--text);
   line-height: 1.6;
-  transition: background var(--transition-base), color var(--transition-base);
+  transition: background 0.3s, color 0.3s;
   overflow-x: hidden;
   position: relative;
 }
 
-/* Background Image Layer */
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--bg-image) no-repeat center center fixed;
-  background-size: cover;
-  filter: blur(var(--bg-blur)) saturate(var(--bg-saturation)) brightness(var(--bg-brightness));
-  transform: scale(1.03);
-  pointer-events: none;
-  z-index: -2;
-}
-
-/* Overlay + Background Pattern */
-body::after {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background:
-    var(--bg-overlay),
-    radial-gradient(circle at 20% 50%, rgba(14, 165, 233, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: -1;
-}
-
 .overlay {
-  position: relative;
-  z-index: 1;
+  backdrop-filter: blur(3px);
+  background-color: rgba(255, 255, 255, 0.85);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+.dark .overlay {
+  background-color: rgba(0, 0, 0, 0.7);
 }
 
 /* Header */
