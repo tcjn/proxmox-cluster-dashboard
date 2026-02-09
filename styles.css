@@ -44,6 +44,9 @@
     rgba(15, 23, 42, 0.25),
     rgba(15, 23, 42, 0.25)
   );
+  --bg-blur: 12px;
+  --bg-brightness: 1;
+  --bg-saturation: 1;
   
   /* Transitions */
   --transition-fast: 150ms ease;
@@ -81,6 +84,9 @@
     rgba(2, 6, 23, 0.55),
     rgba(2, 6, 23, 0.55)
   );
+  --bg-blur: 16px;
+  --bg-brightness: 0.75;
+  --bg-saturation: 0.85;
 }
 
 /* Reset & Base Styles */
@@ -92,15 +98,15 @@
 
 body {
   font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg-overlay), var(--bg-image) no-repeat center center fixed;
-  background-size: cover;
+  background: var(--bg);
   color: var(--text);
   line-height: 1.6;
   transition: background var(--transition-base), color var(--transition-base);
   overflow-x: hidden;
+  position: relative;
 }
 
-/* Background Pattern */
+/* Background Image Layer */
 body::before {
   content: '';
   position: fixed;
@@ -108,11 +114,28 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background: 
+  background: var(--bg-image) no-repeat center center fixed;
+  background-size: cover;
+  filter: blur(var(--bg-blur)) saturate(var(--bg-saturation)) brightness(var(--bg-brightness));
+  transform: scale(1.03);
+  pointer-events: none;
+  z-index: -2;
+}
+
+/* Overlay + Background Pattern */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    var(--bg-overlay),
     radial-gradient(circle at 20% 50%, rgba(14, 165, 233, 0.05) 0%, transparent 50%),
     radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
   pointer-events: none;
-  z-index: 0;
+  z-index: -1;
 }
 
 .overlay {
