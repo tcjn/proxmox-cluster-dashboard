@@ -161,11 +161,13 @@ function updateStatisticsUI() {
   document.getElementById('avgMemory').textContent = `${stats.avgMemory}%`;
   document.getElementById('avgDisk').textContent = `${stats.avgDisk}%`;
   
-  // Health gauge
+  // Health score
   document.getElementById('healthScore').textContent = `${stats.healthScore}%`;
-  const gaugeFill = document.getElementById('healthGaugeFill');
-  const dashOffset = 502.4 * (1 - stats.healthScore / 100);
-  gaugeFill.style.strokeDashoffset = dashOffset;
+  const healthFill = document.getElementById('healthProgressFill');
+  healthFill.style.width = `${stats.healthScore}%`;
+  document.getElementById('healthClustersValue').textContent = `${stats.onlineClustersPercent}%`;
+  document.getElementById('healthNodesValue').textContent = `${stats.onlineNodesPercent}%`;
+  document.getElementById('healthVMsValue').textContent = `${stats.runningVMsPercent}%`;
   
   document.getElementById('healthyCount').textContent = `${stats.healthyCount} Healthy`;
   document.getElementById('warningCount').textContent = `${stats.warningCount} Warnings`;

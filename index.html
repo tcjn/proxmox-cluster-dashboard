@@ -190,12 +190,26 @@
                 <span>System Health</span>
               </div>
             </div>
-            <div class="health-gauge-container">
-              <svg class="health-gauge" viewBox="0 0 200 200">
-                <circle class="gauge-bg" cx="100" cy="100" r="80" />
-                <circle class="gauge-fill" id="healthGaugeFill" cx="100" cy="100" r="80" />
-              </svg>
-              <div class="gauge-value" id="healthScore">0%</div>
+            <div class="health-score">
+              <div class="health-score-value" id="healthScore">0%</div>
+              <div class="health-score-label">Overall Health</div>
+            </div>
+            <div class="health-progress">
+              <div class="health-progress-fill" id="healthProgressFill"></div>
+            </div>
+            <div class="health-breakdown">
+              <div class="health-breakdown-item">
+                <span>Clusters Online</span>
+                <span id="healthClustersValue">0%</span>
+              </div>
+              <div class="health-breakdown-item">
+                <span>Nodes Online</span>
+                <span id="healthNodesValue">0%</span>
+              </div>
+              <div class="health-breakdown-item">
+                <span>VMs Running</span>
+                <span id="healthVMsValue">0%</span>
+              </div>
             </div>
             <div class="health-details">
               <div class="health-detail">

@@ -97,6 +97,10 @@ function createNodeHTML(node, cluster) {
   const nodeData = getNodeData(node.fullName);
   
   if (!nodeData || nodeStatus === 'offline') {
+    const statusLabel = nodeStatus === 'offline' ? 'Offline' : 'No Data';
+    const offlineMessage = nodeStatus === 'offline'
+      ? 'Node is currently offline. Login is unavailable.'
+      : 'Telemetry is unavailable. Login status cannot be verified.';
     return `
       <div class="node">
         <div class="node-header">
@@ -104,9 +108,9 @@ function createNodeHTML(node, cluster) {
             <span class="node-indicator ${nodeStatus}"></span>
             <a href="https://${node.fullName}:8006" target="_blank">${shortName}</a>
           </div>
-          <span class="node-status">${nodeStatus === 'offline' ? 'Offline' : 'No Data'}</span>
+          <span class="node-status ${nodeStatus}">${statusLabel}</span>
         </div>
-        ${nodeStatus === 'offline' ? '<div class="node-offline">Node is currently offline</div>' : ''}
+        <div class="node-offline">${offlineMessage}</div>
       </div>
     `;
   }
@@ -142,7 +146,7 @@ function createNodeHTML(node, cluster) {
           <span class="node-indicator ${nodeStatus}"></span>
           <a href="https://${node.fullName}:8006" target="_blank">${shortName}</a>
         </div>
-        <span class="node-status">${nodeStatus}</span>
+        <span class="node-status ${nodeStatus}">${nodeStatus}</span>
       </div>
       <div class="node-details">
         <div class="node-metric">
