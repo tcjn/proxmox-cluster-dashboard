@@ -81,7 +81,8 @@
 
 body {
   font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg);
+  background: url('https://i.gremicdn.pl/image/free/c24482dbeaf5c39e775e6a3bf0d74843/?t=resize%3Afill%3A1200%3A716%2Cenlarge%3A1') no-repeat center center fixed;
+  background-size: cover;
   color: var(--text);
   line-height: 1.6;
   transition: background var(--transition-base), color var(--transition-base);
@@ -149,9 +150,11 @@ header h1 a:hover {
   font-family: 'IBM Plex Mono', monospace;
   opacity: 0.9;
   background: rgba(255,255,255,0.1);
-  padding: 0.4rem 1rem;
+  padding: 0.35rem 0.75rem;
   border-radius: var(--radius-lg);
-  display: flex;
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
