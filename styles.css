@@ -38,6 +38,12 @@
   --search-highlight: #fef3c7;
   --vm-highlight: #dbeafe;
   --cluster-highlight: #e0f2fe;
+
+  --bg-image: url('https://i.gremicdn.pl/image/free/c24482dbeaf5c39e775e6a3bf0d74843/?t=resize%3Afill%3A1200%3A716%2Cenlarge%3A1');
+  --bg-overlay: linear-gradient(
+    rgba(15, 23, 42, 0.25),
+    rgba(15, 23, 42, 0.25)
+  );
   
   /* Transitions */
   --transition-fast: 150ms ease;
@@ -70,6 +76,11 @@
   --search-highlight: #1e3a5f;
   --vm-highlight: #1e3a5f;
   --cluster-highlight: #1a2942;
+
+  --bg-overlay: linear-gradient(
+    rgba(2, 6, 23, 0.55),
+    rgba(2, 6, 23, 0.55)
+  );
 }
 
 /* Reset & Base Styles */
@@ -81,7 +92,7 @@
 
 body {
   font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: url('https://i.gremicdn.pl/image/free/c24482dbeaf5c39e775e6a3bf0d74843/?t=resize%3Afill%3A1200%3A716%2Cenlarge%3A1') no-repeat center center fixed;
+  background: var(--bg-overlay), var(--bg-image) no-repeat center center fixed;
   background-size: cover;
   color: var(--text);
   line-height: 1.6;
