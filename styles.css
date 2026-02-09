@@ -1,43 +1,42 @@
-/* Proxmox Dashboard - Modern Design System */
-/* Typography: IBM Plex Mono + Outfit for distinctive, tech-focused aesthetic */
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=Outfit:wght@300;400;600;700;800&display=swap');
+/* Proxmox Dashboard - Classic Design System */
+/* Typography: Segoe UI to match legacy dashboard */
 
 :root {
-  /* Core Colors - Tech-focused with cyan accents */
-  --bg: #f8fafc;
-  --text: #0f172a;
-  --card: #ffffff;
-  --hover: #f1f5f9;
-  --header: #0a1628;
-  --link: #0ea5e9;
-  --copy: #475569;
-  --border: #e2e8f0;
+  /* Core Colors - aligned with legacy dashboard */
+  --bg: #f4f4f8;
+  --text: #333;
+  --card: #fff;
+  --hover: #e2e8f0;
+  --header: #0f4c81;
+  --link: #3182ce;
+  --copy: #4a5568;
+  --border: #d9e2ec;
   
   /* Status Colors */
-  --online: #10b981;
-  --offline: #ef4444;
-  --degraded: #f59e0b;
-  --warning: #f97316;
-  --maintenance: #8b5cf6;
+  --online: #38a169;
+  --offline: #e53e3e;
+  --degraded: #d69e2e;
+  --warning: #ff6b35;
+  --maintenance: #ff6b35;
   
   /* Regional Colors */
-  --amer-color: #3b82f6;
-  --apac-color: #10b981;
-  --emea-color: #8b5cf6;
-  --cme-color: #f59e0b;
+  --amer-color: #4299e1;
+  --apac-color: #48bb78;
+  --emea-color: #9f7aea;
+  --cme-color: #d69e2e;
   
   /* UI Elements */
-  --node-bg: rgba(0, 0, 0, 0.03);
-  --prod-color: #10b981;
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
-  --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.2);
+  --node-bg: rgba(0, 0, 0, 0.05);
+  --prod-color: #38a169;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.18);
+  --shadow-xl: 0 12px 28px rgba(0, 0, 0, 0.2);
   
   /* Search & Highlight */
-  --search-highlight: #fef3c7;
-  --vm-highlight: #dbeafe;
-  --cluster-highlight: #e0f2fe;
+  --search-highlight: #fffacd;
+  --vm-highlight: #ffeb3b;
+  --cluster-highlight: #e3f2fd;
   
   /* Transitions */
   --transition-fast: 150ms ease;
@@ -52,24 +51,24 @@
 }
 
 .dark {
-  --bg: #0a0e1a;
+  --bg: #1a202c;
   --text: #e2e8f0;
-  --card: #1a1f35;
-  --hover: #252b45;
-  --header: #0a1628;
-  --link: #38bdf8;
-  --copy: #94a3b8;
-  --border: #1e293b;
+  --card: #2d3748;
+  --hover: #4a5568;
+  --header: #0f4c81;
+  --link: #63b3ed;
+  --copy: #e2e8f0;
+  --border: #3b475c;
   
-  --node-bg: rgba(255, 255, 255, 0.04);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.6);
-  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.7);
-  --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.8);
+  --node-bg: rgba(255, 255, 255, 0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.35);
+  --shadow-xl: 0 12px 28px rgba(0, 0, 0, 0.4);
   
-  --search-highlight: #1e3a5f;
-  --vm-highlight: #1e3a5f;
-  --cluster-highlight: #1a2942;
+  --search-highlight: #2d3748;
+  --vm-highlight: #805ad5;
+  --cluster-highlight: #2d3748;
 }
 
 /* Reset & Base Styles */
@@ -80,27 +79,17 @@
 }
 
 body {
-  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg);
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: url('https://i.gremicdn.pl/image/free/c24482dbeaf5c39e775e6a3bf0d74843/?t=resize%3Afill%3A1200%3A716%2Cenlarge%3A1') no-repeat center center fixed;
+  background-size: cover;
   color: var(--text);
   line-height: 1.6;
   transition: background var(--transition-base), color var(--transition-base);
   overflow-x: hidden;
 }
 
-/* Background Pattern */
 body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: 
-    radial-gradient(circle at 20% 50%, rgba(14, 165, 233, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: 0;
+  content: none;
 }
 
 .overlay {
@@ -109,24 +98,28 @@ body::before {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  backdrop-filter: blur(3px);
+  background-color: rgba(255, 255, 255, 0.85);
+}
+
+.dark .overlay {
+  background-color: rgba(0, 0, 0, 0.7);
 }
 
 /* Header */
 header {
-  background: linear-gradient(135deg, #0a1628 0%, #1a2942 100%);
+  background-color: var(--header);
   color: #fff;
-  padding: 1.5rem 2rem;
+  padding: 1rem;
   text-align: center;
   position: relative;
-  box-shadow: var(--shadow-lg);
-  border-bottom: 2px solid rgba(14, 165, 233, 0.2);
+  padding-bottom: 2rem;
+  box-shadow: var(--shadow-md);
 }
 
 header h1 {
-  font-family: 'IBM Plex Mono', monospace;
   font-size: 1.8rem;
   font-weight: 700;
-  letter-spacing: -0.02em;
   margin-bottom: 0.5rem;
 }
 
@@ -136,27 +129,26 @@ header h1 a {
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
-  transition: transform var(--transition-base);
-}
-
-header h1 a:hover {
-  transform: scale(1.02);
 }
 
 .last-update {
-  margin: 0 auto;
+  position: absolute;
+  bottom: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 0.75rem;
-  font-family: 'IBM Plex Mono', monospace;
   opacity: 0.9;
-  background: rgba(255,255,255,0.1);
-  padding: 0.4rem 1rem;
-  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  backdrop-filter: blur(10px);
+  gap: 0.5rem;
   flex-wrap: wrap;
+}
+
+.dark .last-update {
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .refresh-btn {
@@ -190,40 +182,53 @@ header h1 a:hover {
 /* Header Icons */
 .header-icons {
   position: absolute;
-  top: 1.5rem;
-  right: 2rem;
+  top: 1rem;
+  right: 1rem;
   display: flex;
   gap: 0.75rem;
+  padding: 0.5rem;
   z-index: 10;
 }
 
 .header-icon {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
   color: #fff;
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all var(--transition-base) cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all var(--transition-base);
   font-size: 1.1rem;
   position: relative;
-  backdrop-filter: blur(10px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(4px);
   text-decoration: none;
 }
 
 .header-icon:hover {
-  transform: translateY(-2px) scale(1.05);
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(14, 165, 233, 0.5);
-  box-shadow: 0 8px 20px rgba(14, 165, 233, 0.3);
+  transform: scale(1.15) translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18),
+              0 0 0 4px rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .header-icon:active {
-  transform: translateY(0) scale(0.98);
+  transform: scale(0.98);
+}
+
+.dark .header-icon {
+  background: rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.dark .header-icon:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3),
+              0 0 0 4px rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.35);
 }
 
 .notification-badge {
@@ -345,7 +350,7 @@ header h1 a:hover {
 .notification-time {
   font-size: 0.75rem;
   color: var(--copy);
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Segoe UI', sans-serif;
 }
 
 /* Modal */
@@ -426,7 +431,7 @@ header h1 a:hover {
   width: 100%;
   margin-bottom: 1rem;
   transition: all var(--transition-fast);
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   font-size: 1rem;
 }
 
@@ -444,9 +449,9 @@ header h1 a:hover {
 /* Container */
 .container {
   flex: 1;
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 2rem auto;
-  padding: 0 2rem;
+  padding: 0 1rem;
   width: 100%;
 }
 
@@ -483,7 +488,7 @@ header h1 a:hover {
 .search-input {
   padding: 1rem 3rem 1rem 3rem;
   font-size: 1rem;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Segoe UI', sans-serif;
   border: 2px solid var(--border);
   border-radius: var(--radius-lg);
   flex: 1;
@@ -534,7 +539,7 @@ header h1 a:hover {
   border-radius: var(--radius-lg);
   padding: 1rem 1.5rem;
   font-size: 0.95rem;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   font-weight: 600;
   cursor: pointer;
   color: var(--text);
@@ -573,7 +578,7 @@ header h1 a:hover {
   border-radius: var(--radius-lg);
   padding: 0.75rem 1.25rem;
   font-size: 0.9rem;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   font-weight: 600;
   cursor: pointer;
   color: var(--text);
@@ -626,7 +631,7 @@ header h1 a:hover {
 .sort-select {
   padding: 0.75rem 2.5rem 0.75rem 1rem;
   font-size: 0.9rem;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   font-weight: 600;
   border: 2px solid var(--border);
   border-radius: var(--radius-lg);
@@ -717,7 +722,7 @@ header h1 a:hover {
 .btn-secondary {
   padding: 0.75rem 1.5rem;
   font-size: 0.9rem;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   font-weight: 600;
   border: none;
   border-radius: var(--radius-md);
@@ -761,7 +766,7 @@ header h1 a:hover {
   border-radius: var(--radius-md);
   padding: 0.5rem 1rem;
   font-size: 0.85rem;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   font-weight: 600;
   cursor: pointer;
   color: var(--text);
@@ -796,7 +801,7 @@ header h1 a:hover {
   border-radius: var(--radius-lg);
   padding: 1rem 2rem;
   font-size: 1rem;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   font-weight: 700;
   cursor: pointer;
   color: var(--text);
@@ -906,7 +911,7 @@ header h1 a:hover {
 .stat-card-value {
   font-size: 2.5rem;
   font-weight: 800;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Segoe UI', sans-serif;
   margin-bottom: 0.5rem;
   color: var(--text);
   background: linear-gradient(135deg, var(--link), var(--maintenance));
@@ -948,7 +953,7 @@ header h1 a:hover {
 .stat-detail-value {
   font-size: 1rem;
   font-weight: 700;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Segoe UI', sans-serif;
   color: var(--text);
   display: flex;
   align-items: center;
@@ -1021,7 +1026,7 @@ header h1 a:hover {
   transform: translate(-50%, -50%);
   font-size: 2.5rem;
   font-weight: 800;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Segoe UI', sans-serif;
   color: var(--text);
 }
 
@@ -1075,7 +1080,7 @@ header h1 a:hover {
 .resource-value {
   font-size: 1.5rem;
   font-weight: 800;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Segoe UI', sans-serif;
   margin-bottom: 0.25rem;
   background: linear-gradient(135deg, var(--link), var(--maintenance));
   -webkit-background-clip: text;
@@ -1151,7 +1156,7 @@ header h1 a:hover {
 .region-stat-value {
   font-size: 2rem;
   font-weight: 800;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Segoe UI', sans-serif;
   margin-bottom: 0.5rem;
 }
 
@@ -1261,7 +1266,7 @@ header h1 a:hover {
 
 .search-count-item span {
   color: var(--text);
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Segoe UI', sans-serif;
   font-weight: 700;
 }
 
@@ -1435,7 +1440,7 @@ header h1 a:hover {
   color: var(--link);
   font-weight: 700;
   font-size: 1.1rem;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Segoe UI', sans-serif;
   transition: color var(--transition-fast);
   display: flex;
   align-items: center;
@@ -1509,7 +1514,7 @@ header h1 a:hover {
   align-items: center;
   gap: 0.5rem;
   font-weight: 700;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Segoe UI', sans-serif;
 }
 
 .node-name a {
@@ -1567,7 +1572,7 @@ header h1 a:hover {
 .metric-value {
   font-weight: 700;
   font-size: 0.9rem;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Segoe UI', sans-serif;
   margin-bottom: 0.25rem;
   color: var(--text);
 }
@@ -1613,7 +1618,7 @@ header h1 a:hover {
   font-size: 0.7rem;
   color: var(--copy);
   text-align: center;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Segoe UI', sans-serif;
 }
 
 .version-outdated {
@@ -1636,7 +1641,7 @@ header h1 a:hover {
   color: var(--link);
   cursor: pointer;
   font-size: 0.75rem;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   font-weight: 600;
   padding: 0.5rem 1rem;
   margin-top: 0.5rem;
@@ -1698,7 +1703,7 @@ header h1 a:hover {
 
 .vm-header {
   font-weight: 700;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Segoe UI', sans-serif;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -1744,7 +1749,7 @@ header h1 a:hover {
 .vm-metric-value {
   font-weight: 700;
   font-size: 0.85rem;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Segoe UI', sans-serif;
   color: var(--text);
 }
 
@@ -1762,7 +1767,7 @@ header h1 a:hover {
   color: var(--copy);
   text-align: center;
   margin-top: 0.25rem;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Segoe UI', sans-serif;
 }
 
 /* Maintenance Info */
@@ -1867,7 +1872,7 @@ footer {
 
 .footer-stats {
   margin-top: 0.5rem;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Segoe UI', sans-serif;
   font-size: 0.75rem;
 }
 
