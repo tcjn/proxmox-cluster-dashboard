@@ -414,20 +414,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load data
   loadData();
   
-  // Add SVG gradient for health gauge
-  const svg = document.querySelector('.health-gauge');
-  if (svg) {
-    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-    defs.innerHTML = `
-      <linearGradient id="healthGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
-        <stop offset="50%" style="stop-color:#0ea5e9;stop-opacity:1" />
-        <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
-      </linearGradient>
-    `;
-    svg.insertBefore(defs, svg.firstChild);
-  }
-  
   console.log('Proxmox Dashboard initialized successfully');
 });
 

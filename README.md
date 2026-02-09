@@ -10,13 +10,13 @@ A modern, feature-rich dashboard for managing and monitoring Proxmox VE clusters
 - **Smart Filtering**: Filter by status, type, region, and version
 - **Multiple Sorting**: Sort by name, status, CPU, memory, VM count, or region
 - **Statistics Dashboard**: Comprehensive overview with charts and metrics
-- **Health Monitoring**: System health score with visual gauge
+- **Health Monitoring**: System health score with progress and breakdown indicators
 - **Notifications**: Automatic alerts for critical thresholds
 - **Auto-refresh**: Optional automatic data updates (60s interval)
 
 ### Data Visualization
 - **Interactive Charts**: Resource distribution and status charts using Chart.js
-- **Health Gauge**: Visual health score indicator
+- **Health Score**: Progress indicator with component breakdown
 - **Regional Statistics**: Breakdown by AMER, APAC, EMEA, and CME regions
 - **Resource Metrics**: CPU, Memory, and Disk usage tracking
 - **VM Analytics**: Running/stopped VM statistics

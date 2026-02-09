@@ -996,44 +996,56 @@ header h1 a:hover {
   grid-column: span 1;
 }
 
-.health-gauge-container {
-  position: relative;
-  width: 200px;
-  height: 200px;
-  margin: 1rem auto;
+.health-score {
+  text-align: center;
+  margin: 1rem 0 0.75rem;
 }
 
-.health-gauge {
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-}
-
-.gauge-bg {
-  fill: none;
-  stroke: var(--node-bg);
-  stroke-width: 12;
-}
-
-.gauge-fill {
-  fill: none;
-  stroke: url(#healthGradient);
-  stroke-width: 12;
-  stroke-linecap: round;
-  stroke-dasharray: 502.4;
-  stroke-dashoffset: 502.4;
-  transition: stroke-dashoffset 1s ease;
-}
-
-.gauge-value {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 2.5rem;
+.health-score-value {
+  font-size: 2.4rem;
   font-weight: 800;
   font-family: 'IBM Plex Mono', monospace;
   color: var(--text);
+}
+
+.health-score-label {
+  font-size: 0.8rem;
+  color: var(--copy);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+.health-progress {
+  width: 100%;
+  height: 12px;
+  background: var(--node-bg);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 0.75rem 0 1rem;
+}
+
+.health-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--online), var(--link), var(--prod-color));
+  border-radius: 999px;
+  transition: width 0.6s ease;
+}
+
+.health-breakdown {
+  display: grid;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--copy);
+}
+
+.health-breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .health-details {
@@ -1561,6 +1573,18 @@ header h1 a:hover {
   letter-spacing: 0.05em;
 }
 
+.node-status.online {
+  color: var(--online);
+}
+
+.node-status.offline {
+  color: var(--offline);
+}
+
+.node-status.degraded {
+  color: var(--degraded);
+}
+
 .node-details {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1710,6 +1734,7 @@ header h1 a:hover {
 .vm-header {
   font-weight: 700;
   font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -1724,6 +1749,8 @@ header h1 a:hover {
   transition: color var(--transition-fast);
   overflow-wrap: anywhere;
   word-break: break-word;
+  font-size: 0.75rem;
+  line-height: 1.2;
 }
 
 .vm-header a:hover {
@@ -2212,12 +2239,7 @@ footer {
     font-size: 2rem;
   }
   
-  .health-gauge-container {
-    width: 160px;
-    height: 160px;
-  }
-  
-  .gauge-value {
+  .health-score-value {
     font-size: 2rem;
   }
   
