@@ -144,10 +144,7 @@ header h1 a:hover {
 }
 
 .last-update {
-  position: absolute;
-  bottom: 1rem;
-  left: 50%;
-  transform: translateX(-50%);
+  margin: 0 auto;
   font-size: 0.75rem;
   font-family: 'IBM Plex Mono', monospace;
   opacity: 0.9;
@@ -156,8 +153,10 @@ header h1 a:hover {
   border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.75rem;
   backdrop-filter: blur(10px);
+  flex-wrap: wrap;
 }
 
 .refresh-btn {
@@ -1366,7 +1365,7 @@ header h1 a:hover {
 
 .cluster-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(4, minmax(250px, 1fr));
   gap: 1.5rem;
 }
 
