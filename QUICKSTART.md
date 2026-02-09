@@ -1,4 +1,4 @@
-# Quick Start Guide - Proxmox Dashboard
+# Quick Start Guide - Proxmox Cluster Dashboard
 
 ## 5-Minute Setup
 

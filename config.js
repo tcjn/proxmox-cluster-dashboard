@@ -50,7 +50,7 @@ const CONFIG = {
     
     // APAC
     'au-mefi': 'au', 'au-mel1': 'au', 'au-syd1': 'au', 'br-sao1': 'br',
-    'ch-hkg1': 'hk', 'ch-hkgi': 'hk', 'hk-hkg1': 'hk', 'id-jkt1': 'id',
+    'ch-hkg1': 'hk', 'hk-hkg1': 'hk', 'id-jkt1': 'id',
     'jp-kyo1': 'jp', 'jp-tyo1': 'jp', 'sg-sin1': 'sg', 'sg-sin1-prod': 'sg',
     'sg-sin2-prod': 'sg', 'sg-sin2': 'sg', 'th-bkk1': 'th', 'th-bkx1': 'th',
     'za-jb01': 'za', 'za-jnb1': 'za',

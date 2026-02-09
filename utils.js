@@ -38,7 +38,8 @@ function compareVersions(v1, v2) {
 
 // Get short node name (remove domain)
 function getShortNodeName(fullNodeName) {
-  return fullNodeName.replace('.expereo.local', '');
+  if (!fullNodeName) return '';
+  return fullNodeName.split('.')[0];
 }
 
 // Get region from cluster name

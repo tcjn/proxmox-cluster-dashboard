@@ -1682,6 +1682,7 @@ header h1 a:hover {
   gap: 0.75rem;
   transition: all var(--transition-base);
   border: 1px solid var(--border);
+  min-width: 0;
 }
 
 .vm-item:hover {
@@ -1701,14 +1702,18 @@ header h1 a:hover {
   font-family: 'IBM Plex Mono', monospace;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.5rem;
   grid-column: span 3;
+  min-width: 0;
 }
 
 .vm-header a {
   color: var(--text);
   text-decoration: none;
   transition: color var(--transition-fast);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .vm-header a:hover {
