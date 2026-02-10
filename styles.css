@@ -52,6 +52,10 @@
   --transition-fast: 150ms ease;
   --transition-base: 250ms ease;
   --transition-slow: 400ms ease;
+
+  /* Typography tuning */
+  --vm-label-font-size: 0.72rem;
+  --node-label-font-size: calc(var(--vm-label-font-size) - 0.2pt);
   
   /* Spacing */
   --radius-sm: 6px;
@@ -1533,7 +1537,7 @@ header h1 a:hover {
   gap: 0.5rem;
   font-weight: 700;
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.88rem;
+  font-size: var(--node-label-font-size);
 }
 
 .node-name a {
@@ -1735,7 +1739,7 @@ header h1 a:hover {
 .vm-header {
   font-weight: 700;
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.58rem;
+  font-size: var(--vm-label-font-size);
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -1750,7 +1754,7 @@ header h1 a:hover {
   transition: color var(--transition-fast);
   overflow-wrap: anywhere;
   word-break: break-word;
-  font-size: 0.58rem;
+  font-size: var(--vm-label-font-size);
   line-height: 1.2;
 }
 

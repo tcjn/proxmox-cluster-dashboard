@@ -25,6 +25,13 @@ function calculateStatistics() {
     totalMemoryUsage: 0,
     totalDiskUsage: 0,
     nodesWithData: 0,
+
+    occupancyBuckets: {
+      low: { cpu: 0, memory: 0, disk: 0 },
+      medium: { cpu: 0, memory: 0, disk: 0 },
+      high: { cpu: 0, memory: 0, disk: 0 },
+      critical: { cpu: 0, memory: 0, disk: 0 }
+    },
     
     updatedNodes: 0,
     outdatedNodes: 0,
@@ -74,15 +81,21 @@ function calculateStatistics() {
           stats.nodesWithData++;
           
           if (nodeData.cpu !== undefined && !isNaN(nodeData.cpu)) {
-            stats.totalCpuUsage += nodeData.cpu * 100;
+            const cpuUsage = nodeData.cpu * 100;
+            stats.totalCpuUsage += cpuUsage;
+            stats.occupancyBuckets[getOccupancyBucket(cpuUsage)].cpu++;
           }
           
           if (nodeData.mem && nodeData.maxmem) {
-            stats.totalMemoryUsage += (nodeData.mem / nodeData.maxmem) * 100;
+            const memoryUsage = (nodeData.mem / nodeData.maxmem) * 100;
+            stats.totalMemoryUsage += memoryUsage;
+            stats.occupancyBuckets[getOccupancyBucket(memoryUsage)].memory++;
           }
           
           if (nodeData.disk && nodeData.maxdisk) {
-            stats.totalDiskUsage += (nodeData.disk / nodeData.maxdisk) * 100;
+            const diskUsage = (nodeData.disk / nodeData.maxdisk) * 100;
+            stats.totalDiskUsage += diskUsage;
+            stats.occupancyBuckets[getOccupancyBucket(diskUsage)].disk++;
           }
           
           if (nodeData.pveversion) {
@@ -138,6 +151,13 @@ function calculateStatistics() {
   stats.criticalCount = stats.offlineNodes;
   
   return stats;
+}
+
+function getOccupancyBucket(usage) {
+  if (usage < 40) return 'low';
+  if (usage < 70) return 'medium';
+  if (usage < 85) return 'high';
+  return 'critical';
 }
 
 function updateStatisticsUI() {
