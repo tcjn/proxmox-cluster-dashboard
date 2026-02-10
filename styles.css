@@ -1482,9 +1482,10 @@ header h1 a:hover {
 
 .node-header {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.5rem;
   margin-bottom: 0.75rem;
 }
 
@@ -1497,14 +1498,15 @@ header h1 a:hover {
   font-weight: 700;
   font-family: 'IBM Plex Mono', monospace;
   font-size: calc(var(--node-label-font-size) - 0.4pt);
-  min-width: 0;
 }
 
 .node-name a {
   color: var(--text);
   text-decoration: none;
   transition: color var(--transition-fast);
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .node-name a:hover {
@@ -1534,6 +1536,8 @@ header h1 a:hover {
 
 .node-status {
   flex-shrink: 0;
+  margin-left: 0.5rem;
+  padding-left: 0.5rem;
   font-size: 0.75rem;
   color: var(--copy);
   font-weight: 600;
