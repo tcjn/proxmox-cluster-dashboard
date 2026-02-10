@@ -92,7 +92,7 @@ function createNodesHTML(cluster) {
 }
 
 function createNodeHTML(node, cluster) {
-  const displayName = node.fullName || getShortNodeName(node.fullName);
+  const displayName = getShortNodeName(node.fullName);
   const nodeStatus = getNodeStatus(node.fullName);
   const nodeData = getNodeData(node.fullName);
   
