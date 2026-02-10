@@ -77,7 +77,7 @@ const STATE = {
   filters: {
     status: ['online', 'offline', 'degraded'],
     type: ['prod', 'nonprod'],
-    region: ['AMER', 'APAC', 'EMEA', 'CME'],
+    region: ['AMER', 'APAC', 'EMEA', 'CME', 'LAB'],
     version: ['updated', 'outdated']
   },
   sortBy: 'name'

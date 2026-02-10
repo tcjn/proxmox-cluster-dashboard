@@ -7,13 +7,7 @@ function applyFilters() {
 
 function updateFilterCount() {
   const activeFilters = Object.values(STATE.filters).flat().length;
-  const totalPossible = Object.keys(STATE.filters).reduce((sum, key) => {
-    if (key === 'status') return sum + 3;
-    if (key === 'type') return sum + 2;
-    if (key === 'region') return sum + 4;
-    if (key === 'version') return sum + 2;
-    return sum;
-  }, 0);
+  const totalPossible = document.querySelectorAll('.filter-panel input[type="checkbox"]').length;
   
   const filterCount = document.getElementById('filterCount');
   if (activeFilters < totalPossible) {
@@ -28,7 +22,7 @@ function resetFilters() {
   STATE.filters = {
     status: ['online', 'offline', 'degraded'],
     type: ['prod', 'nonprod'],
-    region: ['AMER', 'APAC', 'EMEA', 'CME'],
+    region: ['AMER', 'APAC', 'EMEA', 'CME', 'LAB'],
     version: ['updated', 'outdated']
   };
   
