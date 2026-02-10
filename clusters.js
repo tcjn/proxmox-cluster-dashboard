@@ -57,6 +57,11 @@ function createClusterElement(cluster, region, index) {
   div.setAttribute('data-region', region);
   
   const clusterStatus = getClusterStatus(cluster.name);
+  const isCmeCluster = region.toUpperCase() === 'CME';
+  const cephHealthLabel = isCmeCluster ? getCephHealthLabel(cluster.name) : null;
+  const cephHealthTitle = isCmeCluster
+    ? `Ceph: ${cephHealthLabel === 'unknown' ? 'No data' : cephHealthLabel}`
+    : '';
   div.setAttribute('data-status', clusterStatus);
   
   const isProd = cluster.name.includes('-prod');
@@ -73,6 +78,7 @@ function createClusterElement(cluster, region, index) {
         ${cluster.name}
         ${isProd ? '<i class="fas fa-star" style="color: var(--prod-color); margin-left: 0.25rem;"></i>' : ''}
       </a>
+      ${isCmeCluster ? `<span class="ceph-health-badge ${cephHealthLabel}" title="${cephHealthTitle}"><i class="fas fa-database"></i> Ceph ${cephHealthLabel}</span>` : ''}
       <button class="copy-btn" title="Copy link" data-url="${cluster.url}">
         <i class="fas fa-copy"></i>
       </button>

@@ -45,6 +45,16 @@ function calculateStatistics() {
       APAC: { clusters: 0, vms: 0, nodes: 0 },
       EMEA: { clusters: 0, vms: 0, nodes: 0 },
       CME: { clusters: 0, vms: 0, nodes: 0 }
+    },
+
+    ceph: {
+      total: 0,
+      healthy: 0,
+      warning: 0,
+      critical: 0,
+      notInstalled: 0,
+      unknown: 0,
+      clusters: []
     }
   };
   
@@ -62,6 +72,21 @@ function calculateStatistics() {
       const clusterRegion = region.toUpperCase();
       if (stats.regionStats[clusterRegion]) {
         stats.regionStats[clusterRegion].clusters++;
+      }
+
+      if (clusterRegion === 'CME') {
+        const cephHealthLabel = getCephHealthLabel(cluster.name);
+        stats.ceph.total++;
+        stats.ceph.clusters.push({
+          name: cluster.name,
+          health: cephHealthLabel
+        });
+
+        if (cephHealthLabel === 'healthy') stats.ceph.healthy++;
+        else if (cephHealthLabel === 'warning') stats.ceph.warning++;
+        else if (cephHealthLabel === 'critical') stats.ceph.critical++;
+        else if (cephHealthLabel === 'not-installed') stats.ceph.notInstalled++;
+        else stats.ceph.unknown++;
       }
       
       const nodes = [cluster.node1, cluster.node2, cluster.node3].filter(Boolean);
@@ -204,7 +229,38 @@ function updateStatisticsUI() {
   document.getElementById('emeaTrend').innerHTML = `<i class="fas fa-server"></i> <span>${stats.regionStats.EMEA.vms} VMs</span>`;
   document.getElementById('cmeTrend').innerHTML = `<i class="fas fa-server"></i> <span>${stats.regionStats.CME.vms} VMs</span>`;
   
+  renderCephStatus(stats.ceph);
+  
   // Footer stats
   document.getElementById('footerStats').textContent = 
     `${stats.totalClusters} Clusters • ${stats.totalNodes} Nodes • ${stats.totalVMs} VMs`;
+}
+
+function renderCephStatus(cephStats) {
+  const panel = document.getElementById('cephStatusPanel');
+  const summary = document.getElementById('cephStatusSummary');
+  const list = document.getElementById('cephStatusList');
+
+  if (!panel || !summary || !list) return;
+
+  if (!cephStats || cephStats.total === 0) {
+    panel.style.display = 'none';
+    return;
+  }
+
+  panel.style.display = 'block';
+  summary.innerHTML = `
+    <span class="ceph-summary-pill healthy">Healthy: ${cephStats.healthy}</span>
+    <span class="ceph-summary-pill warning">Warn: ${cephStats.warning}</span>
+    <span class="ceph-summary-pill critical">Critical: ${cephStats.critical}</span>
+    <span class="ceph-summary-pill not-installed">Not Installed: ${cephStats.notInstalled}</span>
+    <span class="ceph-summary-pill unknown">Unknown: ${cephStats.unknown}</span>
+  `;
+
+  list.innerHTML = cephStats.clusters.map(item => `
+    <div class="ceph-status-item ${item.health}">
+      <span class="ceph-cluster-name">${item.name}</span>
+      <span class="ceph-cluster-health">${item.health}</span>
+    </div>
+  `).join('');
 }

@@ -95,6 +95,29 @@ function getClusterStatus(clusterName) {
   return STATE.statusData.clusterStatus[clusterName] || 'offline';
 }
 
+// Get ceph status for a cluster from status data
+function getCephStatus(clusterName) {
+  if (!STATE.statusData || !STATE.statusData.cephStatus || !clusterName) {
+    return null;
+  }
+
+  return STATE.statusData.cephStatus[clusterName] || null;
+}
+
+function getCephHealthLabel(clusterName) {
+  const cephStatus = getCephStatus(clusterName);
+  if (!cephStatus) return 'unknown';
+
+  const rawHealth = (cephStatus.health || 'unknown').toString().toLowerCase();
+
+  if (rawHealth === 'health_ok') return 'healthy';
+  if (rawHealth === 'health_warn') return 'warning';
+  if (rawHealth === 'health_err') return 'critical';
+  if (rawHealth === 'not-installed') return 'not-installed';
+
+  return rawHealth;
+}
+
 // Get node status from status data
 function getNodeStatus(nodeName) {
   if (!STATE.statusData || !STATE.statusData.nodeStatus) {

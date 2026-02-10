@@ -1411,6 +1411,45 @@ header h1 a:hover {
   justify-content: center;
   margin-bottom: 1rem;
   gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ceph-health-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 1px solid transparent;
+}
+
+.ceph-health-badge.healthy {
+  color: var(--online);
+  border-color: color-mix(in srgb, var(--online) 40%, transparent);
+  background: color-mix(in srgb, var(--online) 15%, transparent);
+}
+
+.ceph-health-badge.warning {
+  color: var(--degraded);
+  border-color: color-mix(in srgb, var(--degraded) 40%, transparent);
+  background: color-mix(in srgb, var(--degraded) 16%, transparent);
+}
+
+.ceph-health-badge.critical {
+  color: var(--offline);
+  border-color: color-mix(in srgb, var(--offline) 45%, transparent);
+  background: color-mix(in srgb, var(--offline) 16%, transparent);
+}
+
+.ceph-health-badge.not-installed,
+.ceph-health-badge.unknown {
+  color: var(--copy);
+  border-color: var(--border);
+  background: var(--node-bg);
 }
 
 .cluster a {
@@ -2088,6 +2127,14 @@ footer {
   .region-stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .ceph-status-header {
+    flex-direction: column;
+  }
+
+  .ceph-status-summary {
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 768px) {
@@ -2220,5 +2267,95 @@ footer {
   
   .vm-search-results h2 {
     font-size: 1.3rem;
+  }
+}
+
+.ceph-status-panel {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--border);
+}
+
+.ceph-status-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.ceph-status-header h3 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.ceph-status-summary {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.ceph-summary-pill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.ceph-summary-pill.healthy { color: var(--online); background: color-mix(in srgb, var(--online) 16%, transparent); }
+.ceph-summary-pill.warning { color: var(--degraded); background: color-mix(in srgb, var(--degraded) 16%, transparent); }
+.ceph-summary-pill.critical { color: var(--offline); background: color-mix(in srgb, var(--offline) 16%, transparent); }
+.ceph-summary-pill.not-installed,
+.ceph-summary-pill.unknown { color: var(--copy); background: var(--node-bg); border-color: var(--border); }
+
+.ceph-status-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.ceph-status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--node-bg);
+  border: 1px solid var(--border);
+  border-left: 4px solid transparent;
+  border-radius: var(--radius-md);
+  padding: 0.75rem;
+}
+
+.ceph-status-item .ceph-cluster-name {
+  font-weight: 600;
+}
+
+.ceph-status-item .ceph-cluster-health {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--copy);
+}
+
+.ceph-status-item.healthy { border-left-color: var(--online); }
+.ceph-status-item.warning { border-left-color: var(--degraded); }
+.ceph-status-item.critical { border-left-color: var(--offline); }
+.ceph-status-item.not-installed,
+.ceph-status-item.unknown { border-left-color: var(--border); }
+
+@media (max-width: 900px) {
+  .ceph-status-header {
+    flex-direction: column;
+  }
+
+  .ceph-status-summary {
+    justify-content: flex-start;
   }
 }

@@ -72,5 +72,33 @@
         }
       ]
     }
+  },
+  "cephStatus": {
+    "us-nyc1-prod": {
+      "health": "not-installed"
+    },
+    "us-chi1": {
+      "health": "not-installed"
+    },
+    "sg-sin1-prod": {
+      "health": "health_warn"
+    },
+    "au-syd1": {
+      "health": "not-installed"
+    },
+    "nl-ams1-prod": {
+      "health": "health_ok",
+      "fsmap": {
+        "in": 1,
+        "up": 1,
+        "epoch": 16
+      }
+    },
+    "uk-lon1": {
+      "health": "health_err"
+    },
+    "cme-cluster1-prod": {
+      "health": "health_ok"
+    }
   }
 }
