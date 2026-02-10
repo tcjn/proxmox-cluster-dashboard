@@ -1498,7 +1498,7 @@ header h1 a:hover {
   overflow: hidden;
   font-weight: 700;
   font-family: 'IBM Plex Mono', monospace;
-  font-size: calc(var(--node-label-font-size) - 0.4pt);
+  font-size: calc(var(--node-label-font-size) - 1pt);
 }
 
 .node-name a {
@@ -1508,6 +1508,7 @@ header h1 a:hover {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 0.9em;
 }
 
 .node-name a:hover {
