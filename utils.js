@@ -108,15 +108,80 @@ function getCephHealthLabel(clusterName) {
   const cephStatus = getCephStatus(clusterName);
   if (!cephStatus) return 'unknown';
 
-  const rawHealth = (cephStatus.health || 'unknown').toString().toLowerCase();
-
-  if (rawHealth === 'health_ok') return 'healthy';
-  if (rawHealth === 'health_warn') return 'warning';
-  if (rawHealth === 'health_err') return 'critical';
-  if (rawHealth === 'not-installed') return 'not-installed';
-
-  return rawHealth;
+  const rawHealth = extractCephHealthValue(cephStatus);
+  return normalizeCephHealthLabel(rawHealth);
 }
+
+function getCephHealthDetails(clusterName) {
+  const cephStatus = getCephStatus(clusterName);
+  if (!cephStatus) {
+    return {
+      label: 'unknown',
+      text: 'Unknown',
+      details: 'No Ceph status data available.'
+    };
+  }
+
+  const rawHealth = extractCephHealthValue(cephStatus);
+  const label = normalizeCephHealthLabel(rawHealth);
+
+  const checks = cephStatus.health && typeof cephStatus.health === 'object' && cephStatus.health.checks
+    ? cephStatus.health.checks
+    : null;
+
+  let details = '';
+  if (checks && Object.keys(checks).length > 0) {
+    details = `${Object.keys(checks).length} active checks`;
+  } else if (cephStatus.health && typeof cephStatus.health === 'object' && cephStatus.health.summary) {
+    details = String(cephStatus.health.summary);
+  } else if (cephStatus.detail) {
+    details = String(cephStatus.detail);
+  }
+
+  const textMap = {
+    healthy: 'Healthy',
+    warning: 'Warning',
+    critical: 'Critical',
+    'not-installed': 'Not installed',
+    unknown: 'Unknown'
+  };
+
+  return {
+    label,
+    text: textMap[label] || label,
+    details
+  };
+}
+
+function extractCephHealthValue(cephStatus) {
+  if (typeof cephStatus === 'string') return cephStatus;
+  if (!cephStatus || typeof cephStatus !== 'object') return 'unknown';
+
+  const health = cephStatus.health;
+  if (typeof health === 'string') return health;
+  if (health && typeof health === 'object') {
+    if (typeof health.status === 'string') return health.status;
+    if (typeof health.overall_status === 'string') return health.overall_status;
+    if (typeof health.overallStatus === 'string') return health.overallStatus;
+  }
+
+  if (typeof cephStatus.status === 'string') return cephStatus.status;
+  if (typeof cephStatus.overall_status === 'string') return cephStatus.overall_status;
+
+  return 'unknown';
+}
+
+function normalizeCephHealthLabel(rawHealth) {
+  const normalized = String(rawHealth || 'unknown').trim().toLowerCase();
+
+  if (normalized === 'health_ok' || normalized === 'ok' || normalized === 'healthy') return 'healthy';
+  if (normalized === 'health_warn' || normalized === 'warn' || normalized === 'warning') return 'warning';
+  if (normalized === 'health_err' || normalized === 'health_error' || normalized === 'error' || normalized === 'critical') return 'critical';
+  if (normalized === 'not-installed' || normalized === 'not_installed' || normalized === 'not installed') return 'not-installed';
+
+  return 'unknown';
+}
+
 
 // Get node status from status data
 function getNodeStatus(nodeName) {
