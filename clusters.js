@@ -1,3 +1,10 @@
+// Domain-agnostic hostname formatter
+function getDisplayNodeName(fullName) {
+  if (typeof fullName !== 'string' || fullName.length === 0) return '';
+  if (!fullName.includes('.')) return fullName;
+  return fullName.split('.')[0];
+}
+
 // Cluster Rendering
 
 function renderClusters() {
@@ -39,7 +46,6 @@ function renderClusters() {
     container.appendChild(regionEl);
   });
   
-  // Add event listeners
   attachClusterEventListeners();
 }
 
@@ -213,7 +219,6 @@ function createVMHTML(vm, cluster) {
 }
 
 function attachClusterEventListeners() {
-  // Copy buttons
   document.querySelectorAll('.copy-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -225,7 +230,6 @@ function attachClusterEventListeners() {
     });
   });
   
-  // Region collapse
   document.querySelectorAll('.region h2').forEach(header => {
     header.addEventListener('click', () => {
       header.parentElement.classList.toggle('collapsed');
@@ -233,7 +237,6 @@ function attachClusterEventListeners() {
   });
 }
 
-// Global function for VM toggle (called from inline onclick)
 window.toggleVMDetails = function(button) {
   const details = button.nextElementSibling;
   const icon = button.querySelector('.fa-chevron-down, .fa-chevron-up');
