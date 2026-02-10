@@ -39,6 +39,12 @@
   --vm-highlight: #dbeafe;
   --cluster-highlight: #e0f2fe;
 
+  /* Statistics Panel Palette */
+  --stats-accent-start: #2563eb;
+  --stats-accent-end: #7c3aed;
+  --stats-icon-bg: rgba(37, 99, 235, 0.14);
+  --stats-icon-border: rgba(37, 99, 235, 0.3);
+
   --bg-image: url('https://i.gremicdn.pl/image/free/c24482dbeaf5c39e775e6a3bf0d74843/?t=resize%3Afill%3A1200%3A716%2Cenlarge%3A1');
   --bg-overlay: linear-gradient(
     rgba(15, 23, 42, 0.25),
@@ -83,6 +89,11 @@
   --search-highlight: #1e3a5f;
   --vm-highlight: #1e3a5f;
   --cluster-highlight: #1a2942;
+
+  --stats-accent-start: #60a5fa;
+  --stats-accent-end: #a78bfa;
+  --stats-icon-bg: rgba(96, 165, 250, 0.2);
+  --stats-icon-border: rgba(96, 165, 250, 0.45);
 
   --bg-overlay: linear-gradient(
     rgba(2, 6, 23, 0.55),
@@ -850,7 +861,7 @@ header h1 a:hover {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  border-bottom: 3px solid var(--link);
+  border-bottom: 3px solid var(--stats-accent-start);
 }
 
 .statistics-grid {
@@ -879,7 +890,7 @@ header h1 a:hover {
   left: 0;
   width: 100%;
   height: 4px;
-  background: linear-gradient(90deg, var(--link), var(--maintenance));
+  background: linear-gradient(90deg, var(--stats-accent-start), var(--stats-accent-end));
   opacity: 0;
   transition: opacity var(--transition-base);
 }
@@ -914,8 +925,17 @@ header h1 a:hover {
 
 .stat-card-icon {
   font-size: 2rem;
-  color: var(--link);
-  opacity: 0.2;
+  color: var(--stats-accent-start);
+  opacity: 1;
+  background: var(--stats-icon-bg);
+  border: 1px solid var(--stats-icon-border);
+  border-radius: 999px;
+  width: 2.75rem;
+  height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.18);
 }
 
 .stat-card-value {
@@ -924,7 +944,7 @@ header h1 a:hover {
   font-family: 'IBM Plex Mono', monospace;
   margin-bottom: 0.5rem;
   color: var(--text);
-  background: linear-gradient(135deg, var(--link), var(--maintenance));
+  background: linear-gradient(135deg, var(--stats-accent-start), var(--stats-accent-end));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1104,7 +1124,7 @@ header h1 a:hover {
   font-weight: 800;
   font-family: 'IBM Plex Mono', monospace;
   margin-bottom: 0.25rem;
-  background: linear-gradient(135deg, var(--link), var(--maintenance));
+  background: linear-gradient(135deg, var(--stats-accent-start), var(--stats-accent-end));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
