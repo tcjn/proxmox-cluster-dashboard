@@ -1484,6 +1484,7 @@ header h1 a:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
   margin-bottom: 0.75rem;
 }
 
@@ -1491,6 +1492,8 @@ header h1 a:hover {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
   font-weight: 700;
   font-family: 'IBM Plex Mono', monospace;
   font-size: calc(var(--node-label-font-size) - 0.4pt);
@@ -1529,6 +1532,7 @@ header h1 a:hover {
 }
 
 .node-status {
+  flex-shrink: 0;
   font-size: 0.75rem;
   color: var(--copy);
   font-weight: 600;
