@@ -45,6 +45,13 @@
   --stats-icon-bg: rgba(37, 99, 235, 0.14);
   --stats-icon-border: rgba(37, 99, 235, 0.3);
 
+  /* Header + section title accents */
+  --hero-gradient-start: #123d73;
+  --hero-gradient-end: #1e5ca8;
+  --hero-title-color: #f8fbff;
+  --hero-meta-color: #dbeafe;
+  --section-title-line: #2c7ad6;
+
   --bg-image: url('https://i.gremicdn.pl/image/free/c24482dbeaf5c39e775e6a3bf0d74843/?t=resize%3Afill%3A1200%3A716%2Cenlarge%3A1');
   --bg-overlay: linear-gradient(
     rgba(15, 23, 42, 0.25),
@@ -95,6 +102,12 @@
   --stats-icon-bg: rgba(96, 165, 250, 0.2);
   --stats-icon-border: rgba(96, 165, 250, 0.45);
 
+  --hero-gradient-start: #08162e;
+  --hero-gradient-end: #13325f;
+  --hero-title-color: #eff6ff;
+  --hero-meta-color: #bfdbfe;
+  --section-title-line: #3b82f6;
+
   --bg-overlay: linear-gradient(
     rgba(2, 6, 23, 0.55),
     rgba(2, 6, 23, 0.55)
@@ -137,7 +150,7 @@ body {
 
 /* Header */
 header {
-  background: linear-gradient(135deg, #0a1628 0%, #1a2942 100%);
+  background: linear-gradient(135deg, var(--hero-gradient-start) 0%, var(--hero-gradient-end) 100%);
   color: #fff;
   padding: 1.5rem 2rem;
   text-align: center;
@@ -152,6 +165,7 @@ header h1 {
   font-weight: 700;
   letter-spacing: -0.02em;
   margin-bottom: 0.5rem;
+  color: var(--hero-title-color);
 }
 
 header h1 a {
@@ -183,6 +197,7 @@ header h1 a:hover {
   gap: 0.75rem;
   backdrop-filter: blur(10px);
   flex-wrap: wrap;
+  color: var(--hero-meta-color);
 }
 
 .refresh-btn {
@@ -861,7 +876,7 @@ header h1 a:hover {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  border-bottom: 3px solid var(--stats-accent-start);
+  border-bottom: 3px solid var(--section-title-line);
 }
 
 .statistics-grid {
@@ -1327,7 +1342,7 @@ header h1 a:hover {
   color: var(--text);
   font-size: 1.6rem;
   font-weight: 700;
-  border-bottom: 3px solid var(--link);
+  border-bottom: 3px solid var(--section-title-line);
   padding-bottom: 0.75rem;
   margin-bottom: 1.5rem;
   display: flex;
@@ -1391,7 +1406,7 @@ header h1 a:hover {
   color: var(--text);
   font-size: 1.6rem;
   font-weight: 700;
-  border-bottom: 3px solid var(--link);
+  border-bottom: 3px solid var(--section-title-line);
   padding-bottom: 0.75rem;
   margin-bottom: 1.5rem;
   cursor: pointer;
