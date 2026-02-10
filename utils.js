@@ -39,7 +39,19 @@ function compareVersions(v1, v2) {
 // Get short node name (remove domain)
 function getShortNodeName(fullNodeName) {
   if (!fullNodeName) return '';
-  return fullNodeName.split('.')[0];
+
+  let normalized = String(fullNodeName).trim();
+
+  // Handle values passed as URL, e.g. https://srv01.expereo.local:8006
+  normalized = normalized.replace(/^https?:\/\//i, '');
+
+  // Remove path/query fragments if present
+  normalized = normalized.split('/')[0].split('?')[0].split('#')[0];
+
+  // Remove port suffix
+  normalized = normalized.split(':')[0];
+
+  return normalized.split('.')[0];
 }
 
 // Get compact node display name for cards
