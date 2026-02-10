@@ -1493,13 +1493,15 @@ header h1 a:hover {
   gap: 0.5rem;
   font-weight: 700;
   font-family: 'IBM Plex Mono', monospace;
-  font-size: var(--node-label-font-size);
+  font-size: calc(var(--node-label-font-size) - 0.4pt);
+  min-width: 0;
 }
 
 .node-name a {
   color: var(--text);
   text-decoration: none;
   transition: color var(--transition-fast);
+  white-space: nowrap;
 }
 
 .node-name a:hover {
