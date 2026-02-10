@@ -149,7 +149,7 @@ function createVMSearchCard(vmResult) {
         </div>
         <div style="text-align: center; padding: 0.75rem; background: var(--node-bg); border-radius: var(--radius-md);">
           <div style="font-weight: 700; font-size: 1.1rem; font-family: 'IBM Plex Mono', monospace;">${memUsage}</div>
-          <div style="font-size: 0.7rem; color: var(--copy); text-transform: uppercase; letter-spacing: 0.05em;">Memory</div>
+          <div style="font-size: 0.7rem; color: var(--copy); text-transform: uppercase; letter-spacing: 0.05em;">RAM</div>
         </div>
         <div style="text-align: center; padding: 0.75rem; background: var(--node-bg); border-radius: var(--radius-md);">
           <div style="font-weight: 700; font-size: 1.1rem; font-family: 'IBM Plex Mono', monospace;">${uptime}</div>
