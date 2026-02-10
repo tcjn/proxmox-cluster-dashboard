@@ -42,6 +42,21 @@ function getShortNodeName(fullNodeName) {
   return fullNodeName.split('.')[0];
 }
 
+// Get compact node display name for cards
+function getDisplayNodeName(fullNodeName) {
+  const shortName = getShortNodeName(fullNodeName);
+  if (!shortName) return '';
+
+  const parts = shortName.split('-').filter(Boolean);
+  const trailingPart = parts[parts.length - 1] || shortName;
+
+  if (/^(srv|node)\d+[a-z0-9-]*$/i.test(trailingPart)) {
+    return trailingPart;
+  }
+
+  return shortName;
+}
+
 // Get region from cluster name
 function getRegionFromClusterName(clusterName) {
   // Check if it's CME cluster
