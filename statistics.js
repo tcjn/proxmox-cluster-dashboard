@@ -76,12 +76,14 @@ function calculateStatistics() {
 
       if (clusterRegion === 'CME') {
         const cephHealth = getCephHealthDetails(cluster.name);
+        const cephStatus = getCephStatus(cluster.name);
         stats.ceph.total++;
         stats.ceph.clusters.push({
           name: cluster.name,
           health: cephHealth.label,
           healthText: cephHealth.text,
-          details: cephHealth.details
+          details: cephHealth.details,
+          metrics: extractCephMetrics(cephStatus)
         });
 
         if (cephHealth.label === 'healthy') stats.ceph.healthy++;
@@ -251,18 +253,82 @@ function renderCephStatus(cephStats) {
   }
 
   panel.style.display = 'block';
+  const clustersWithAlerts = cephStats.warning + cephStats.critical + cephStats.unknown;
   summary.innerHTML = `
     <span class="ceph-summary-pill healthy">Healthy: ${cephStats.healthy}</span>
     <span class="ceph-summary-pill warning">Warn: ${cephStats.warning}</span>
     <span class="ceph-summary-pill critical">Critical: ${cephStats.critical}</span>
     <span class="ceph-summary-pill not-installed">Not Installed: ${cephStats.notInstalled}</span>
     <span class="ceph-summary-pill unknown">Unknown: ${cephStats.unknown}</span>
+    <span class="ceph-summary-pill meta">Monitored: ${cephStats.total}</span>
+    <span class="ceph-summary-pill meta">Needs attention: ${clustersWithAlerts}</span>
   `;
 
   list.innerHTML = cephStats.clusters.map(item => `
     <div class="ceph-status-item ${item.health}">
-      <span class="ceph-cluster-name">${item.name}</span>
-      <span class="ceph-cluster-health" title="${sanitizeHTML(item.details || '')}">${sanitizeHTML(item.healthText || item.health)}</span>
+      <div class="ceph-status-item-main">
+        <span class="ceph-cluster-name">${sanitizeHTML(item.name)}</span>
+        <span class="ceph-cluster-health" title="${sanitizeHTML(item.details || '')}">${sanitizeHTML(item.healthText || item.health)}</span>
+      </div>
+      <div class="ceph-status-item-meta">
+        ${item.details ? `<span class="ceph-meta-item details">${sanitizeHTML(item.details)}</span>` : ''}
+        ${Array.isArray(item.metrics) ? item.metrics.map(metric => `<span class="ceph-meta-item">${sanitizeHTML(metric)}</span>`).join('') : ''}
+      </div>
     </div>
   `).join('');
+}
+
+function extractCephMetrics(cephStatus) {
+  if (!cephStatus || typeof cephStatus !== 'object') return [];
+
+  const metrics = [];
+  const healthChecks = cephStatus.health && typeof cephStatus.health === 'object' && cephStatus.health.checks
+    ? cephStatus.health.checks
+    : null;
+
+  if (healthChecks && Object.keys(healthChecks).length > 0) {
+    metrics.push(`Checks: ${Object.keys(healthChecks).length}`);
+  }
+
+  const monMap = cephStatus.monmap || cephStatus.mon_status || cephStatus.monStatus;
+  if (monMap && typeof monMap === 'object') {
+    const mons = monMap.mons || monMap.monitors;
+    const quorum = monMap.quorum;
+    if (Array.isArray(quorum)) {
+      metrics.push(`MON quorum: ${quorum.length}`);
+    } else if (Array.isArray(mons)) {
+      metrics.push(`MONs: ${mons.length}`);
+    }
+  }
+
+  const osdMap = cephStatus.osdmap || cephStatus.osd_map || cephStatus.osdMap;
+  if (osdMap && typeof osdMap === 'object') {
+    const upOsds = osdMap.num_up_osds ?? osdMap.up_osds;
+    const inOsds = osdMap.num_in_osds ?? osdMap.in_osds;
+    const totalOsds = osdMap.num_osds ?? osdMap.total_osds;
+
+    if (typeof upOsds === 'number' && typeof totalOsds === 'number') {
+      metrics.push(`OSDs up: ${upOsds}/${totalOsds}`);
+    }
+    if (typeof inOsds === 'number' && typeof totalOsds === 'number') {
+      metrics.push(`OSDs in: ${inOsds}/${totalOsds}`);
+    }
+  }
+
+  const pgMap = cephStatus.pgmap || cephStatus.pg_map || cephStatus.pgMap;
+  if (pgMap && typeof pgMap === 'object') {
+    const pgs = pgMap.num_pgs ?? pgMap.pgs;
+    if (typeof pgs === 'number') {
+      metrics.push(`PGs: ${pgs}`);
+    }
+  }
+
+  const fsMap = cephStatus.fsmap || cephStatus.fs_map || cephStatus.fsMap;
+  if (fsMap && typeof fsMap === 'object') {
+    if (typeof fsMap.up === 'number' && typeof fsMap.in === 'number') {
+      metrics.push(`MDS up/in: ${fsMap.up}/${fsMap.in}`);
+    }
+  }
+
+  return metrics.slice(0, 5);
 }

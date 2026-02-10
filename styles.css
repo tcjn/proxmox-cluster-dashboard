@@ -2314,6 +2314,7 @@ footer {
 .ceph-summary-pill.critical { color: var(--offline); background: color-mix(in srgb, var(--offline) 16%, transparent); }
 .ceph-summary-pill.not-installed,
 .ceph-summary-pill.unknown { color: var(--copy); background: var(--node-bg); border-color: var(--border); }
+.ceph-summary-pill.meta { color: var(--link); background: color-mix(in srgb, var(--link) 12%, transparent); }
 
 .ceph-status-list {
   display: grid;
@@ -2323,14 +2324,21 @@ footer {
 
 .ceph-status-item {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: 0.75rem;
   background: var(--node-bg);
   border: 1px solid var(--border);
   border-left: 4px solid transparent;
   border-radius: var(--radius-md);
   padding: 0.75rem;
+}
+
+.ceph-status-item-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .ceph-status-item .ceph-cluster-name {
@@ -2342,6 +2350,25 @@ footer {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--copy);
+}
+
+.ceph-status-item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.ceph-meta-item {
+  font-size: 0.72rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.18rem 0.48rem;
+  background: color-mix(in srgb, var(--card) 70%, var(--node-bg));
+  color: var(--copy);
+}
+
+.ceph-meta-item.details {
+  border-style: dashed;
 }
 
 .ceph-status-item.healthy { border-left-color: var(--online); }
