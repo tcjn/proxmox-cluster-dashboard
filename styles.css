@@ -1512,10 +1512,11 @@ header h1 a:hover {
 }
 
 .node-indicator {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   display: inline-block;
+  flex-shrink: 0;
   box-shadow: 0 0 8px currentColor;
 }
 
