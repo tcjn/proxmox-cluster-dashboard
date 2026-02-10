@@ -138,10 +138,19 @@ class NotificationManager {
     `).join('');
   }
   
-  clear() {
+  acknowledgeAll() {
+    const count = this.notifications.length;
+    this.notifications = [];
+    this.updateUI();
+    return count;
+  }
+
+  clearAll() {
+    const count = this.notifications.length;
     this.notifications = [];
     this.checkedAlerts.clear();
     this.updateUI();
+    return count;
   }
 }
 
