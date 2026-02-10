@@ -1494,10 +1494,10 @@ header h1 a:hover {
   gap: 0.5rem;
   flex: 1;
   min-width: 0;
+  overflow: hidden;
   font-weight: 700;
   font-family: 'IBM Plex Mono', monospace;
   font-size: calc(var(--node-label-font-size) - 0.4pt);
-  min-width: 0;
 }
 
 .node-name a {
@@ -1505,6 +1505,8 @@ header h1 a:hover {
   text-decoration: none;
   transition: color var(--transition-fast);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .node-name a:hover {
@@ -1534,6 +1536,7 @@ header h1 a:hover {
 
 .node-status {
   flex-shrink: 0;
+  margin-left: 0.5rem;
   font-size: 0.75rem;
   color: var(--copy);
   font-weight: 600;
