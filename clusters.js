@@ -92,7 +92,7 @@ function createNodesHTML(cluster) {
 }
 
 function createNodeHTML(node, cluster) {
-  const shortName = getShortNodeName(node.fullName);
+  const displayName = node.fullName || getShortNodeName(node.fullName);
   const nodeStatus = getNodeStatus(node.fullName);
   const nodeData = getNodeData(node.fullName);
   
@@ -106,7 +106,7 @@ function createNodeHTML(node, cluster) {
         <div class="node-header">
           <div class="node-name">
             <span class="node-indicator ${nodeStatus}"></span>
-            <a href="https://${node.fullName}:8006" target="_blank">${shortName}</a>
+            <a href="https://${node.fullName}:8006" target="_blank">${displayName}</a>
           </div>
           <span class="node-status ${nodeStatus}">${statusLabel}</span>
         </div>
@@ -145,7 +145,7 @@ function createNodeHTML(node, cluster) {
       <div class="node-header">
         <div class="node-name">
           <span class="node-indicator ${nodeStatus}"></span>
-          <a href="https://${node.fullName}:8006" target="_blank">${shortName}</a>
+          <a href="https://${node.fullName}:8006" target="_blank">${displayName}</a>
         </div>
         <span class="node-status ${nodeStatus}">${nodeStatus}</span>
       </div>
