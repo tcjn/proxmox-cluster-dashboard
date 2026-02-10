@@ -30,6 +30,38 @@ class NotificationManager {
           }
         }
         
+        if (region.toUpperCase() === 'CME') {
+          const cephHealth = getCephHealthLabel(cluster.name);
+
+          if (cephHealth === 'critical' || cephHealth === 'warning') {
+            const alertKey = `ceph-${cephHealth}-${cluster.name}`;
+            if (!this.checkedAlerts.has(alertKey)) {
+              newAlerts.push({
+                type: cephHealth === 'critical' ? 'critical' : 'warning',
+                title: `Ceph ${cephHealth === 'critical' ? 'Critical' : 'Warning'}`,
+                message: `${cluster.name}: Ceph health is ${cephHealth}`,
+                cluster: cluster.name,
+                timestamp: new Date().toISOString()
+              });
+              this.checkedAlerts.add(alertKey);
+            }
+          }
+
+          if (cephHealth === 'not-installed') {
+            const alertKey = `ceph-not-installed-${cluster.name}`;
+            if (!this.checkedAlerts.has(alertKey)) {
+              newAlerts.push({
+                type: 'info',
+                title: 'Ceph Not Installed',
+                message: `${cluster.name}: Ceph storage is not installed`,
+                cluster: cluster.name,
+                timestamp: new Date().toISOString()
+              });
+              this.checkedAlerts.add(alertKey);
+            }
+          }
+        }
+
         // Check nodes
         const nodes = [cluster.node1, cluster.node2, cluster.node3].filter(Boolean);
         nodes.forEach(node => {
