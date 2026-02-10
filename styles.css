@@ -1484,22 +1484,30 @@ header h1 a:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
   margin-bottom: 0.75rem;
 }
 
 .node-name {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
+  flex: 1;
+  min-width: 0;
   font-weight: 700;
   font-family: 'IBM Plex Mono', monospace;
-  font-size: var(--node-label-font-size);
+  font-size: calc(var(--node-label-font-size) - 1.1pt);
 }
 
 .node-name a {
   color: var(--text);
   text-decoration: none;
   transition: color var(--transition-fast);
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .node-name a:hover {
@@ -1507,10 +1515,11 @@ header h1 a:hover {
 }
 
 .node-indicator {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   display: inline-block;
+  flex-shrink: 0;
   box-shadow: 0 0 8px currentColor;
 }
 
@@ -1527,6 +1536,7 @@ header h1 a:hover {
 }
 
 .node-status {
+  flex-shrink: 0;
   font-size: 0.75rem;
   color: var(--copy);
   font-weight: 600;
