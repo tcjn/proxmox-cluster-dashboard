@@ -1496,17 +1496,14 @@ header h1 a:hover {
   min-width: 0;
   font-weight: 700;
   font-family: 'IBM Plex Mono', monospace;
-  font-size: calc(var(--node-label-font-size) - 0.8pt);
+  font-size: calc(var(--node-label-font-size) - 0.4pt);
+  min-width: 0;
 }
 
 .node-name a {
   color: var(--text);
   text-decoration: none;
   transition: color var(--transition-fast);
-  display: inline-block;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
