@@ -158,7 +158,7 @@ function createNodeHTML(node, cluster) {
         </div>
         <div class="node-metric">
           <span class="metric-value">${memPercent}%</span>
-          <span class="metric-label">Memory</span>
+          <span class="metric-label">RAM</span>
           <div class="progress-container">
             <div class="progress-bar mem-progress" style="width: ${memPercent}%"></div>
           </div>
@@ -199,7 +199,7 @@ function createVMHTML(vm, cluster) {
       </div>
       <div class="vm-metric">
         <span class="vm-metric-value">${memUsage}</span>
-        <span class="vm-metric-label">Memory</span>
+        <span class="vm-metric-label">RAM</span>
       </div>
       <div class="vm-metric">
         <span class="vm-metric-value">${vm.vmid}</span>

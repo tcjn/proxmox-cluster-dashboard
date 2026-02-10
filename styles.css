@@ -1734,7 +1734,7 @@ header h1 a:hover {
 .vm-header {
   font-weight: 700;
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -1749,7 +1749,7 @@ header h1 a:hover {
   transition: color var(--transition-fast);
   overflow-wrap: anywhere;
   word-break: break-word;
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   line-height: 1.2;
 }
 

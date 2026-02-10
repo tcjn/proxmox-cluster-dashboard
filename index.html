@@ -117,7 +117,7 @@
                 <option value="name">Name</option>
                 <option value="status">Status</option>
                 <option value="cpu">CPU Usage</option>
-                <option value="memory">Memory Usage</option>
+                <option value="memory">RAM Usage</option>
                 <option value="vms">VM Count</option>
                 <option value="region">Region</option>
               </select>
@@ -321,7 +321,7 @@
               </div>
               <div class="resource-stat">
                 <div class="resource-value" id="avgMemory">0%</div>
-                <div class="resource-label">Avg. Memory</div>
+                <div class="resource-label">Avg. RAM</div>
               </div>
               <div class="resource-stat">
                 <div class="resource-value" id="avgDisk">0%</div>
@@ -376,7 +376,7 @@
         <!-- Charts Section -->
         <div class="charts-section">
           <div class="chart-card">
-            <h3><i class="fas fa-chart-pie"></i> Resource Distribution</h3>
+            <h3><i class="fas fa-chart-bar"></i> Resource Usage vs Free Capacity</h3>
             <canvas id="resourceChart"></canvas>
           </div>
           <div class="chart-card">

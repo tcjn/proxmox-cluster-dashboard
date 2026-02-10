@@ -7,25 +7,24 @@ function initializeCharts() {
   const stats = calculateStatistics();
   if (!stats) return;
   
-  // Resource Distribution Chart
+  // Resource Usage vs Free Capacity Chart
   const resourceCtx = document.getElementById('resourceChart');
   if (resourceCtx && !resourceChart) {
     resourceChart = new Chart(resourceCtx, {
-      type: 'doughnut',
+      type: 'bar',
       data: {
-        labels: ['CPU Usage', 'Memory Usage', 'Disk Usage'],
+        labels: ['CPU', 'RAM', 'Disk'],
         datasets: [{
+          label: 'Used (%)',
           data: [stats.avgCpu, stats.avgMemory, stats.avgDisk],
-          backgroundColor: [
-            'rgba(59, 130, 246, 0.8)',
-            'rgba(16, 185, 129, 0.8)',
-            'rgba(139, 92, 246, 0.8)'
-          ],
-          borderColor: [
-            'rgb(59, 130, 246)',
-            'rgb(16, 185, 129)',
-            'rgb(139, 92, 246)'
-          ],
+          backgroundColor: 'rgba(59, 130, 246, 0.8)',
+          borderColor: 'rgb(59, 130, 246)',
+          borderWidth: 2
+        }, {
+          label: 'Free (%)',
+          data: [100 - stats.avgCpu, 100 - stats.avgMemory, 100 - stats.avgDisk],
+          backgroundColor: 'rgba(16, 185, 129, 0.75)',
+          borderColor: 'rgb(16, 185, 129)',
           borderWidth: 2
         }]
       },
@@ -46,7 +45,22 @@ function initializeCharts() {
           tooltip: {
             callbacks: {
               label: function(context) {
-                return context.label + ': ' + context.parsed + '%';
+                return context.dataset.label + ': ' + context.parsed.y + '%';
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            stacked: true
+          },
+          y: {
+            stacked: true,
+            beginAtZero: true,
+            max: 100,
+            ticks: {
+              callback: function(value) {
+                return value + '%';
               }
             }
           }
@@ -105,6 +119,7 @@ function updateCharts() {
   
   if (resourceChart) {
     resourceChart.data.datasets[0].data = [stats.avgCpu, stats.avgMemory, stats.avgDisk];
+    resourceChart.data.datasets[1].data = [100 - stats.avgCpu, 100 - stats.avgMemory, 100 - stats.avgDisk];
     resourceChart.update();
   }
   

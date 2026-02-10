@@ -6,7 +6,7 @@ function exportToCSV() {
     return;
   }
   
-  const rows = [['Region', 'Cluster', 'Status', 'Node', 'Node Status', 'CPU %', 'Memory %', 'Disk %', 'VMs', 'PVE Version']];
+  const rows = [['Region', 'Cluster', 'Status', 'Node', 'Node Status', 'CPU %', 'RAM %', 'Disk %', 'VMs', 'PVE Version']];
   
   Object.entries(STATE.clustersData).forEach(([region, clusters]) => {
     clusters.forEach(cluster => {
@@ -121,7 +121,7 @@ function exportToHTML() {
         <th>Nodes</th>
         <th>VMs</th>
         <th>Avg CPU</th>
-        <th>Avg Memory</th>
+        <th>Avg RAM</th>
       </tr>
     </thead>
     <tbody>
