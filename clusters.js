@@ -118,6 +118,7 @@ function createNodeHTML(node, cluster) {
   const cpuPercent = Math.round((nodeData.cpu || 0) * 100);
   const memPercent = nodeData.maxmem ? Math.round((nodeData.mem / nodeData.maxmem) * 100) : 0;
   const diskPercent = nodeData.maxdisk ? Math.round((nodeData.disk / nodeData.maxdisk) * 100) : 0;
+  const ramLabel = 'RAM';
   
   const isVersionOutdated = nodeData.pveversion && 
     compareVersions(nodeData.pveversion, CONFIG.pveVersionProd) < 0;
@@ -158,7 +159,7 @@ function createNodeHTML(node, cluster) {
         </div>
         <div class="node-metric">
           <span class="metric-value">${memPercent}%</span>
-          <span class="metric-label">RAM</span>
+          <span class="metric-label">${ramLabel}</span>
           <div class="progress-container">
             <div class="progress-bar mem-progress" style="width: ${memPercent}%"></div>
           </div>
@@ -186,6 +187,7 @@ function createVMHTML(vm, cluster) {
   const vmStatus = vm.status || 'stopped';
   const cpuPercent = Math.round((vm.cpu || 0) * 100);
   const memUsage = formatBytes(vm.mem || 0);
+  const ramLabel = 'RAM';
   
   return `
     <div class="vm-item" data-vm-id="${vm.vmid}" data-vm-name="${vmName.toLowerCase()}">
@@ -199,7 +201,7 @@ function createVMHTML(vm, cluster) {
       </div>
       <div class="vm-metric">
         <span class="vm-metric-value">${memUsage}</span>
-        <span class="vm-metric-label">RAM</span>
+        <span class="vm-metric-label">${ramLabel}</span>
       </div>
       <div class="vm-metric">
         <span class="vm-metric-value">${vm.vmid}</span>
