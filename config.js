@@ -80,6 +80,5 @@ const STATE = {
     region: ['AMER', 'APAC', 'EMEA', 'CME'],
     version: ['updated', 'outdated']
   },
-  sortBy: 'name',
-  favorites: []
+  sortBy: 'name'
 };

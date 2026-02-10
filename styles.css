@@ -337,6 +337,20 @@ header h1 a:hover {
   padding: 1rem;
 }
 
+.notifications-actions {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.notifications-actions .btn-secondary {
+  flex: 1;
+  font-size: 0.85rem;
+  padding: 0.5rem 0.75rem;
+}
+
 .no-notifications {
   text-align: center;
   padding: 3rem 1rem;
@@ -387,99 +401,6 @@ header h1 a:hover {
   font-size: 0.75rem;
   color: var(--copy);
   font-family: 'IBM Plex Mono', monospace;
-}
-
-/* Modal */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(5px);
-  z-index: 1000;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  animation: fadeIn var(--transition-base);
-}
-
-.modal.open {
-  display: flex;
-}
-
-.modal-content {
-  background: var(--card);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xl);
-  max-width: 500px;
-  width: 90%;
-  max-height: 80vh;
-  overflow: hidden;
-  animation: slideInUp var(--transition-base);
-}
-
-.modal-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--hover);
-}
-
-.modal-header h3 {
-  font-size: 1.2rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.close-modal {
-  background: none;
-  border: none;
-  color: var(--text);
-  cursor: pointer;
-  padding: 0.5rem;
-  font-size: 1.2rem;
-  transition: transform var(--transition-fast);
-}
-
-.close-modal:hover {
-  transform: scale(1.1);
-}
-
-.modal-body {
-  padding: 2rem;
-}
-
-.export-option {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  border: 2px solid var(--border);
-  border-radius: var(--radius-md);
-  background: none;
-  color: var(--text);
-  cursor: pointer;
-  width: 100%;
-  margin-bottom: 1rem;
-  transition: all var(--transition-fast);
-  font-family: 'Outfit', sans-serif;
-  font-size: 1rem;
-}
-
-.export-option:hover {
-  background: var(--hover);
-  border-color: var(--link);
-  transform: translateX(5px);
-}
-
-.export-option i {
-  font-size: 1.5rem;
-  color: var(--link);
 }
 
 /* Container */

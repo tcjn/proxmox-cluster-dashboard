@@ -268,33 +268,23 @@ function initializeEventListeners() {
   document.getElementById('closeNotifications').addEventListener('click', () => {
     document.getElementById('notificationsPanel').classList.remove('open');
   });
-  
-  // Export
-  document.getElementById('exportBtn').addEventListener('click', () => {
-    document.getElementById('exportModal').classList.add('open');
+
+  document.getElementById('acknowledgeNotifications').addEventListener('click', () => {
+    const acknowledgedCount = notificationManager.acknowledgeAll();
+    if (acknowledgedCount > 0) {
+      showToast(`Acknowledged ${acknowledgedCount} notification${acknowledgedCount === 1 ? '' : 's'}`, 'info');
+    } else {
+      showToast('No notifications to acknowledge', 'info');
+    }
   });
-  
-  document.getElementById('closeExport').addEventListener('click', () => {
-    document.getElementById('exportModal').classList.remove('open');
-  });
-  
-  document.querySelectorAll('.export-option').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const format = btn.getAttribute('data-format');
-      if (format === 'csv') exportToCSV();
-      else if (format === 'json') exportToJSON();
-      else if (format === 'html') exportToHTML();
-      document.getElementById('exportModal').classList.remove('open');
-    });
-  });
-  
-  // Close modals on background click
-  document.querySelectorAll('.modal').forEach(modal => {
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        modal.classList.remove('open');
-      }
-    });
+
+  document.getElementById('clearNotifications').addEventListener('click', () => {
+    const clearedCount = notificationManager.clearAll();
+    if (clearedCount > 0) {
+      showToast(`Cleaned ${clearedCount} notification${clearedCount === 1 ? '' : 's'}`, 'success');
+    } else {
+      showToast('No notifications to clean', 'info');
+    }
   });
   
   // Maintenance toggle
@@ -325,11 +315,6 @@ function initializeEventListeners() {
   document.getElementById('headerLogo').addEventListener('click', (e) => {
     e.preventDefault();
     location.reload();
-  });
-  
-  // Favorites button
-  document.getElementById('favoritesBtn').addEventListener('click', () => {
-    showToast('Favorites feature coming soon!', 'info');
   });
 }
 
@@ -377,9 +362,6 @@ function loadPreferences() {
   if (autoRefreshEnabled) {
     startAutoRefresh();
   }
-  
-  // Load favorites
-  STATE.favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
 }
 
 function startAutoRefresh() {
