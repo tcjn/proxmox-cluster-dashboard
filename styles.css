@@ -1505,10 +1505,8 @@ header h1 a:hover {
   color: var(--text);
   text-decoration: none;
   transition: color var(--transition-fast);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 0.9em;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .node-name a:hover {
