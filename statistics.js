@@ -75,17 +75,19 @@ function calculateStatistics() {
       }
 
       if (clusterRegion === 'CME') {
-        const cephHealthLabel = getCephHealthLabel(cluster.name);
+        const cephHealth = getCephHealthDetails(cluster.name);
         stats.ceph.total++;
         stats.ceph.clusters.push({
           name: cluster.name,
-          health: cephHealthLabel
+          health: cephHealth.label,
+          healthText: cephHealth.text,
+          details: cephHealth.details
         });
 
-        if (cephHealthLabel === 'healthy') stats.ceph.healthy++;
-        else if (cephHealthLabel === 'warning') stats.ceph.warning++;
-        else if (cephHealthLabel === 'critical') stats.ceph.critical++;
-        else if (cephHealthLabel === 'not-installed') stats.ceph.notInstalled++;
+        if (cephHealth.label === 'healthy') stats.ceph.healthy++;
+        else if (cephHealth.label === 'warning') stats.ceph.warning++;
+        else if (cephHealth.label === 'critical') stats.ceph.critical++;
+        else if (cephHealth.label === 'not-installed') stats.ceph.notInstalled++;
         else stats.ceph.unknown++;
       }
       
@@ -260,7 +262,7 @@ function renderCephStatus(cephStats) {
   list.innerHTML = cephStats.clusters.map(item => `
     <div class="ceph-status-item ${item.health}">
       <span class="ceph-cluster-name">${item.name}</span>
-      <span class="ceph-cluster-health">${item.health}</span>
+      <span class="ceph-cluster-health" title="${sanitizeHTML(item.details || '')}">${sanitizeHTML(item.healthText || item.health)}</span>
     </div>
   `).join('');
 }
