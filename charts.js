@@ -69,26 +69,45 @@ function initializeCharts() {
     });
   }
   
-  // Cluster Status Chart
+  // Node Resource Occupancy Chart
   const statusCtx = document.getElementById('statusChart');
   if (statusCtx && !statusChart) {
     statusChart = new Chart(statusCtx, {
       type: 'bar',
       data: {
-        labels: ['Online', 'Offline', 'Degraded'],
+        labels: ['Low (<40%)', 'Medium (40-69%)', 'High (70-84%)', 'Critical (85%+)'],
         datasets: [{
-          label: 'Clusters',
-          data: [stats.onlineClusters, stats.offlineClusters, stats.degradedClusters],
-          backgroundColor: [
-            'rgba(16, 185, 129, 0.8)',
-            'rgba(239, 68, 68, 0.8)',
-            'rgba(245, 158, 11, 0.8)'
+          label: 'CPU Nodes',
+          data: [
+            stats.occupancyBuckets.low.cpu,
+            stats.occupancyBuckets.medium.cpu,
+            stats.occupancyBuckets.high.cpu,
+            stats.occupancyBuckets.critical.cpu
           ],
-          borderColor: [
-            'rgb(16, 185, 129)',
-            'rgb(239, 68, 68)',
-            'rgb(245, 158, 11)'
+          backgroundColor: 'rgba(59, 130, 246, 0.8)',
+          borderColor: 'rgb(59, 130, 246)',
+          borderWidth: 2
+        }, {
+          label: 'RAM Nodes',
+          data: [
+            stats.occupancyBuckets.low.memory,
+            stats.occupancyBuckets.medium.memory,
+            stats.occupancyBuckets.high.memory,
+            stats.occupancyBuckets.critical.memory
           ],
+          backgroundColor: 'rgba(16, 185, 129, 0.8)',
+          borderColor: 'rgb(16, 185, 129)',
+          borderWidth: 2
+        }, {
+          label: 'Disk Nodes',
+          data: [
+            stats.occupancyBuckets.low.disk,
+            stats.occupancyBuckets.medium.disk,
+            stats.occupancyBuckets.high.disk,
+            stats.occupancyBuckets.critical.disk
+          ],
+          backgroundColor: 'rgba(245, 158, 11, 0.8)',
+          borderColor: 'rgb(245, 158, 11)',
           borderWidth: 2
         }]
       },
@@ -97,7 +116,14 @@ function initializeCharts() {
         maintainAspectRatio: true,
         plugins: {
           legend: {
-            display: false
+            position: 'bottom'
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `${context.dataset.label}: ${context.parsed.y} nodes`;
+              }
+            }
           }
         },
         scales: {
@@ -124,7 +150,24 @@ function updateCharts() {
   }
   
   if (statusChart) {
-    statusChart.data.datasets[0].data = [stats.onlineClusters, stats.offlineClusters, stats.degradedClusters];
+    statusChart.data.datasets[0].data = [
+      stats.occupancyBuckets.low.cpu,
+      stats.occupancyBuckets.medium.cpu,
+      stats.occupancyBuckets.high.cpu,
+      stats.occupancyBuckets.critical.cpu
+    ];
+    statusChart.data.datasets[1].data = [
+      stats.occupancyBuckets.low.memory,
+      stats.occupancyBuckets.medium.memory,
+      stats.occupancyBuckets.high.memory,
+      stats.occupancyBuckets.critical.memory
+    ];
+    statusChart.data.datasets[2].data = [
+      stats.occupancyBuckets.low.disk,
+      stats.occupancyBuckets.medium.disk,
+      stats.occupancyBuckets.high.disk,
+      stats.occupancyBuckets.critical.disk
+    ];
     statusChart.update();
   }
 }
