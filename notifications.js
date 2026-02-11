@@ -116,6 +116,38 @@ class NotificationManager {
               }
             }
           }
+
+          // Disk alert
+          if (nodeData.maxdisk) {
+            const diskPercent = (nodeData.disk / nodeData.maxdisk) * 100;
+            if (diskPercent >= CONFIG.thresholds.diskCritical) {
+              const alertKey = `disk-critical-${node}`;
+              if (!this.checkedAlerts.has(alertKey)) {
+                newAlerts.push({
+                  type: 'critical',
+                  title: 'High Disk Usage',
+                  message: `${getShortNodeName(node)}: ${Math.round(diskPercent)}% Disk`,
+                  cluster: cluster.name,
+                  node: node,
+                  timestamp: new Date().toISOString()
+                });
+                this.checkedAlerts.add(alertKey);
+              }
+            } else if (diskPercent >= CONFIG.thresholds.diskWarning) {
+              const alertKey = `disk-warning-${node}`;
+              if (!this.checkedAlerts.has(alertKey)) {
+                newAlerts.push({
+                  type: 'warning',
+                  title: 'Elevated Disk Usage',
+                  message: `${getShortNodeName(node)}: ${Math.round(diskPercent)}% Disk`,
+                  cluster: cluster.name,
+                  node: node,
+                  timestamp: new Date().toISOString()
+                });
+                this.checkedAlerts.add(alertKey);
+              }
+            }
+          }
           
           // Version check
           if (nodeData.pveversion) {
