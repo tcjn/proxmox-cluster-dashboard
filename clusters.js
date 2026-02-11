@@ -278,10 +278,10 @@ function createVMHTML(vm, cluster) {
       ? 'missing'
       : 'unknown';
   const nautobotVisibilityText = nautobotInfo.isVisible === true
-    ? 'Nautobot: OK'
+    ? 'In Nautobot'
     : nautobotInfo.isVisible === false
-      ? 'Nautobot: NOK'
-      : 'Nautobot: --';
+      ? 'Not in Nautobot'
+      : 'Nautobot unknown';
   const nautobotVisibilityIcon = nautobotInfo.isVisible === true
     ? 'fa-check-circle'
     : nautobotInfo.isVisible === false
@@ -294,7 +294,7 @@ function createVMHTML(vm, cluster) {
         <span class="vm-status ${vmStatus}"></span>
         <a href="${cluster.url}/#v1:0:=qemu%2F${vm.vmid}:4::::::" target="_blank">${vmName}</a>
         ${nautobotInfo.url ? `<a href="${nautobotInfo.url}" target="_blank" rel="noopener noreferrer" class="nautobot-link" title="Open ${vmName} in Nautobot"><i class="fas fa-sitemap"></i> Nautobot</a>` : ''}
-        <span class="nautobot-visibility ${nautobotVisibilityClass}" title="Nautobot visibility">
+        <span class="nautobot-visibility ${nautobotVisibilityClass}" title="Nautobot visibility status">
           <i class="fas ${nautobotVisibilityIcon}"></i>
           ${nautobotVisibilityText}
         </span>
