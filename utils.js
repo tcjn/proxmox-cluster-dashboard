@@ -104,6 +104,14 @@ function getCephStatus(clusterName) {
   return STATE.statusData.cephStatus[clusterName] || null;
 }
 
+function getClusterInfra(clusterName) {
+  if (!STATE.statusData || !STATE.statusData.clusterInfra || !clusterName) {
+    return null;
+  }
+
+  return STATE.statusData.clusterInfra[clusterName] || null;
+}
+
 function getCephHealthLabel(clusterName) {
   const cephStatus = getCephStatus(clusterName);
   if (!cephStatus) return 'unknown';
