@@ -272,25 +272,13 @@ function createVMHTML(vm, cluster) {
   const memUsage = formatBytes(vm.mem || 0);
   const ramLabel = 'RAM';
   const nautobotInfo = getVmNautobotInfo(vm);
-  const visibilityClass = nautobotInfo.isVisible === true
-    ? 'visible'
-    : nautobotInfo.isVisible === false
-      ? 'missing'
-      : 'unknown';
-  const visibilityText = nautobotInfo.isVisible === true
-    ? 'Visible'
-    : nautobotInfo.isVisible === false
-      ? 'Missing'
-      : 'Unknown';
-  const hasKnownVisibility = nautobotInfo.isVisible !== null;
   const vmUptimeMarkup = vm.uptime
     ? `<div class="vm-uptime">Uptime: ${formatUptime(vm.uptime)}</div>`
     : '';
-  const vmNautobotMetaMarkup = (nautobotInfo.url || hasKnownVisibility)
+  const vmNautobotMetaMarkup = nautobotInfo.url
     ? `
       <div class="vm-nautobot-meta">
-        ${nautobotInfo.url ? `<a href="${nautobotInfo.url}" class="nautobot-link" target="_blank" rel="noopener noreferrer"><i class="fas fa-link"></i> Nautobot</a>` : ''}
-        ${hasKnownVisibility ? `<span class="nautobot-visibility ${visibilityClass}">${visibilityText}</span>` : ''}
+        <a href="${nautobotInfo.url}" class="nautobot-link" target="_blank" rel="noopener noreferrer"><i class="fas fa-link"></i> Nautobot</a>
       </div>
     `
     : '';
