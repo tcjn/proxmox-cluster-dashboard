@@ -2370,6 +2370,12 @@ footer {
   color: var(--copy);
 }
 
+.ceph-status-item .ceph-cluster-health.healthy { color: var(--online); }
+.ceph-status-item .ceph-cluster-health.warning,
+.ceph-status-item .ceph-cluster-health.critical,
+.ceph-status-item .ceph-cluster-health.not-installed,
+.ceph-status-item .ceph-cluster-health.unknown { color: var(--offline); }
+
 .ceph-status-item-meta {
   display: flex;
   flex-wrap: wrap;
