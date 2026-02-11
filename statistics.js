@@ -58,6 +58,13 @@ function calculateStatistics() {
       notInstalled: 0,
       unknown: 0,
       clusters: []
+    },
+
+    subscription: {
+      active: 0,
+      warning: 0,
+      unknown: 0,
+      total: 0
     }
   };
   
@@ -110,6 +117,10 @@ function calculateStatistics() {
         
         const nodeData = getNodeData(node);
         if (nodeData) {
+          const subscriptionStatus = classifySubscription(nodeData.subscription);
+          stats.subscription.total++;
+          stats.subscription[subscriptionStatus]++;
+
           stats.nodesWithData++;
           
           if (nodeData.cpu !== undefined && !isNaN(nodeData.cpu)) {
@@ -193,8 +204,49 @@ function calculateStatistics() {
   stats.healthyCount = stats.onlineNodes;
   stats.warningCount = stats.degradedNodes;
   stats.criticalCount = stats.offlineNodes;
+
+  stats.subscription.healthPercent = stats.subscription.total > 0
+    ? Math.round((stats.subscription.active / stats.subscription.total) * 100)
+    : 0;
   
   return stats;
+}
+
+function classifySubscription(subscription) {
+  if (!subscription || typeof subscription !== 'string') {
+    return 'unknown';
+  }
+
+  const normalized = subscription.toLowerCase();
+
+  if (
+    normalized.includes('active') ||
+    normalized.includes('valid') ||
+    normalized.includes('premium') ||
+    normalized.includes('standard') ||
+    normalized.includes('basic') ||
+    normalized.includes('enterprise') ||
+    normalized.includes('community')
+  ) {
+    return 'active';
+  }
+
+  if (
+    normalized.includes('warn') ||
+    normalized.includes('expire') ||
+    normalized.includes('invalid') ||
+    normalized.includes('none') ||
+    normalized.includes('inactive') ||
+    normalized.includes('suspended')
+  ) {
+    return 'warning';
+  }
+
+  if (normalized.includes('unknown') || normalized.includes('n/a')) {
+    return 'unknown';
+  }
+
+  return 'unknown';
 }
 
 function getOccupancyBucket(usage) {
@@ -249,6 +301,12 @@ function updateStatisticsUI() {
   document.getElementById('apacTrend').innerHTML = `<i class="fas fa-server"></i> <span>${stats.regionStats.APAC.vms} VMs</span>`;
   document.getElementById('emeaTrend').innerHTML = `<i class="fas fa-server"></i> <span>${stats.regionStats.EMEA.vms} VMs</span>`;
   document.getElementById('cmeTrend').innerHTML = `<i class="fas fa-server"></i> <span>${stats.regionStats.CME.vms} VMs</span>`;
+
+  document.getElementById('subscriptionActive').textContent = stats.subscription.active;
+  document.getElementById('subscriptionWarning').textContent = stats.subscription.warning;
+  document.getElementById('subscriptionUnknown').textContent = stats.subscription.unknown;
+  document.getElementById('subscriptionTotal').textContent = stats.subscription.total;
+  document.getElementById('subscriptionHealthScore').textContent = `${stats.subscription.healthPercent}% active`;
   
   renderCephStatus(stats.ceph);
   
