@@ -296,7 +296,7 @@ function getVmNautobotInfo(vm) {
   }
 
   const encodedName = encodeURIComponent(vmName);
-  const queryParam = `name=${encodedName}`;
+  const queryParam = `q=${encodedName}`;
 
   return {
     url: `${baseUrl}${cleanPath}?${queryParam}`,
