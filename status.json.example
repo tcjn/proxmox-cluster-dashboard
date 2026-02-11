@@ -33,7 +33,9 @@
           "status": "running",
           "cpu": 0.12,
           "mem": 4294967296,
-          "uptime": 604800
+          "uptime": 604800,
+          "nautobotVisible": true,
+          "nautobotUrl": "https://nautobot.expereocloud.com/virtualization/virtual-machines/3f59473f-1de8-4a21-93e4-a6ed637cc3f6/"
         },
         {
           "vmid": 101,
@@ -49,7 +51,8 @@
           "status": "stopped",
           "cpu": 0,
           "mem": 0,
-          "uptime": 0
+          "uptime": 0,
+          "nautobotVisible": false
         }
       ]
     },
