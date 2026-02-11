@@ -244,6 +244,66 @@ function getNodeData(nodeName) {
   return nodeKey ? STATE.statusData.nodeData[nodeKey] : null;
 }
 
+function normalizeBoolean(value) {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value > 0;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (['1', 'true', 'yes', 'visible', 'found', 'present'].includes(normalized)) return true;
+    if (['0', 'false', 'no', 'hidden', 'missing', 'absent'].includes(normalized)) return false;
+  }
+
+  return null;
+}
+
+function getVmNautobotInfo(vm) {
+  const vmName = vm?.name || `VM ${vm?.vmid || ''}`;
+  const visibilitySignals = [
+    vm?.nautobotVisible,
+    vm?.nautobot_visibility,
+    vm?.inNautobot,
+    vm?.in_nautobot,
+    vm?.nautobot?.visible,
+    vm?.nautobot?.exists,
+    vm?.nautobot?.found
+  ];
+
+  const firstVisibilitySignal = visibilitySignals
+    .map(normalizeBoolean)
+    .find(value => value !== null);
+
+  const isVisible = firstVisibilitySignal;
+
+  const explicitUrl = vm?.nautobotUrl || vm?.nautobot_url || vm?.nautobot?.url;
+  if (explicitUrl) {
+    return {
+      url: explicitUrl,
+      isVisible,
+      hasExplicitUrl: true
+    };
+  }
+
+  const baseUrl = (CONFIG?.nautobot?.baseUrl || '').replace(/\/$/, '');
+  const virtualizationPath = CONFIG?.nautobot?.virtualizationPath || '/virtualization/virtual-machines/';
+  const cleanPath = virtualizationPath.startsWith('/') ? virtualizationPath : `/${virtualizationPath}`;
+  if (!baseUrl) {
+    return {
+      url: null,
+      isVisible,
+      hasExplicitUrl: false
+    };
+  }
+
+  const encodedName = encodeURIComponent(vmName);
+  const queryParam = `name=${encodedName}`;
+
+  return {
+    url: `${baseUrl}${cleanPath}?${queryParam}`,
+    isVisible,
+    hasExplicitUrl: false
+  };
+}
+
 // Throttle function
 function throttle(func, wait) {
   let timeout;

@@ -1855,6 +1855,54 @@ header h1 a:hover {
   color: var(--link);
 }
 
+.nautobot-link {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--link) !important;
+  text-decoration: none;
+  font-size: 0.68rem !important;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.15rem 0.45rem;
+}
+
+.nautobot-link:hover {
+  border-color: var(--link);
+}
+
+.nautobot-visibility {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-radius: 999px;
+  padding: 0.15rem 0.45rem;
+  border: 1px solid transparent;
+}
+
+.nautobot-visibility.visible {
+  color: var(--online);
+  background: color-mix(in srgb, var(--online) 12%, transparent);
+  border-color: color-mix(in srgb, var(--online) 30%, transparent);
+}
+
+.nautobot-visibility.missing {
+  color: var(--offline);
+  background: color-mix(in srgb, var(--offline) 12%, transparent);
+  border-color: color-mix(in srgb, var(--offline) 30%, transparent);
+}
+
+.nautobot-visibility.unknown {
+  color: var(--maintenance);
+  background: color-mix(in srgb, var(--maintenance) 12%, transparent);
+  border-color: color-mix(in srgb, var(--maintenance) 30%, transparent);
+}
+
 .vm-status {
   width: 8px;
   height: 8px;
