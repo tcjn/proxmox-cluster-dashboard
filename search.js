@@ -9,9 +9,28 @@ function searchClusters() {
   }
   
   const results = {
-    clusters: new Set(),
+    clusters: new Map(),
     vms: [],
     nodes: new Set()
+  };
+
+  const ensureClusterResult = (cluster, region) => {
+    if (!results.clusters.has(cluster.name)) {
+      const nodes = [cluster.node1, cluster.node2, cluster.node3].filter(Boolean);
+      const vmCount = nodes.reduce((count, nodeName) => {
+        const nodeData = getNodeData(nodeName);
+        return count + ((nodeData && Array.isArray(nodeData.vms)) ? nodeData.vms.length : 0);
+      }, 0);
+
+      results.clusters.set(cluster.name, {
+        name: cluster.name,
+        url: cluster.url,
+        region,
+        status: getClusterStatus(cluster.name),
+        nodeCount: nodes.length,
+        vmCount
+      });
+    }
   };
   
   Object.entries(STATE.clustersData || {}).forEach(([region, clusters]) => {
@@ -22,7 +41,7 @@ function searchClusters() {
       if ((STATE.searchType === 'all' || STATE.searchType === 'clusters') &&
           cluster.name.toLowerCase().includes(searchTerm)) {
         clusterMatches = true;
-        results.clusters.add(cluster.name);
+        ensureClusterResult(cluster, region);
       }
       
       // Check nodes
@@ -38,7 +57,7 @@ function searchClusters() {
         // Check node name
         if (node.name.toLowerCase().includes(searchTerm)) {
           results.nodes.add(node.name);
-          results.clusters.add(cluster.name);
+          ensureClusterResult(cluster, region);
         }
         
         // Check VMs
@@ -60,7 +79,7 @@ function searchClusters() {
                   vm: vm,
                   region: region
                 });
-                results.clusters.add(cluster.name);
+                ensureClusterResult(cluster, region);
                 results.nodes.add(node.name);
               }
             });
@@ -78,12 +97,15 @@ function updateSearchResults(results) {
   const noResultsEl = document.getElementById('noResults');
   const vmSearchEl = document.getElementById('vmSearchResults');
   const vmGridEl = document.getElementById('vmSearchGrid');
-  
+  const clusterSearchEl = document.getElementById('clusterSearchResults');
+  const clusterGridEl = document.getElementById('clusterSearchGrid');
+
   const totalResults = results.clusters.size + results.vms.length;
   
   if (totalResults === 0) {
     summaryEl.classList.remove('visible');
     vmSearchEl.classList.remove('visible');
+    clusterSearchEl.classList.remove('visible');
     noResultsEl.classList.add('visible');
     document.body.classList.remove('vm-search-mode');
   } else {
@@ -95,6 +117,20 @@ function updateSearchResults(results) {
     document.querySelector('#vmResultsCount span').textContent = results.vms.length;
     document.querySelector('#nodeResultsCount span').textContent = results.nodes.size;
     
+    // Show cluster results if searching for clusters
+    if (STATE.searchType === 'clusters' || (STATE.searchType === 'all' && results.clusters.size > 0)) {
+      clusterSearchEl.classList.add('visible');
+
+      const clusterResults = Array.from(results.clusters.values())
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      clusterGridEl.innerHTML = clusterResults
+        .map(clusterResult => createClusterSearchCard(clusterResult))
+        .join('');
+    } else {
+      clusterSearchEl.classList.remove('visible');
+    }
+
     // Show VM results if searching for VMs
     if (STATE.searchType === 'vms' || (STATE.searchType === 'all' && results.vms.length > 0)) {
       vmSearchEl.classList.add('visible');
@@ -166,9 +202,31 @@ function createVMSearchCard(vmResult) {
   `;
 }
 
+function createClusterSearchCard(clusterResult) {
+  const flagCode = CONFIG.countryFlags[clusterResult.name] || '';
+
+  return `
+    <div class="cluster-search-item">
+      <div class="cluster-search-item-header">
+        <a href="${clusterResult.url}" target="_blank" class="cluster-search-item-title">
+          ${flagCode ? `<img class="flag" src="https://flagcdn.com/24x18/${flagCode}.png" alt="${flagCode}"/>` : ''}
+          ${clusterResult.name}
+        </a>
+        <span class="node-status ${clusterResult.status}">${clusterResult.status}</span>
+      </div>
+      <div class="cluster-search-item-meta">
+        <span><i class="fas fa-globe"></i> ${clusterResult.region.toUpperCase()}</span>
+        <span><i class="fas fa-hdd"></i> ${clusterResult.nodeCount} node${clusterResult.nodeCount === 1 ? '' : 's'}</span>
+        <span><i class="fas fa-desktop"></i> ${clusterResult.vmCount} VM${clusterResult.vmCount === 1 ? '' : 's'}</span>
+      </div>
+    </div>
+  `;
+}
+
 function clearSearchResults() {
   document.getElementById('searchResultsSummary').classList.remove('visible');
   document.getElementById('vmSearchResults').classList.remove('visible');
+  document.getElementById('clusterSearchResults').classList.remove('visible');
   document.getElementById('noResults').classList.remove('visible');
   document.body.classList.remove('vm-search-mode');
 }
