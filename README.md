@@ -200,13 +200,19 @@ echo "}" >> "$OUTPUT_FILE"
           "status": "running",
           "cpu": 0.12,
           "mem": 4294967296,
-          "uptime": 604800
+          "uptime": 604800,
+          "nautobotVisible": true,
+          "nautobotUrl": "https://nautobot.expereocloud.com/virtualization/virtual-machines/3f59473f-1de8-4a21-93e4-a6ed637cc3f6/"
         }
       ]
     }
   }
 }
 ```
+
+Optional per-VM fields for Nautobot integration:
+- `nautobotVisible`: `true`, `false`, or omitted when unknown.
+- `nautobotUrl`: direct URL for the VM record in Nautobot (optional, fallback URL is generated from VM name).
 
 ### 5. Configure Web Server
 

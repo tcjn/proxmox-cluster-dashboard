@@ -21,6 +21,12 @@ const CONFIG = {
   
   // Search settings
   searchDebounce: 300, // milliseconds
+
+  // Nautobot integration
+  nautobot: {
+    baseUrl: 'https://nautobot.expereocloud.com',
+    virtualizationPath: '/virtualization/virtual-machines/'
+  },
   
   // Alert thresholds
   thresholds: {
