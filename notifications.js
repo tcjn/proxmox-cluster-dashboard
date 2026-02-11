@@ -148,6 +148,38 @@ class NotificationManager {
               }
             }
           }
+
+          // Load average alert (1 minute)
+          const loadAvgOneMinute = Array.isArray(nodeData.loadavg) ? Number(nodeData.loadavg[0]) : NaN;
+          if (!Number.isNaN(loadAvgOneMinute)) {
+            if (loadAvgOneMinute >= CONFIG.thresholds.loadAverageCritical) {
+              const alertKey = `load-critical-${node}`;
+              if (!this.checkedAlerts.has(alertKey)) {
+                newAlerts.push({
+                  type: 'critical',
+                  title: 'High Load Average',
+                  message: `${getShortNodeName(node)}: ${loadAvgOneMinute.toFixed(2)} load (1m)`,
+                  cluster: cluster.name,
+                  node: node,
+                  timestamp: new Date().toISOString()
+                });
+                this.checkedAlerts.add(alertKey);
+              }
+            } else if (loadAvgOneMinute >= CONFIG.thresholds.loadAverageWarning) {
+              const alertKey = `load-warning-${node}`;
+              if (!this.checkedAlerts.has(alertKey)) {
+                newAlerts.push({
+                  type: 'warning',
+                  title: 'Elevated Load Average',
+                  message: `${getShortNodeName(node)}: ${loadAvgOneMinute.toFixed(2)} load (1m)`,
+                  cluster: cluster.name,
+                  node: node,
+                  timestamp: new Date().toISOString()
+                });
+                this.checkedAlerts.add(alertKey);
+              }
+            }
+          }
           
           // Version check
           if (nodeData.pveversion) {

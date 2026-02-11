@@ -288,14 +288,16 @@ const CONFIG = {
   // Auto-refresh interval (milliseconds)
   autoRefreshInterval: 60000, // 60 seconds
   
-  // Alert thresholds (percentage)
+  // Alert thresholds
   thresholds: {
-    cpuWarning: 80,
-    cpuCritical: 90,
-    memoryWarning: 85,
-    memoryCritical: 95,
-    diskWarning: 80,
-    diskCritical: 90
+    cpuWarning: 80,          // percentage
+    cpuCritical: 90,         // percentage
+    memoryWarning: 85,       // percentage
+    memoryCritical: 95,      // percentage
+    diskWarning: 80,         // percentage
+    diskCritical: 90,        // percentage
+    loadAverageWarning: 8,   // 1-minute load average
+    loadAverageCritical: 10  // 1-minute load average
   }
 };
 ```
