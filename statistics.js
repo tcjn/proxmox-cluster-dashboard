@@ -332,3 +332,8 @@ function extractCephMetrics(cephStatus) {
 
   return metrics.slice(0, 5);
 }
+
+
+// Explicitly expose stats functions for safe cross-script calls
+window.calculateStatistics = calculateStatistics;
+window.updateStatisticsUI = updateStatisticsUI;
