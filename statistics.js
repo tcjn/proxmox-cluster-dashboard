@@ -118,7 +118,22 @@ function calculateStatistics() {
         else if (nodeStatus === 'degraded') stats.degradedNodes++;
         
         const nodeData = getNodeData(node);
-        if (nodeData) {
+        if (!nodeData) {
+          stats.topRiskNodes.push({
+            nodeName: node,
+            clusterName: cluster.name,
+            riskScore: nodeStatus === 'offline' ? 100 : nodeStatus === 'degraded' ? 40 : 5,
+            cpuPercent: 0,
+            memPercent: 0,
+            diskPercent: 0,
+            nodeStatus,
+            subscriptionStatus: 'unknown'
+          });
+          stats.subscription.total++;
+          stats.subscription.unknown++;
+          return;
+        }
+
           stats.nodesWithData++;
           
           if (nodeData.cpu !== undefined && !isNaN(nodeData.cpu)) {
