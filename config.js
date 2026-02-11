@@ -29,7 +29,9 @@ const CONFIG = {
     memoryWarning: 85,
     memoryCritical: 95,
     diskWarning: 80,
-    diskCritical: 90
+    diskCritical: 90,
+    loadAverageWarning: 8,
+    loadAverageCritical: 10
   },
   
   // Regional prefixes
