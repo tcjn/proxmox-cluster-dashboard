@@ -257,7 +257,9 @@ function normalizeBoolean(value) {
 }
 
 function getVmNautobotInfo(vm) {
-  const vmHostname = vm?.hostname || vm?.hostName || vm?.fqdn || vm?.dnsName || vm?.name || `VM ${vm?.vmid || ''}`;
+  const vmName = vm?.name || `VM ${vm?.vmid || ''}`;
+  const vmId = vm?.vmid;
+
   const visibilitySignals = [
     vm?.nautobotVisible,
     vm?.nautobot_visibility,
@@ -274,6 +276,15 @@ function getVmNautobotInfo(vm) {
 
   const isVisible = firstVisibilitySignal;
 
+  const explicitUrl = vm?.nautobotUrl || vm?.nautobot_url || vm?.nautobot?.url;
+  if (explicitUrl) {
+    return {
+      url: explicitUrl,
+      isVisible,
+      hasExplicitUrl: true
+    };
+  }
+
   const baseUrl = (CONFIG?.nautobot?.baseUrl || '').replace(/\/$/, '');
   const virtualizationPath = CONFIG?.nautobot?.virtualizationPath || '/virtualization/virtual-machines/';
   const cleanPath = virtualizationPath.startsWith('/') ? virtualizationPath : `/${virtualizationPath}`;
@@ -285,8 +296,8 @@ function getVmNautobotInfo(vm) {
     };
   }
 
-  const encodedName = encodeURIComponent(vmHostname);
-  const queryParam = `name=${encodedName}`;
+  const encodedName = encodeURIComponent(vmName);
+  const queryParam = vmId ? `name=${encodedName}&id=${encodeURIComponent(vmId)}` : `name=${encodedName}`;
 
   return {
     url: `${baseUrl}${cleanPath}?${queryParam}`,
