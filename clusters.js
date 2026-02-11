@@ -5,6 +5,56 @@ function getDisplayNodeName(fullName) {
   return fullName.split('.')[0];
 }
 
+function getClusterQuorumState(cluster, clusterInfra) {
+  const quorumRaw = String(clusterInfra?.quorum ?? 'unknown').toLowerCase();
+  const quorumTrueStates = ['1', 'yes', 'true', 'ok', 'quorate', 'online'];
+  const quorumFalseStates = ['0', 'no', 'false', 'offline', 'not_quorate'];
+
+  if (quorumTrueStates.includes(quorumRaw)) {
+    return {
+      hasQuorum: true,
+      title: `Quorum: ${clusterInfra?.quorum} | Nodes: ${clusterInfra?.nodes ?? 'n/a'} | Votes: ${clusterInfra?.totalVotes ?? 'n/a'}/${clusterInfra?.expectedVotes ?? 'n/a'}`
+    };
+  }
+
+  if (quorumFalseStates.includes(quorumRaw)) {
+    return {
+      hasQuorum: false,
+      title: `Quorum: ${clusterInfra?.quorum} | Nodes: ${clusterInfra?.nodes ?? 'n/a'} | Votes: ${clusterInfra?.totalVotes ?? 'n/a'}/${clusterInfra?.expectedVotes ?? 'n/a'}`
+    };
+  }
+
+  const expectedVotes = Number(clusterInfra?.expectedVotes);
+  const totalVotes = Number(clusterInfra?.totalVotes);
+  if (Number.isFinite(expectedVotes) && expectedVotes > 0 && Number.isFinite(totalVotes)) {
+    const hasQuorum = totalVotes > (expectedVotes / 2);
+    return {
+      hasQuorum,
+      title: `Quorum derived from votes: ${totalVotes}/${expectedVotes}`
+    };
+  }
+
+  const clusterNodes = [cluster?.node1, cluster?.node2, cluster?.node3].filter(Boolean);
+  const configuredNodes = clusterNodes.length;
+  const onlineNodes = clusterNodes.filter(node => {
+    const status = getNodeStatus(node);
+    return status === 'online' || status === 'degraded';
+  }).length;
+
+  if (configuredNodes > 0) {
+    const hasQuorum = onlineNodes > (configuredNodes / 2);
+    return {
+      hasQuorum,
+      title: `Quorum derived from node status: ${onlineNodes}/${configuredNodes} nodes reachable`
+    };
+  }
+
+  return {
+    hasQuorum: false,
+    title: 'No cluster quorum data available'
+  };
+}
+
 // Cluster Rendering
 
 function renderClusters() {
@@ -64,12 +114,10 @@ function createClusterElement(cluster, region, index) {
     ? `Ceph: ${cephHealth.text}${cephHealth.details ? ` (${cephHealth.details})` : ''}`
     : '';
   const clusterInfra = getClusterInfra(cluster.name);
-  const quorumState = clusterInfra ? String(clusterInfra.quorum || 'unknown').toLowerCase() : 'unknown';
-  const quorumBadgeClass = quorumState === '1' || quorumState === 'yes' || quorumState === 'true' ? 'healthy' : 'warning';
-  const quorumLabel = quorumState === '1' || quorumState === 'yes' || quorumState === 'true' ? 'Quorum OK' : 'No Quorum';
-  const quorumTitle = clusterInfra
-    ? `Quorum: ${clusterInfra.quorum} | Nodes: ${clusterInfra.nodes} | Votes: ${clusterInfra.totalVotes}/${clusterInfra.expectedVotes}`
-    : 'No cluster quorum data available';
+  const quorum = getClusterQuorumState(cluster, clusterInfra);
+  const quorumBadgeClass = quorum.hasQuorum ? 'healthy' : 'warning';
+  const quorumLabel = quorum.hasQuorum ? 'Quorum OK' : 'No Quorum';
+  const quorumTitle = quorum.title;
   div.setAttribute('data-status', clusterStatus);
   
   const isProd = cluster.name.includes('-prod');
@@ -87,7 +135,7 @@ function createClusterElement(cluster, region, index) {
         ${isProd ? '<i class="fas fa-star" style="color: var(--prod-color); margin-left: 0.25rem;"></i>' : ''}
       </a>
       ${isCmeCluster ? `<span class="ceph-health-badge ${cephHealthLabel}" title="${cephHealthTitle}"><i class="fas fa-database"></i> Ceph ${cephHealth.text}</span>` : ''}
-      ${clusterInfra ? `<span class="ceph-health-badge ${quorumBadgeClass}" title="${quorumTitle}"><i class="fas fa-balance-scale"></i> ${quorumLabel}</span>` : ''}
+      <span class="ceph-health-badge ${quorumBadgeClass}" title="${quorumTitle}"><i class="fas fa-balance-scale"></i> ${quorumLabel}</span>
       <button class="copy-btn" title="Copy link" data-url="${cluster.url}">
         <i class="fas fa-copy"></i>
       </button>
