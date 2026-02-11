@@ -151,6 +151,7 @@ function createVMSearchCard(vmResult) {
   const cpuPercent = Math.round((vm.cpu || 0) * 100);
   const memUsage = formatBytes(vm.mem || 0);
   const uptime = vm.uptime ? formatUptime(vm.uptime) : 'N/A';
+  const nautobotInfo = getVmNautobotInfo(vm);
   
   const flagCode = CONFIG.countryFlags[vmResult.cluster] || '';
   const clusterStatus = getClusterStatus(vmResult.cluster);
@@ -197,6 +198,9 @@ function createVMSearchCard(vmResult) {
         <a href="${vmResult.clusterUrl}/#v1:0:=qemu%2F${vm.vmid}:4::::::" class="btn-primary" target="_blank" style="flex: 1; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
           <i class="fas fa-external-link-alt"></i> Open VM
         </a>
+        ${nautobotInfo.url ? `<a href="${nautobotInfo.url}" class="btn-primary" target="_blank" rel="noopener noreferrer" style="flex: 1; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: transparent; border-color: var(--link); color: var(--link);">
+          <i class="fas fa-link"></i> Nautobot
+        </a>` : ''}
       </div>
     </div>
   `;
