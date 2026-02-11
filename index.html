@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0" />
   <title>Proxmox Cluster Dashboard</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <link rel="stylesheet" href="styles.css?v=20260211c" />
+  <link rel="stylesheet" href="styles.css?v=20260211b" />
 </head>
 <body>
   <div class="overlay">
@@ -280,6 +280,16 @@
                   <span class="stat-badge offline" id="stoppedVMsPercent">0%</span>
                 </div>
               </div>
+              <div class="stat-detail-item">
+                <div class="stat-detail-label">
+                  <i class="fas fa-box" style="color: var(--link);"></i>
+                  <span>Containers</span>
+                </div>
+                <div class="stat-detail-value">
+                  <span id="totalContainers">0</span>
+                  <span class="stat-badge" id="runningContainersPercent">0% running</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -364,6 +374,37 @@
           <div class="ceph-status-list" id="cephStatusList"></div>
         </div>
 
+        <div class="ops-insights-grid">
+          <div class="ops-insight-card">
+            <h3><i class="fas fa-triangle-exclamation"></i> Top Risk Nodes</h3>
+            <div class="ops-risk-list" id="topRiskNodesList">
+              <p class="ops-empty">No node telemetry available.</p>
+            </div>
+          </div>
+          <div class="ops-insight-card">
+            <h3><i class="fas fa-id-card"></i> Subscription / License Health</h3>
+            <div class="license-summary-grid">
+              <div class="license-summary-item healthy">
+                <span class="license-label">Active</span>
+                <span class="license-value" id="subscriptionActive">0</span>
+              </div>
+              <div class="license-summary-item warning">
+                <span class="license-label">Warning</span>
+                <span class="license-value" id="subscriptionWarning">0</span>
+              </div>
+              <div class="license-summary-item unknown">
+                <span class="license-label">Unknown</span>
+                <span class="license-value" id="subscriptionUnknown">0</span>
+              </div>
+              <div class="license-summary-item total">
+                <span class="license-label">Total Nodes</span>
+                <span class="license-value" id="subscriptionTotal">0</span>
+              </div>
+            </div>
+            <div class="license-health-score" id="subscriptionHealthScore">0% active</div>
+          </div>
+        </div>
+
         <!-- Charts Section -->
         <div class="charts-section">
           <div class="chart-card">
@@ -436,15 +477,15 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   
   <!-- Main Application Scripts -->
-  <script src="config.js?v=20260211c"></script>
-  <script src="utils.js?v=20260211c"></script>
-  <script src="cache.js?v=20260211c"></script>
-  <script src="statistics.js?v=20260211c"></script>
-  <script src="notifications.js?v=20260211c"></script>
-  <script src="search.js?v=20260211c"></script>
-  <script src="filters.js?v=20260211c"></script>
-  <script src="clusters.js?v=20260211c"></script>
-  <script src="charts.js?v=20260211c"></script>
-  <script src="app.js?v=20260211c"></script>
+  <script src="config.js?v=20260211b"></script>
+  <script src="utils.js?v=20260211b"></script>
+  <script src="cache.js?v=20260211b"></script>
+  <script src="statistics.js?v=20260211b"></script>
+  <script src="notifications.js?v=20260211b"></script>
+  <script src="search.js?v=20260211b"></script>
+  <script src="filters.js?v=20260211b"></script>
+  <script src="clusters.js?v=20260211b"></script>
+  <script src="charts.js?v=20260211b"></script>
+  <script src="app.js?v=20260211b"></script>
 </body>
 </html>

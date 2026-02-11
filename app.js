@@ -1,30 +1,30 @@
 // Main Application
 
 function refreshStatisticsModules() {
-  if (typeof window.updateStatisticsUI === 'function' && typeof window.calculateStatistics === 'function') {
+  if (typeof window.updateStatisticsUI === 'function') {
     window.updateStatisticsUI();
   } else {
-    console.warn('Statistics module missing: updateStatisticsUI/calculateStatistics is not defined');
+    console.warn('Statistics module missing: updateStatisticsUI is not defined');
   }
 
-  if (typeof window.updateCharts === 'function' && typeof window.calculateStatistics === 'function') {
+  if (typeof window.updateCharts === 'function') {
     window.updateCharts();
   } else {
-    console.warn('Charts module missing: updateCharts/calculateStatistics is not defined');
+    console.warn('Charts module missing: updateCharts is not defined');
   }
 }
 
 function initializeStatisticsModules() {
-  if (typeof window.updateStatisticsUI === 'function' && typeof window.calculateStatistics === 'function') {
+  if (typeof window.updateStatisticsUI === 'function') {
     window.updateStatisticsUI();
   } else {
-    console.warn('Statistics module missing: updateStatisticsUI/calculateStatistics is not defined');
+    console.warn('Statistics module missing: updateStatisticsUI is not defined');
   }
 
-  if (typeof window.initializeCharts === 'function' && typeof window.calculateStatistics === 'function') {
+  if (typeof window.initializeCharts === 'function') {
     window.initializeCharts();
   } else {
-    console.warn('Charts module missing: initializeCharts/calculateStatistics is not defined');
+    console.warn('Charts module missing: initializeCharts is not defined');
   }
 }
 
