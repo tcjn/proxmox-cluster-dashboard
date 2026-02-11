@@ -1855,8 +1855,16 @@ header h1 a:hover {
   color: var(--link);
 }
 
-.nautobot-link {
+.nautobot-meta {
   margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.nautobot-link {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;

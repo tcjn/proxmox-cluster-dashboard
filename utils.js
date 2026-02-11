@@ -258,7 +258,6 @@ function normalizeBoolean(value) {
 
 function getVmNautobotInfo(vm) {
   const vmName = vm?.name || `VM ${vm?.vmid || ''}`;
-  const vmId = vm?.vmid;
 
   const visibilitySignals = [
     vm?.nautobotVisible,
@@ -297,7 +296,7 @@ function getVmNautobotInfo(vm) {
   }
 
   const encodedName = encodeURIComponent(vmName);
-  const queryParam = vmId ? `name=${encodedName}&id=${encodeURIComponent(vmId)}` : `name=${encodedName}`;
+  const queryParam = `name=${encodedName}`;
 
   return {
     url: `${baseUrl}${cleanPath}?${queryParam}`,
