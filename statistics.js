@@ -15,6 +15,9 @@ function calculateStatistics() {
     totalVMs: 0,
     runningVMs: 0,
     stoppedVMs: 0,
+    totalContainers: 0,
+    runningContainers: 0,
+    stoppedContainers: 0,
     
     totalNodes: 0,
     onlineNodes: 0,
@@ -148,6 +151,17 @@ function calculateStatistics() {
               }
             });
           }
+
+          if (nodeData.containers && Array.isArray(nodeData.containers)) {
+            nodeData.containers.forEach(container => {
+              stats.totalContainers++;
+              if (container.status === 'running') {
+                stats.runningContainers++;
+              } else {
+                stats.stoppedContainers++;
+              }
+            });
+          }
         }
       });
     });
@@ -158,6 +172,7 @@ function calculateStatistics() {
   stats.offlineClustersPercent = stats.totalClusters > 0 ? Math.round((stats.offlineClusters / stats.totalClusters) * 100) : 0;
   stats.runningVMsPercent = stats.totalVMs > 0 ? Math.round((stats.runningVMs / stats.totalVMs) * 100) : 0;
   stats.stoppedVMsPercent = stats.totalVMs > 0 ? Math.round((stats.stoppedVMs / stats.totalVMs) * 100) : 0;
+  stats.runningContainersPercent = stats.totalContainers > 0 ? Math.round((stats.runningContainers / stats.totalContainers) * 100) : 0;
   stats.onlineNodesPercent = stats.totalNodes > 0 ? Math.round((stats.onlineNodes / stats.totalNodes) * 100) : 0;
   stats.offlineNodesPercent = stats.totalNodes > 0 ? Math.round((stats.offlineNodes / stats.totalNodes) * 100) : 0;
   stats.degradedNodesPercent = stats.totalNodes > 0 ? Math.round((stats.degradedNodes / stats.totalNodes) * 100) : 0;
@@ -204,6 +219,10 @@ function updateStatisticsUI() {
   document.getElementById('runningVMsPercent').textContent = `${stats.runningVMsPercent}%`;
   document.getElementById('stoppedVMs').textContent = stats.stoppedVMs;
   document.getElementById('stoppedVMsPercent').textContent = `${stats.stoppedVMsPercent}%`;
+  const totalContainersEl = document.getElementById('totalContainers');
+  if (totalContainersEl) totalContainersEl.textContent = stats.totalContainers;
+  const runningContainersPercentEl = document.getElementById('runningContainersPercent');
+  if (runningContainersPercentEl) runningContainersPercentEl.textContent = `${stats.runningContainersPercent}% running`;
   
   document.getElementById('totalNodes').textContent = stats.totalNodes;
   document.getElementById('avgCpu').textContent = `${stats.avgCpu}%`;
@@ -258,8 +277,6 @@ function renderCephStatus(cephStats) {
     <span class="ceph-summary-pill healthy">Healthy: ${cephStats.healthy}</span>
     <span class="ceph-summary-pill warning">Warn: ${cephStats.warning}</span>
     <span class="ceph-summary-pill critical">Critical: ${cephStats.critical}</span>
-    <span class="ceph-summary-pill not-installed">Not Installed: ${cephStats.notInstalled}</span>
-    <span class="ceph-summary-pill unknown">Unknown: ${cephStats.unknown}</span>
     <span class="ceph-summary-pill meta">Monitored: ${cephStats.total}</span>
     <span class="ceph-summary-pill meta">Needs attention: ${clustersWithAlerts}</span>
   `;
@@ -268,7 +285,7 @@ function renderCephStatus(cephStats) {
     <div class="ceph-status-item ${item.health}">
       <div class="ceph-status-item-main">
         <span class="ceph-cluster-name">${sanitizeHTML(item.name)}</span>
-        <span class="ceph-cluster-health" title="${sanitizeHTML(item.details || '')}">${sanitizeHTML(item.healthText || item.health)}</span>
+        <span class="ceph-cluster-health ${sanitizeHTML(item.health)}" title="${sanitizeHTML(item.details || '')}">${sanitizeHTML(item.healthText || item.health)}</span>
       </div>
       <div class="ceph-status-item-meta">
         ${item.details ? `<span class="ceph-meta-item details">${sanitizeHTML(item.details)}</span>` : ''}

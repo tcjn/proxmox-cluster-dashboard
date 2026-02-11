@@ -4,6 +4,7 @@ let resourceChart = null;
 let statusChart = null;
 
 function initializeCharts() {
+  if (typeof window.calculateStatistics !== 'function') return;
   const stats = calculateStatistics();
   if (!stats) return;
   
@@ -140,6 +141,7 @@ function initializeCharts() {
 }
 
 function updateCharts() {
+  if (typeof window.calculateStatistics !== 'function') return;
   const stats = calculateStatistics();
   if (!stats) return;
   
