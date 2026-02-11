@@ -271,12 +271,33 @@ function createVMHTML(vm, cluster) {
   const cpuPercent = Math.round((vm.cpu || 0) * 100);
   const memUsage = formatBytes(vm.mem || 0);
   const ramLabel = 'RAM';
+  const nautobotInfo = getVmNautobotInfo(vm);
+  const nautobotVisibilityClass = nautobotInfo.isVisible === true
+    ? 'visible'
+    : nautobotInfo.isVisible === false
+      ? 'missing'
+      : 'unknown';
+  const nautobotVisibilityText = nautobotInfo.isVisible === true
+    ? 'In Nautobot'
+    : nautobotInfo.isVisible === false
+      ? 'Not in Nautobot'
+      : 'Nautobot unknown';
+  const nautobotVisibilityIcon = nautobotInfo.isVisible === true
+    ? 'fa-check-circle'
+    : nautobotInfo.isVisible === false
+      ? 'fa-times-circle'
+      : 'fa-question-circle';
   
   return `
     <div class="vm-item" data-vm-id="${vm.vmid}" data-vm-name="${vmName.toLowerCase()}">
       <div class="vm-header">
         <span class="vm-status ${vmStatus}"></span>
         <a href="${cluster.url}/#v1:0:=qemu%2F${vm.vmid}:4::::::" target="_blank">${vmName}</a>
+        ${nautobotInfo.url ? `<a href="${nautobotInfo.url}" target="_blank" rel="noopener noreferrer" class="nautobot-link" title="Open ${vmName} in Nautobot"><i class="fas fa-sitemap"></i> Nautobot</a>` : ''}
+        <span class="nautobot-visibility ${nautobotVisibilityClass}" title="Nautobot visibility status">
+          <i class="fas ${nautobotVisibilityIcon}"></i>
+          ${nautobotVisibilityText}
+        </span>
       </div>
       <div class="vm-metric">
         <span class="vm-metric-value">${cpuPercent}%</span>
