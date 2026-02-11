@@ -63,6 +63,13 @@ function createClusterElement(cluster, region, index) {
   const cephHealthTitle = isCmeCluster
     ? `Ceph: ${cephHealth.text}${cephHealth.details ? ` (${cephHealth.details})` : ''}`
     : '';
+  const clusterInfra = getClusterInfra(cluster.name);
+  const quorumState = clusterInfra ? String(clusterInfra.quorum || 'unknown').toLowerCase() : 'unknown';
+  const quorumBadgeClass = quorumState === '1' || quorumState === 'yes' || quorumState === 'true' ? 'healthy' : 'warning';
+  const quorumLabel = quorumState === '1' || quorumState === 'yes' || quorumState === 'true' ? 'Quorum OK' : 'No Quorum';
+  const quorumTitle = clusterInfra
+    ? `Quorum: ${clusterInfra.quorum} | Nodes: ${clusterInfra.nodes} | Votes: ${clusterInfra.totalVotes}/${clusterInfra.expectedVotes}`
+    : 'No cluster quorum data available';
   div.setAttribute('data-status', clusterStatus);
   
   const isProd = cluster.name.includes('-prod');
@@ -80,6 +87,7 @@ function createClusterElement(cluster, region, index) {
         ${isProd ? '<i class="fas fa-star" style="color: var(--prod-color); margin-left: 0.25rem;"></i>' : ''}
       </a>
       ${isCmeCluster ? `<span class="ceph-health-badge ${cephHealthLabel}" title="${cephHealthTitle}"><i class="fas fa-database"></i> Ceph ${cephHealth.text}</span>` : ''}
+      ${clusterInfra ? `<span class="ceph-health-badge ${quorumBadgeClass}" title="${quorumTitle}"><i class="fas fa-balance-scale"></i> ${quorumLabel}</span>` : ''}
       <button class="copy-btn" title="Copy link" data-url="${cluster.url}">
         <i class="fas fa-copy"></i>
       </button>
@@ -132,6 +140,10 @@ function createNodeHTML(node, cluster) {
   const memPercent = nodeData.maxmem ? Math.round((nodeData.mem / nodeData.maxmem) * 100) : 0;
   const diskPercent = nodeData.maxdisk ? Math.round((nodeData.disk / nodeData.maxdisk) * 100) : 0;
   const ramLabel = 'RAM';
+  const swapPercent = nodeData.maxswap ? Math.round((nodeData.swap / nodeData.maxswap) * 100) : 0;
+  const loadAvgOneMinute = Array.isArray(nodeData.loadavg) ? Number(nodeData.loadavg[0] || 0).toFixed(2) : '0.00';
+  const runningContainers = (nodeData.containers || []).filter(ct => ct.status === 'running').length;
+  const totalContainers = (nodeData.containers || []).length;
   
   const isVersionOutdated = nodeData.pveversion && 
     compareVersions(nodeData.pveversion, CONFIG.pveVersionProd) < 0;
@@ -186,7 +198,17 @@ function createNodeHTML(node, cluster) {
         </div>
       </div>
       <div class="uptime">Uptime: ${formatUptime(nodeData.uptime || 0)}</div>
-      <div class="pve-version ${isVersionOutdated ? 'version-outdated' : ''}">
+      <div class="node-infra-meta" title="Kernel, load average, swap and guest density">
+        <span><i class="fas fa-microchip"></i> ${nodeData.cpus || 0} cores</span>
+        <span><i class="fas fa-tachometer-alt"></i> Load ${loadAvgOneMinute}</span>
+        <span><i class="fas fa-memory"></i> Swap ${swapPercent}%</span>
+      </div>
+      <div class="node-infra-meta">
+        <span><i class="fas fa-box"></i> CTs ${runningContainers}/${totalContainers}</span>
+        <span><i class="fas fa-hdd"></i> Pools ${(nodeData.storage && nodeData.storage.activePools) || 0}/${(nodeData.storage && nodeData.storage.pools) || 0}</span>
+        <span><i class="fas fa-id-card"></i> ${nodeData.subscription || 'unknown'}</span>
+      </div>
+      <div class="pve-version ${isVersionOutdated ? 'version-outdated' : ''}" title="Kernel: ${nodeData.kernel || 'unknown'}">
         Version: ${nodeData.pveversion || 'N/A'}
         ${isVersionOutdated ? '<i class="fas fa-exclamation-triangle"></i>' : ''}
       </div>
