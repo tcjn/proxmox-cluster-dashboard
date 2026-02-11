@@ -1864,6 +1864,16 @@ header h1 a:hover {
   white-space: nowrap;
 }
 
+.vm-nautobot-meta {
+  grid-column: span 3;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+  white-space: nowrap;
+}
+
 .nautobot-link {
   display: inline-flex;
   align-items: center;

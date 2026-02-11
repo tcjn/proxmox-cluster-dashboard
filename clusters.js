@@ -282,16 +282,24 @@ function createVMHTML(vm, cluster) {
     : nautobotInfo.isVisible === false
       ? 'Missing'
       : 'Unknown';
+  const hasKnownVisibility = nautobotInfo.isVisible !== null;
+  const vmUptimeMarkup = vm.uptime
+    ? `<div class="vm-uptime">Uptime: ${formatUptime(vm.uptime)}</div>`
+    : '';
+  const vmNautobotMetaMarkup = (nautobotInfo.url || hasKnownVisibility)
+    ? `
+      <div class="vm-nautobot-meta">
+        ${nautobotInfo.url ? `<a href="${nautobotInfo.url}" class="nautobot-link" target="_blank" rel="noopener noreferrer"><i class="fas fa-link"></i> Nautobot</a>` : ''}
+        ${hasKnownVisibility ? `<span class="nautobot-visibility ${visibilityClass}">${visibilityText}</span>` : ''}
+      </div>
+    `
+    : '';
   
   return `
     <div class="vm-item" data-vm-id="${vm.vmid}" data-vm-name="${vmName.toLowerCase()}">
       <div class="vm-header">
         <span class="vm-status ${vmStatus}"></span>
         <a href="${cluster.url}/#v1:0:=qemu%2F${vm.vmid}:4::::::" target="_blank">${vmName}</a>
-        <span class="nautobot-meta">
-          ${nautobotInfo.url ? `<a href="${nautobotInfo.url}" class="nautobot-link" target="_blank" rel="noopener noreferrer"><i class="fas fa-link"></i> Nautobot</a>` : ''}
-          <span class="nautobot-visibility ${visibilityClass}">${visibilityText}</span>
-        </span>
       </div>
       <div class="vm-metric">
         <span class="vm-metric-value">${cpuPercent}%</span>
@@ -305,7 +313,8 @@ function createVMHTML(vm, cluster) {
         <span class="vm-metric-value">${vm.vmid}</span>
         <span class="vm-metric-label">VM ID</span>
       </div>
-      ${vm.uptime ? `<div class="vm-uptime">Uptime: ${formatUptime(vm.uptime)}</div>` : ''}
+      ${vmUptimeMarkup}
+      ${vmNautobotMetaMarkup}
     </div>
   `;
 }
