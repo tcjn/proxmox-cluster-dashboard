@@ -186,19 +186,7 @@ function calculateStatistics() {
               }
             });
           }
-
-          const subscriptionStatus = getNodeSubscriptionStatus(nodeData);
-          stats.subscription.total++;
-          if (['active', 'valid', 'ok', 'enabled'].includes(subscriptionStatus)) {
-            stats.subscription.active++;
-          } else if (['unknown', 'notfound', 'n/a', 'none'].includes(subscriptionStatus)) {
-            stats.subscription.unknown++;
-          } else {
-            stats.subscription.warning++;
-          }
-
-          const nodeRisk = calculateNodeRisk(node, cluster.name, nodeData, nodeStatus);
-          stats.topRiskNodes.push(nodeRisk);
+        }
       });
     });
   });
@@ -209,7 +197,6 @@ function calculateStatistics() {
   stats.runningVMsPercent = stats.totalVMs > 0 ? Math.round((stats.runningVMs / stats.totalVMs) * 100) : 0;
   stats.stoppedVMsPercent = stats.totalVMs > 0 ? Math.round((stats.stoppedVMs / stats.totalVMs) * 100) : 0;
   stats.runningContainersPercent = stats.totalContainers > 0 ? Math.round((stats.runningContainers / stats.totalContainers) * 100) : 0;
-  stats.subscriptionActivePercent = stats.subscription.total > 0 ? Math.round((stats.subscription.active / stats.subscription.total) * 100) : 0;
   stats.onlineNodesPercent = stats.totalNodes > 0 ? Math.round((stats.onlineNodes / stats.totalNodes) * 100) : 0;
   stats.offlineNodesPercent = stats.totalNodes > 0 ? Math.round((stats.offlineNodes / stats.totalNodes) * 100) : 0;
   stats.degradedNodesPercent = stats.totalNodes > 0 ? Math.round((stats.degradedNodes / stats.totalNodes) * 100) : 0;
@@ -241,7 +228,7 @@ function calculateNodeRisk(nodeName, clusterName, nodeData, nodeStatus) {
   const cpuPercent = Math.round((nodeData.cpu || 0) * 100);
   const memPercent = nodeData.maxmem ? Math.round((nodeData.mem / nodeData.maxmem) * 100) : 0;
   const diskPercent = nodeData.maxdisk ? Math.round((nodeData.disk / nodeData.maxdisk) * 100) : 0;
-  const subscriptionStatus = getNodeSubscriptionStatus(nodeData);
+  const subscriptionStatus = String(nodeData.subscription || 'unknown').toLowerCase();
 
   let riskScore = 0;
   if (nodeStatus === 'offline') riskScore += 100;
@@ -257,9 +244,7 @@ function calculateNodeRisk(nodeName, clusterName, nodeData, nodeStatus) {
   else if (diskPercent >= CONFIG.thresholds.diskWarning) riskScore += 18;
 
   if (nodeData.pveversion && compareVersions(nodeData.pveversion, CONFIG.pveVersionProd) < 0) riskScore += 10;
-  if (!['active', 'valid', 'ok', 'enabled'].includes(subscriptionStatus)) {
-    riskScore += ['unknown', 'notfound', 'n/a', 'none'].includes(subscriptionStatus) ? 6 : 12;
-  }
+  if (subscriptionStatus !== 'active') riskScore += subscriptionStatus === 'unknown' ? 6 : 12;
 
   return {
     nodeName,
@@ -271,28 +256,6 @@ function calculateNodeRisk(nodeName, clusterName, nodeData, nodeStatus) {
     nodeStatus,
     subscriptionStatus
   };
-}
-
-function getNodeSubscriptionStatus(nodeData) {
-  if (!nodeData || typeof nodeData !== 'object') return 'unknown';
-
-  const rawSubscription = nodeData.subscription;
-  if (typeof rawSubscription === 'string' && rawSubscription.trim()) {
-    return rawSubscription.trim().toLowerCase();
-  }
-
-  if (rawSubscription && typeof rawSubscription === 'object' && typeof rawSubscription.status === 'string') {
-    return rawSubscription.status.trim().toLowerCase();
-  }
-
-  const candidateKeys = ['subscriptionStatus', 'license', 'licenseStatus', 'status'];
-  for (const key of candidateKeys) {
-    if (typeof nodeData[key] === 'string' && nodeData[key].trim()) {
-      return nodeData[key].trim().toLowerCase();
-    }
-  }
-
-  return 'unknown';
 }
 
 function getOccupancyBucket(usage) {
@@ -487,6 +450,5 @@ function renderSubscriptionHealth(subscriptionStats, activePercent) {
   warningEl.textContent = subscriptionStats.warning;
   unknownEl.textContent = subscriptionStats.unknown;
   totalEl.textContent = subscriptionStats.total;
-  const normalizedActivePercent = Number.isFinite(Number(activePercent)) ? Math.round(Number(activePercent)) : 0;
-  scoreEl.textContent = `${normalizedActivePercent}% active`;
+  scoreEl.textContent = `${activePercent}% active`;
 }
