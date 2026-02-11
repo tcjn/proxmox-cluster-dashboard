@@ -2401,6 +2401,120 @@ footer {
 .ceph-status-item.not-installed,
 .ceph-status-item.unknown { border-left-color: var(--border); }
 
+.ops-insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.ops-insight-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+}
+
+.ops-insight-card h3 {
+  margin: 0 0 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ops-risk-list {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.ops-risk-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.65rem;
+  background: var(--node-bg);
+}
+
+.ops-risk-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+
+.ops-risk-node {
+  font-weight: 700;
+}
+
+.ops-risk-score {
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+}
+
+.ops-risk-score.healthy { color: var(--online); background: color-mix(in srgb, var(--online) 16%, transparent); }
+.ops-risk-score.warning { color: var(--degraded); background: color-mix(in srgb, var(--degraded) 16%, transparent); }
+.ops-risk-score.critical { color: var(--offline); background: color-mix(in srgb, var(--offline) 16%, transparent); }
+
+.ops-risk-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--copy);
+}
+
+.ops-risk-meta span {
+  background: color-mix(in srgb, var(--card) 70%, var(--node-bg));
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.1rem 0.4rem;
+}
+
+.license-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.license-summary-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.65rem;
+  background: var(--node-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.license-summary-item.healthy { border-left: 4px solid var(--online); }
+.license-summary-item.warning { border-left: 4px solid var(--degraded); }
+.license-summary-item.unknown { border-left: 4px solid var(--offline); }
+.license-summary-item.total { border-left: 4px solid var(--link); }
+
+.license-label {
+  font-size: 0.75rem;
+  color: var(--copy);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.license-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.license-health-score {
+  margin-top: 0.75rem;
+  font-weight: 700;
+  color: var(--link);
+}
+
+.ops-empty {
+  margin: 0;
+  color: var(--copy);
+}
+
 @media (max-width: 900px) {
   .ceph-status-header {
     flex-direction: column;
