@@ -118,7 +118,22 @@ function calculateStatistics() {
         else if (nodeStatus === 'degraded') stats.degradedNodes++;
         
         const nodeData = getNodeData(node);
-        if (nodeData) {
+        if (!nodeData) {
+          stats.topRiskNodes.push({
+            nodeName: node,
+            clusterName: cluster.name,
+            riskScore: nodeStatus === 'offline' ? 100 : nodeStatus === 'degraded' ? 40 : 5,
+            cpuPercent: 0,
+            memPercent: 0,
+            diskPercent: 0,
+            nodeStatus,
+            subscriptionStatus: 'unknown'
+          });
+          stats.subscription.total++;
+          stats.subscription.unknown++;
+          return;
+        }
+
           stats.nodesWithData++;
           
           if (nodeData.cpu !== undefined && !isNaN(nodeData.cpu)) {
@@ -171,19 +186,6 @@ function calculateStatistics() {
               }
             });
           }
-
-          const subscriptionStatus = String(nodeData.subscription || 'unknown').toLowerCase();
-          stats.subscription.total++;
-          if (subscriptionStatus === 'active') {
-            stats.subscription.active++;
-          } else if (subscriptionStatus === 'unknown' || subscriptionStatus === 'notfound') {
-            stats.subscription.unknown++;
-          } else {
-            stats.subscription.warning++;
-          }
-
-          const nodeRisk = calculateNodeRisk(node, cluster.name, nodeData, nodeStatus);
-          stats.topRiskNodes.push(nodeRisk);
         }
       });
     });
@@ -195,7 +197,6 @@ function calculateStatistics() {
   stats.runningVMsPercent = stats.totalVMs > 0 ? Math.round((stats.runningVMs / stats.totalVMs) * 100) : 0;
   stats.stoppedVMsPercent = stats.totalVMs > 0 ? Math.round((stats.stoppedVMs / stats.totalVMs) * 100) : 0;
   stats.runningContainersPercent = stats.totalContainers > 0 ? Math.round((stats.runningContainers / stats.totalContainers) * 100) : 0;
-  stats.subscriptionActivePercent = stats.subscription.total > 0 ? Math.round((stats.subscription.active / stats.subscription.total) * 100) : 0;
   stats.onlineNodesPercent = stats.totalNodes > 0 ? Math.round((stats.onlineNodes / stats.totalNodes) * 100) : 0;
   stats.offlineNodesPercent = stats.totalNodes > 0 ? Math.round((stats.offlineNodes / stats.totalNodes) * 100) : 0;
   stats.degradedNodesPercent = stats.totalNodes > 0 ? Math.round((stats.degradedNodes / stats.totalNodes) * 100) : 0;
