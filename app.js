@@ -1,5 +1,34 @@
 // Main Application
 
+function refreshStatisticsModules() {
+  if (typeof window.updateStatisticsUI === 'function') {
+    window.updateStatisticsUI();
+  } else {
+    console.warn('Statistics module missing: updateStatisticsUI is not defined');
+  }
+
+  if (typeof window.updateCharts === 'function') {
+    window.updateCharts();
+  } else {
+    console.warn('Charts module missing: updateCharts is not defined');
+  }
+}
+
+function initializeStatisticsModules() {
+  if (typeof window.updateStatisticsUI === 'function') {
+    window.updateStatisticsUI();
+  } else {
+    console.warn('Statistics module missing: updateStatisticsUI is not defined');
+  }
+
+  if (typeof window.initializeCharts === 'function') {
+    window.initializeCharts();
+  } else {
+    console.warn('Charts module missing: initializeCharts is not defined');
+  }
+}
+
+
 async function loadData() {
   const loadingSpinner = document.getElementById('loadingSpinner');
   loadingSpinner.style.display = 'flex';
@@ -42,8 +71,7 @@ async function loadData() {
     
     // Update statistics if visible
     if (STATE.statisticsVisible) {
-      updateStatisticsUI();
-      updateCharts();
+      refreshStatisticsModules();
     }
     
     showToast('Data loaded successfully', 'success', 3000);
@@ -249,8 +277,7 @@ function initializeEventListeners() {
       section.style.display = 'block';
       btn.innerHTML = '<i class="fas fa-chart-bar"></i> Hide Statistics Dashboard';
       btn.classList.add('active');
-      updateStatisticsUI();
-      initializeCharts();
+      initializeStatisticsModules();
     } else {
       section.style.display = 'none';
       btn.innerHTML = '<i class="fas fa-chart-bar"></i> Show Statistics Dashboard';
