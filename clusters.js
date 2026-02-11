@@ -97,6 +97,7 @@ function renderClusters() {
   });
   
   attachClusterEventListeners();
+  refreshNautobotPresenceIndicators(container);
 }
 
 function createClusterElement(cluster, region, index) {
@@ -267,6 +268,8 @@ function createNodeHTML(node, cluster) {
 
 function createVMHTML(vm, cluster) {
   const vmName = vm.name || `VM ${vm.vmid}`;
+  const vmNautobotKey = encodeURIComponent(getNautobotVmKey(vmName));
+  const safeVmName = sanitizeHTML(vmName);
   const vmStatus = vm.status || 'stopped';
   const cpuPercent = Math.round((vm.cpu || 0) * 100);
   const memUsage = formatBytes(vm.mem || 0);
@@ -279,6 +282,9 @@ function createVMHTML(vm, cluster) {
     ? `
       <div class="vm-nautobot-meta">
         <a href="${nautobotInfo.url}" class="nautobot-link" target="_blank" rel="noopener noreferrer"><i class="fas fa-link"></i> Nautobot</a>
+        <span class="nautobot-presence-icon unknown" data-nautobot-vm-key="${vmNautobotKey}" data-nautobot-vm-name="${safeVmName}" title="Nautobot status unknown" aria-label="Nautobot status unknown">
+          <i class="fas fa-question-circle"></i>
+        </span>
       </div>
     `
     : '';
