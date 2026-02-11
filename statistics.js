@@ -15,6 +15,9 @@ function calculateStatistics() {
     totalVMs: 0,
     runningVMs: 0,
     stoppedVMs: 0,
+    totalContainers: 0,
+    runningContainers: 0,
+    stoppedContainers: 0,
     
     totalNodes: 0,
     onlineNodes: 0,
@@ -55,7 +58,16 @@ function calculateStatistics() {
       notInstalled: 0,
       unknown: 0,
       clusters: []
-    }
+    },
+
+    subscription: {
+      total: 0,
+      active: 0,
+      warning: 0,
+      unknown: 0
+    },
+
+    topRiskNodes: []
   };
   
   Object.entries(STATE.clustersData).forEach(([region, clusters]) => {
@@ -106,7 +118,22 @@ function calculateStatistics() {
         else if (nodeStatus === 'degraded') stats.degradedNodes++;
         
         const nodeData = getNodeData(node);
-        if (nodeData) {
+        if (!nodeData) {
+          stats.topRiskNodes.push({
+            nodeName: node,
+            clusterName: cluster.name,
+            riskScore: nodeStatus === 'offline' ? 100 : nodeStatus === 'degraded' ? 40 : 5,
+            cpuPercent: 0,
+            memPercent: 0,
+            diskPercent: 0,
+            nodeStatus,
+            subscriptionStatus: 'unknown'
+          });
+          stats.subscription.total++;
+          stats.subscription.unknown++;
+          return;
+        }
+
           stats.nodesWithData++;
           
           if (nodeData.cpu !== undefined && !isNaN(nodeData.cpu)) {
@@ -148,6 +175,17 @@ function calculateStatistics() {
               }
             });
           }
+
+          if (nodeData.containers && Array.isArray(nodeData.containers)) {
+            nodeData.containers.forEach(container => {
+              stats.totalContainers++;
+              if (container.status === 'running') {
+                stats.runningContainers++;
+              } else {
+                stats.stoppedContainers++;
+              }
+            });
+          }
         }
       });
     });
@@ -158,6 +196,7 @@ function calculateStatistics() {
   stats.offlineClustersPercent = stats.totalClusters > 0 ? Math.round((stats.offlineClusters / stats.totalClusters) * 100) : 0;
   stats.runningVMsPercent = stats.totalVMs > 0 ? Math.round((stats.runningVMs / stats.totalVMs) * 100) : 0;
   stats.stoppedVMsPercent = stats.totalVMs > 0 ? Math.round((stats.stoppedVMs / stats.totalVMs) * 100) : 0;
+  stats.runningContainersPercent = stats.totalContainers > 0 ? Math.round((stats.runningContainers / stats.totalContainers) * 100) : 0;
   stats.onlineNodesPercent = stats.totalNodes > 0 ? Math.round((stats.onlineNodes / stats.totalNodes) * 100) : 0;
   stats.offlineNodesPercent = stats.totalNodes > 0 ? Math.round((stats.offlineNodes / stats.totalNodes) * 100) : 0;
   stats.degradedNodesPercent = stats.totalNodes > 0 ? Math.round((stats.degradedNodes / stats.totalNodes) * 100) : 0;
@@ -178,8 +217,45 @@ function calculateStatistics() {
   stats.healthyCount = stats.onlineNodes;
   stats.warningCount = stats.degradedNodes;
   stats.criticalCount = stats.offlineNodes;
+
+  stats.topRiskNodes.sort((a, b) => b.riskScore - a.riskScore);
+  stats.topRiskNodes = stats.topRiskNodes.slice(0, 5);
   
   return stats;
+}
+
+function calculateNodeRisk(nodeName, clusterName, nodeData, nodeStatus) {
+  const cpuPercent = Math.round((nodeData.cpu || 0) * 100);
+  const memPercent = nodeData.maxmem ? Math.round((nodeData.mem / nodeData.maxmem) * 100) : 0;
+  const diskPercent = nodeData.maxdisk ? Math.round((nodeData.disk / nodeData.maxdisk) * 100) : 0;
+  const subscriptionStatus = String(nodeData.subscription || 'unknown').toLowerCase();
+
+  let riskScore = 0;
+  if (nodeStatus === 'offline') riskScore += 100;
+  else if (nodeStatus === 'degraded') riskScore += 40;
+
+  if (cpuPercent >= CONFIG.thresholds.cpuCritical) riskScore += 30;
+  else if (cpuPercent >= CONFIG.thresholds.cpuWarning) riskScore += 15;
+
+  if (memPercent >= CONFIG.thresholds.memoryCritical) riskScore += 30;
+  else if (memPercent >= CONFIG.thresholds.memoryWarning) riskScore += 15;
+
+  if (diskPercent >= CONFIG.thresholds.diskCritical) riskScore += 35;
+  else if (diskPercent >= CONFIG.thresholds.diskWarning) riskScore += 18;
+
+  if (nodeData.pveversion && compareVersions(nodeData.pveversion, CONFIG.pveVersionProd) < 0) riskScore += 10;
+  if (subscriptionStatus !== 'active') riskScore += subscriptionStatus === 'unknown' ? 6 : 12;
+
+  return {
+    nodeName,
+    clusterName,
+    riskScore,
+    cpuPercent,
+    memPercent,
+    diskPercent,
+    nodeStatus,
+    subscriptionStatus
+  };
 }
 
 function getOccupancyBucket(usage) {
@@ -204,6 +280,8 @@ function updateStatisticsUI() {
   document.getElementById('runningVMsPercent').textContent = `${stats.runningVMsPercent}%`;
   document.getElementById('stoppedVMs').textContent = stats.stoppedVMs;
   document.getElementById('stoppedVMsPercent').textContent = `${stats.stoppedVMsPercent}%`;
+  document.getElementById('totalContainers').textContent = stats.totalContainers;
+  document.getElementById('runningContainersPercent').textContent = `${stats.runningContainersPercent}% running`;
   
   document.getElementById('totalNodes').textContent = stats.totalNodes;
   document.getElementById('avgCpu').textContent = `${stats.avgCpu}%`;
@@ -234,6 +312,8 @@ function updateStatisticsUI() {
   document.getElementById('cmeTrend').innerHTML = `<i class="fas fa-server"></i> <span>${stats.regionStats.CME.vms} VMs</span>`;
   
   renderCephStatus(stats.ceph);
+  renderTopRiskNodes(stats.topRiskNodes);
+  renderSubscriptionHealth(stats.subscription, stats.subscriptionActivePercent);
   
   // Footer stats
   document.getElementById('footerStats').textContent = 
@@ -258,8 +338,6 @@ function renderCephStatus(cephStats) {
     <span class="ceph-summary-pill healthy">Healthy: ${cephStats.healthy}</span>
     <span class="ceph-summary-pill warning">Warn: ${cephStats.warning}</span>
     <span class="ceph-summary-pill critical">Critical: ${cephStats.critical}</span>
-    <span class="ceph-summary-pill not-installed">Not Installed: ${cephStats.notInstalled}</span>
-    <span class="ceph-summary-pill unknown">Unknown: ${cephStats.unknown}</span>
     <span class="ceph-summary-pill meta">Monitored: ${cephStats.total}</span>
     <span class="ceph-summary-pill meta">Needs attention: ${clustersWithAlerts}</span>
   `;
@@ -268,7 +346,7 @@ function renderCephStatus(cephStats) {
     <div class="ceph-status-item ${item.health}">
       <div class="ceph-status-item-main">
         <span class="ceph-cluster-name">${sanitizeHTML(item.name)}</span>
-        <span class="ceph-cluster-health" title="${sanitizeHTML(item.details || '')}">${sanitizeHTML(item.healthText || item.health)}</span>
+        <span class="ceph-cluster-health ${sanitizeHTML(item.health)}" title="${sanitizeHTML(item.details || '')}">${sanitizeHTML(item.healthText || item.health)}</span>
       </div>
       <div class="ceph-status-item-meta">
         ${item.details ? `<span class="ceph-meta-item details">${sanitizeHTML(item.details)}</span>` : ''}
@@ -331,4 +409,46 @@ function extractCephMetrics(cephStatus) {
   }
 
   return metrics.slice(0, 5);
+}
+
+
+function renderTopRiskNodes(topRiskNodes) {
+  const list = document.getElementById('topRiskNodesList');
+  if (!list) return;
+
+  if (!Array.isArray(topRiskNodes) || topRiskNodes.length === 0) {
+    list.innerHTML = '<p class="ops-empty">No node telemetry available.</p>';
+    return;
+  }
+
+  list.innerHTML = topRiskNodes.map(item => `
+    <div class="ops-risk-item">
+      <div class="ops-risk-item-header">
+        <span class="ops-risk-node">${sanitizeHTML(getShortNodeName(item.nodeName))}</span>
+        <span class="ops-risk-score ${item.riskScore >= 70 ? 'critical' : item.riskScore >= 40 ? 'warning' : 'healthy'}">Risk ${item.riskScore}</span>
+      </div>
+      <div class="ops-risk-meta">
+        <span>${sanitizeHTML(item.clusterName)}</span>
+        <span>CPU ${item.cpuPercent}%</span>
+        <span>RAM ${item.memPercent}%</span>
+        <span>Disk ${item.diskPercent}%</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderSubscriptionHealth(subscriptionStats, activePercent) {
+  const activeEl = document.getElementById('subscriptionActive');
+  const warningEl = document.getElementById('subscriptionWarning');
+  const unknownEl = document.getElementById('subscriptionUnknown');
+  const totalEl = document.getElementById('subscriptionTotal');
+  const scoreEl = document.getElementById('subscriptionHealthScore');
+
+  if (!activeEl || !warningEl || !unknownEl || !totalEl || !scoreEl) return;
+
+  activeEl.textContent = subscriptionStats.active;
+  warningEl.textContent = subscriptionStats.warning;
+  unknownEl.textContent = subscriptionStats.unknown;
+  totalEl.textContent = subscriptionStats.total;
+  scoreEl.textContent = `${activePercent}% active`;
 }
