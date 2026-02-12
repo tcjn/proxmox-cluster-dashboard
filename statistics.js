@@ -236,13 +236,15 @@ function calculateClusterNetworkUsage(clusterName, clusterNodes) {
     const nodeData = getNodeData(nodeName);
     if (!nodeData) return acc;
 
-    const nodeNetwork = normalizeNetworkThroughput(nodeData.network || nodeData.networkUsage || nodeData);
+    const nodeNetwork = normalizeNetworkThroughput(
+      nodeData.netUsage || nodeData.networkUsage || nodeData.network || nodeData
+    );
     acc.rx += nodeNetwork.rx;
     acc.tx += nodeNetwork.tx;
 
     if (Array.isArray(nodeData.vms)) {
       nodeData.vms.forEach(vm => {
-        const vmNetwork = normalizeNetworkThroughput(vm.network || vm.networkUsage || vm);
+        const vmNetwork = normalizeNetworkThroughput(vm.netUsage || vm.networkUsage || vm.network || vm);
         acc.rx += vmNetwork.rx;
         acc.tx += vmNetwork.tx;
       });
@@ -265,6 +267,14 @@ function normalizeNetworkThroughput(source) {
       const value = source[key];
       if (typeof value === 'number' && Number.isFinite(value)) {
         return value;
+      }
+
+      if (typeof value === 'string') {
+        const normalized = value.trim().replace(',', '.');
+        const parsed = Number.parseFloat(normalized);
+        if (Number.isFinite(parsed)) {
+          return parsed;
+        }
       }
     }
     return 0;
