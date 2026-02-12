@@ -294,6 +294,14 @@ const CONFIG = {
   // Auto-refresh interval (milliseconds)
   autoRefreshInterval: 60000, // 60 seconds
   
+  // Nautobot integration
+  nautobot: {
+    baseUrl: 'https://nautobot.example.com',
+    virtualizationPath: '/virtualization/virtual-machines/',
+    apiPath: '/api/virtualization/virtual-machines/',
+    apiToken: 'YOUR_READ_ONLY_TOKEN'
+  },
+
   // Alert thresholds
   thresholds: {
     cpuWarning: 80,          // percentage
@@ -307,6 +315,8 @@ const CONFIG = {
   }
 };
 ```
+
+> `apiToken` is used client-side to check whether each VM exists in Nautobot and render a presence icon next to the Nautobot link.
 
 ### Country Flags
 

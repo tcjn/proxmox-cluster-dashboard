@@ -137,6 +137,7 @@ function updateSearchResults(results) {
       document.body.classList.add('vm-search-mode');
       
       vmGridEl.innerHTML = results.vms.map(vmResult => createVMSearchCard(vmResult)).join('');
+      refreshNautobotPresenceIndicators(vmGridEl);
     } else {
       vmSearchEl.classList.remove('visible');
       document.body.classList.remove('vm-search-mode');
@@ -147,6 +148,8 @@ function updateSearchResults(results) {
 function createVMSearchCard(vmResult) {
   const vm = vmResult.vm;
   const vmName = vm.name || `VM ${vm.vmid}`;
+  const vmNautobotKey = encodeURIComponent(getNautobotVmKey(vmName));
+  const safeVmName = sanitizeHTML(vmName);
   const vmStatus = vm.status || 'stopped';
   const cpuPercent = Math.round((vm.cpu || 0) * 100);
   const memUsage = formatBytes(vm.mem || 0);
@@ -200,6 +203,9 @@ function createVMSearchCard(vmResult) {
         </a>
         ${nautobotInfo.url ? `<a href="${nautobotInfo.url}" class="btn-primary" target="_blank" rel="noopener noreferrer" style="flex: 1; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: transparent; border-color: var(--link); color: var(--link);">
           <i class="fas fa-link"></i> Nautobot
+          <span class="nautobot-presence-icon unknown" data-nautobot-vm-key="${vmNautobotKey}" data-nautobot-vm-name="${safeVmName}" title="Nautobot status unknown" aria-label="Nautobot status unknown">
+            <i class="fas fa-question-circle"></i>
+          </span>
         </a>` : ''}
       </div>
     </div>

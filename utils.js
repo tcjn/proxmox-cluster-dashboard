@@ -305,6 +305,162 @@ function getVmNautobotInfo(vm) {
   };
 }
 
+const NAUTOBOT_PRESENCE_CACHE = new Map();
+const NAUTOBOT_PRESENCE_REQUESTS = new Map();
+let hasShownNautobotPresenceWarning = false;
+
+function getNautobotVmKey(vmName) {
+  return (vmName || '').trim().toLowerCase();
+}
+
+function setNautobotPresenceIconState(iconEl, state, title) {
+  if (!iconEl) return;
+
+  iconEl.classList.remove('present', 'missing', 'unknown');
+  iconEl.classList.add(state);
+
+  const iconMap = {
+    present: 'fa-check-circle',
+    missing: 'fa-times-circle',
+    unknown: 'fa-question-circle'
+  };
+
+  const statusText = {
+    present: 'Present in Nautobot',
+    missing: 'Missing in Nautobot',
+    unknown: 'Nautobot status unknown'
+  };
+
+  iconEl.innerHTML = `<i class="fas ${iconMap[state] || iconMap.unknown}"></i>`;
+  iconEl.title = title || statusText[state] || statusText.unknown;
+  iconEl.setAttribute('aria-label', iconEl.title);
+}
+
+function getNautobotPresenceRequestUrl(vmName) {
+  const baseUrl = (CONFIG?.nautobot?.baseUrl || '').replace(/\/$/, '');
+  const apiPath = CONFIG?.nautobot?.apiPath || '/api/virtualization/virtual-machines/';
+  const normalizedApiPath = apiPath.startsWith('/') ? apiPath : `/${apiPath}`;
+
+  if (!baseUrl || !vmName) return null;
+
+  const encodedVmName = encodeURIComponent(vmName);
+  return `${baseUrl}${normalizedApiPath}?name=${encodedVmName}`;
+}
+
+async function fetchNautobotVmPresence(vmName) {
+  const vmKey = getNautobotVmKey(vmName);
+  if (!vmKey) {
+    return {
+      state: 'unknown',
+      title: 'VM name is missing; cannot verify Nautobot presence.'
+    };
+  }
+
+  if (NAUTOBOT_PRESENCE_CACHE.has(vmKey)) {
+    return NAUTOBOT_PRESENCE_CACHE.get(vmKey);
+  }
+
+  if (NAUTOBOT_PRESENCE_REQUESTS.has(vmKey)) {
+    return NAUTOBOT_PRESENCE_REQUESTS.get(vmKey);
+  }
+
+  const requestUrl = getNautobotPresenceRequestUrl(vmName);
+  const token = (CONFIG?.nautobot?.apiToken || '').trim();
+  if (!requestUrl || !token) {
+    const unknownResult = {
+      state: 'unknown',
+      title: 'Nautobot API check is disabled (missing base URL or API token in config.js).'
+    };
+    NAUTOBOT_PRESENCE_CACHE.set(vmKey, unknownResult);
+    return unknownResult;
+  }
+
+  const requestPromise = fetch(requestUrl, {
+    method: 'GET',
+    headers: {
+      Authorization: `Token ${token}`,
+      Accept: 'application/json'
+    }
+  })
+    .then(async response => {
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const payload = await response.json();
+      const resultCount = Number(payload?.count);
+      const listLength = Array.isArray(payload?.results) ? payload.results.length : null;
+      const hasMatch = Number.isFinite(resultCount)
+        ? resultCount > 0
+        : Number.isFinite(listLength)
+          ? listLength > 0
+          : false;
+
+      const result = hasMatch
+        ? {
+          state: 'present',
+          title: 'VM record found in Nautobot.'
+        }
+        : {
+          state: 'missing',
+          title: 'No matching VM record in Nautobot.'
+        };
+
+      NAUTOBOT_PRESENCE_CACHE.set(vmKey, result);
+      return result;
+    })
+    .catch(error => {
+      const unknownResult = {
+        state: 'unknown',
+        title: `Unable to verify Nautobot status (${error.message}).`
+      };
+      NAUTOBOT_PRESENCE_CACHE.set(vmKey, unknownResult);
+
+      if (!hasShownNautobotPresenceWarning) {
+        showToast('Unable to validate Nautobot VM presence. Check API token/CORS.', 'warning', 6000);
+        hasShownNautobotPresenceWarning = true;
+      }
+
+      return unknownResult;
+    })
+    .finally(() => {
+      NAUTOBOT_PRESENCE_REQUESTS.delete(vmKey);
+    });
+
+  NAUTOBOT_PRESENCE_REQUESTS.set(vmKey, requestPromise);
+  return requestPromise;
+}
+
+function refreshNautobotPresenceIndicators(root = document) {
+  const iconElements = Array.from(root.querySelectorAll('[data-nautobot-vm-key]'));
+  if (iconElements.length === 0) return;
+
+  const vmKeyToElements = new Map();
+  iconElements.forEach(iconEl => {
+    const vmKey = iconEl.getAttribute('data-nautobot-vm-key');
+    const vmName = iconEl.getAttribute('data-nautobot-vm-name') || '';
+
+    setNautobotPresenceIconState(iconEl, 'unknown');
+
+    if (!vmKeyToElements.has(vmKey)) {
+      vmKeyToElements.set(vmKey, {
+        vmName,
+        elements: []
+      });
+    }
+
+    vmKeyToElements.get(vmKey).elements.push(iconEl);
+  });
+
+  vmKeyToElements.forEach(({ vmName, elements }, vmKey) => {
+    fetchNautobotVmPresence(vmName || vmKey).then(result => {
+      elements.forEach(iconEl => {
+        setNautobotPresenceIconState(iconEl, result.state, result.title);
+      });
+    });
+  });
+}
+
 // Throttle function
 function throttle(func, wait) {
   let timeout;

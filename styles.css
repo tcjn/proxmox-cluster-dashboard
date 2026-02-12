@@ -1921,6 +1921,25 @@ header h1 a:hover {
   border-color: color-mix(in srgb, var(--maintenance) 30%, transparent);
 }
 
+.nautobot-presence-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+}
+
+.nautobot-presence-icon.present {
+  color: var(--online);
+}
+
+.nautobot-presence-icon.missing {
+  color: var(--offline);
+}
+
+.nautobot-presence-icon.unknown {
+  color: var(--maintenance);
+}
+
 .vm-status {
   width: 8px;
   height: 8px;
