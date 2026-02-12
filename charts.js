@@ -174,24 +174,21 @@ function initializeCharts() {
   // Cluster Network Usage Chart
   const networkCtx = document.getElementById('networkChart');
   if (networkCtx && !networkChart) {
-    const networkUsage = Array.isArray(stats.networkUsageClusters) ? stats.networkUsageClusters.slice(0, 10) : [];
-    const labels = networkUsage.length > 0
-      ? networkUsage.map(item => item.clusterName)
-      : ['No network data'];
+    const networkChartData = buildNetworkChartSeries(stats.networkUsageClusters, 6);
 
     networkChart = new Chart(networkCtx, {
       type: 'bar',
       data: {
-        labels,
+        labels: networkChartData.labels,
         datasets: [{
           label: 'RX',
-          data: networkUsage.length > 0 ? networkUsage.map(item => item.rxBytesPerSec) : [0],
+          data: networkChartData.rxData,
           backgroundColor: 'rgba(59, 130, 246, 0.8)',
           borderColor: 'rgb(59, 130, 246)',
           borderWidth: 1
         }, {
           label: 'TX',
-          data: networkUsage.length > 0 ? networkUsage.map(item => item.txBytesPerSec) : [0],
+          data: networkChartData.txData,
           backgroundColor: 'rgba(16, 185, 129, 0.8)',
           borderColor: 'rgb(16, 185, 129)',
           borderWidth: 1
@@ -209,6 +206,10 @@ function initializeCharts() {
             callbacks: {
               label: function(context) {
                 return `${context.dataset.label}: ${formatNetworkRate(context.parsed.x)}`;
+              },
+              footer: function(items) {
+                const total = items.reduce((sum, item) => sum + (item.parsed.x || 0), 0);
+                return `Total: ${formatNetworkRate(total)}`;
               }
             }
           }
@@ -216,11 +217,15 @@ function initializeCharts() {
         scales: {
           x: {
             beginAtZero: true,
+            stacked: true,
             ticks: {
               callback: function(value) {
                 return formatNetworkRate(value);
               }
             }
+          },
+          y: {
+            stacked: true
           }
         }
       }
@@ -264,17 +269,10 @@ function updateCharts() {
   }
 
   if (networkChart) {
-    const networkUsage = Array.isArray(stats.networkUsageClusters) ? stats.networkUsageClusters.slice(0, 10) : [];
-    networkChart.data.labels = networkUsage.length > 0
-      ? networkUsage.map(item => item.clusterName)
-      : ['No network data'];
-
-    networkChart.data.datasets[0].data = networkUsage.length > 0
-      ? networkUsage.map(item => item.rxBytesPerSec)
-      : [0];
-    networkChart.data.datasets[1].data = networkUsage.length > 0
-      ? networkUsage.map(item => item.txBytesPerSec)
-      : [0];
+    const networkChartData = buildNetworkChartSeries(stats.networkUsageClusters, 6);
+    networkChart.data.labels = networkChartData.labels;
+    networkChart.data.datasets[0].data = networkChartData.rxData;
+    networkChart.data.datasets[1].data = networkChartData.txData;
 
     networkChart.update();
   }
