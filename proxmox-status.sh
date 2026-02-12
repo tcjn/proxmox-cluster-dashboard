@@ -57,8 +57,15 @@ process_cluster() {
             "$URL/api2/json/$endpoint" > "${output}.raw"
 
         local code
-        code=$(sed 's/.*HTTPSTATUS://' "${output}.raw")
+        code=$(awk -F'HTTPSTATUS:' 'END {print $NF}' "${output}.raw")
         sed 's/HTTPSTATUS\:.*//' "${output}.raw" > "$output"
+
+        # Some endpoints can intermittently return non-JSON content (e.g. proxy
+        # errors or HTML). Treat those responses as failed requests so callers
+        # can safely fall back to default JSON payloads.
+        if ! jq -e . "$output" >/dev/null 2>&1; then
+            return 1
+        fi
 
         [[ "$code" == "200" ]]
     }
