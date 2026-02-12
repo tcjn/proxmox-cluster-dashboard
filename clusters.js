@@ -150,13 +150,12 @@ function createClusterElement(cluster, region, index) {
 }
 
 function createNodesHTML(cluster) {
-  const nodes = [
-    { name: cluster.node1, fullName: cluster.node1 },
-    { name: cluster.node2, fullName: cluster.node2 }
-  ];
-  if (cluster.node3) {
-    nodes.push({ name: cluster.node3, fullName: cluster.node3 });
-  }
+  const nodes = [cluster.node1, cluster.node2, cluster.node3]
+    .filter(Boolean)
+    .map(nodeName => ({
+      name: nodeName,
+      fullName: nodeName
+    }));
   
   return nodes.map(node => createNodeHTML(node, cluster)).join('');
 }
