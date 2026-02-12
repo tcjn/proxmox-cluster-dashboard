@@ -108,6 +108,7 @@ function calculateStatistics() {
       const nodes = [cluster.node1, cluster.node2, cluster.node3].filter(Boolean);
       const clusterNetworkUsage = calculateClusterNetworkUsage(cluster.name, nodes);
       stats.networkUsageClusters.push({
+        name: cluster.name,
         clusterName: cluster.name,
         rxBytesPerSec: clusterNetworkUsage.rx,
         txBytesPerSec: clusterNetworkUsage.tx,
