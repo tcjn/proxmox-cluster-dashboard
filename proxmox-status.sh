@@ -114,7 +114,7 @@ process_cluster() {
             pve_get "nodes/$SHORT/storage" "$TMP_PREFIX.storage"
             pve_get "nodes/$SHORT/network" "$TMP_PREFIX.network"
             pve_get "nodes/$SHORT/subscription" "$TMP_PREFIX.sub"
-            pve_get "nodes/$SHORT/rrddata?timeframe=minute" "$TMP_PREFIX.rrd"
+            pve_get "nodes/$SHORT/rrddata?timeframe=hour" "$TMP_PREFIX.rrd"
 
             NET_USAGE=$(jq '
               (.data // [])[-1] as $x |
