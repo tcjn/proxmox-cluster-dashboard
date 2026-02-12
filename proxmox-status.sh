@@ -33,7 +33,6 @@ process_cluster() {
         return
     fi
 
-    # --- Login ---
     curl -sk -X POST --connect-timeout 5 --max-time $CURL_TIMEOUT \
         "$URL/api2/json/access/ticket" \
         -d "username=$USERNAME" \
@@ -63,17 +62,16 @@ process_cluster() {
         [[ "$code" == "200" ]]
     }
 
-    # --- Ceph ---
+    # Ceph
     if ! pve_get "cluster/ceph/status" "$TMP_PREFIX.ceph.body"; then
-        jq -n --arg name "$NAME" \
-            '{($name):{health:"not-installed"}}' > "${TMP_PREFIX}.ceph.json"
+        jq -n --arg name "$NAME" '{($name):{health:"not-installed"}}' > "${TMP_PREFIX}.ceph.json"
     else
         jq '.data // {health:"unknown"}' "$TMP_PREFIX.ceph.body" > "$TMP_PREFIX.ceph.clean"
         jq -n --arg name "$NAME" --slurpfile c "$TMP_PREFIX.ceph.clean" \
             '{($name):$c[0]}' > "${TMP_PREFIX}.ceph.json"
     fi
 
-    # --- Cluster infra details ---
+    # Cluster infra
     if pve_get "cluster/status" "$TMP_PREFIX.cluster.status"; then
         jq '.data // []' "$TMP_PREFIX.cluster.status" > "$TMP_PREFIX.cluster.status.clean"
         jq -n --arg name "$NAME" --slurpfile s "$TMP_PREFIX.cluster.status.clean" '
@@ -89,13 +87,11 @@ process_cluster() {
                 clusterId: ($cluster.id // "unknown"),
                 clusterName: ($cluster.name // $name)
               }
-            }
-        ' > "${TMP_PREFIX}.infra.json"
+            }' > "${TMP_PREFIX}.infra.json"
     else
         jq -n --arg name "$NAME" '{($name):{quorum:"unknown"}}' > "${TMP_PREFIX}.infra.json"
     fi
 
-    # --- Nodes ---
     pve_get "nodes" "$TMP_PREFIX.nodes.api" || echo '{"data":[]}' > "$TMP_PREFIX.nodes.api"
 
     local NODE_STATUS="{}"
@@ -105,20 +101,27 @@ process_cluster() {
         SHORT=$(cut -d'.' -f1 <<< "$NODE")
 
         jq ".data[] | select(.node==\"$SHORT\")" "$TMP_PREFIX.nodes.api" > "$TMP_PREFIX.node.info"
-
         STATUS=$(jq -r '.status // "offline"' "$TMP_PREFIX.node.info")
 
         NODE_STATUS=$(jq --arg n "$NODE" --arg s "$STATUS" \
             '. + {($n):$s}' <<< "$NODE_STATUS")
 
         if [[ "$STATUS" == "online" ]]; then
-            pve_get "nodes/$SHORT/status" "$TMP_PREFIX.met" || echo '{"data":{}}' > "$TMP_PREFIX.met"
-            pve_get "nodes/$SHORT/qemu" "$TMP_PREFIX.vms" || echo '{"data":[]}' > "$TMP_PREFIX.vms"
-            pve_get "nodes/$SHORT/lxc" "$TMP_PREFIX.cts" || echo '{"data":[]}' > "$TMP_PREFIX.cts"
-            pve_get "nodes/$SHORT/version" "$TMP_PREFIX.ver" || echo '{"data":{}}' > "$TMP_PREFIX.ver"
-            pve_get "nodes/$SHORT/storage" "$TMP_PREFIX.storage" || echo '{"data":[]}' > "$TMP_PREFIX.storage"
-            pve_get "nodes/$SHORT/network" "$TMP_PREFIX.network" || echo '{"data":[]}' > "$TMP_PREFIX.network"
-            pve_get "nodes/$SHORT/subscription" "$TMP_PREFIX.sub" || echo '{"data":{}}' > "$TMP_PREFIX.sub"
+            pve_get "nodes/$SHORT/status" "$TMP_PREFIX.met"
+            pve_get "nodes/$SHORT/qemu" "$TMP_PREFIX.vms"
+            pve_get "nodes/$SHORT/lxc" "$TMP_PREFIX.cts"
+            pve_get "nodes/$SHORT/version" "$TMP_PREFIX.ver"
+            pve_get "nodes/$SHORT/storage" "$TMP_PREFIX.storage"
+            pve_get "nodes/$SHORT/network" "$TMP_PREFIX.network"
+            pve_get "nodes/$SHORT/subscription" "$TMP_PREFIX.sub"
+            pve_get "nodes/$SHORT/rrddata?timeframe=minute" "$TMP_PREFIX.rrd"
+
+            NET_USAGE=$(jq '
+              (.data // [])[-1] as $x |
+              {
+                rxMbps: (($x.netin // 0) * 8 / 1000000),
+                txMbps: (($x.netout // 0) * 8 / 1000000)
+              }' "$TMP_PREFIX.rrd")
 
             CPU=$(jq '.data.cpu // 0' "$TMP_PREFIX.met")
             MEM=$(( $(jq '.data.memory.used // 0' "$TMP_PREFIX.met") / 1024 / 1024 ))
@@ -135,50 +138,52 @@ process_cluster() {
             SUBSCRIPTION=$(jq -r '.data.status // "unknown"' "$TMP_PREFIX.sub")
 
             STORAGE_SUMMARY=$(jq '
-                (.data // []) as $all |
-                {
-                  pools: ($all | length),
-                  activePools: ($all | map(select(.active == 1)) | length),
-                  used: ($all | map(.used // 0) | add // 0),
-                  total: ($all | map(.total // 0) | add // 0)
-                }
-            ' "$TMP_PREFIX.storage")
+              (.data // []) as $a |
+              {pools:($a|length),
+               activePools:($a|map(select(.active==1))|length),
+               used:($a|map(.used//0)|add//0),
+               total:($a|map(.total//0)|add//0)}' "$TMP_PREFIX.storage")
 
             NETWORK_SUMMARY=$(jq '
-                (.data // []) as $all |
-                {
-                  interfaces: ($all | length),
-                  activeInterfaces: ($all | map(select(.active == 1)) | length),
-                  bridges: ($all | map(select(.type == "bridge")) | map(.iface) | unique)
-                }
-            ' "$TMP_PREFIX.network")
+              (.data // []) as $a |
+              {interfaces:($a|length),
+               activeInterfaces:($a|map(select(.active==1))|length),
+               bridges:($a|map(select(.type=="bridge"))|map(.iface)|unique)}' "$TMP_PREFIX.network")
 
-            jq '[.data[]? | {vmid,name,status,cpu,mem,uptime}]' \
-                "$TMP_PREFIX.vms" > "$TMP_PREFIX.vm.clean"
-            jq '[.data[]? | {vmid,hostname,status,cpu,mem,maxmem,uptime}]' \
-                "$TMP_PREFIX.cts" > "$TMP_PREFIX.ct.clean"
+            jq '[.data[]? | {vmid,name,status,cpu,mem,uptime}]' "$TMP_PREFIX.vms" > "$TMP_PREFIX.vm.clean"
+            jq '[.data[]? | {vmid,hostname,status,cpu,mem,maxmem,uptime}]' "$TMP_PREFIX.cts" > "$TMP_PREFIX.ct.clean"
 
             NODE_DATA=$(jq \
-                --arg node "$NODE" \
-                --argjson cpu "$CPU" \
-                --argjson mem "$MEM" \
-                --argjson maxmem "$MAXMEM" \
-                --argjson disk "$DISK" \
-                --argjson maxdisk "$MAXDISK" \
-                --argjson swap "$SWAP" \
-                --argjson maxswap "$MAXSWAP" \
-                --argjson uptime "$UPTIME" \
-                --arg kernel "$KERNEL" \
-                --arg pve "$PVERSION" \
-                --argjson cpus "$CPUS" \
-                --arg sub "$SUBSCRIPTION" \
-                --argjson loadavg "$LOADAVG" \
-                --argjson storage "$STORAGE_SUMMARY" \
-                --argjson network "$NETWORK_SUMMARY" \
-                --slurpfile v "$TMP_PREFIX.vm.clean" \
-                --slurpfile c "$TMP_PREFIX.ct.clean" \
-                '. + {($node):{cpu:$cpu,mem:$mem,maxmem:$maxmem,disk:$disk,maxdisk:$maxdisk,swap:$swap,maxswap:$maxswap,uptime:$uptime,pveversion:$pve,kernel:$kernel,cpus:$cpus,subscription:$sub,loadavg:$loadavg,storage:$storage,network:$network,vms:$v[0],containers:$c[0]}}' \
-                <<< "$NODE_DATA")
+              --arg node "$NODE" \
+              --argjson cpu "$CPU" \
+              --argjson mem "$MEM" \
+              --argjson maxmem "$MAXMEM" \
+              --argjson disk "$DISK" \
+              --argjson maxdisk "$MAXDISK" \
+              --argjson swap "$SWAP" \
+              --argjson maxswap "$MAXSWAP" \
+              --argjson uptime "$UPTIME" \
+              --arg kernel "$KERNEL" \
+              --arg pve "$PVERSION" \
+              --argjson cpus "$CPUS" \
+              --arg sub "$SUBSCRIPTION" \
+              --argjson loadavg "$LOADAVG" \
+              --argjson storage "$STORAGE_SUMMARY" \
+              --argjson network "$NETWORK_SUMMARY" \
+              --argjson net "$NET_USAGE" \
+              --slurpfile v "$TMP_PREFIX.vm.clean" \
+              --slurpfile c "$TMP_PREFIX.ct.clean" \
+              '. + {($node):{
+                cpu:$cpu,mem:$mem,maxmem:$maxmem,
+                disk:$disk,maxdisk:$maxdisk,
+                swap:$swap,maxswap:$maxswap,
+                uptime:$uptime,pveversion:$pve,
+                kernel:$kernel,cpus:$cpus,
+                subscription:$sub,loadavg:$loadavg,
+                storage:$storage,network:$network,
+                netUsage:$net,
+                vms:$v[0],containers:$c[0]
+              }}' <<< "$NODE_DATA")
         fi
 
     done < "$TMP_PREFIX.nodes.list"
