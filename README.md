@@ -19,6 +19,7 @@ A modern, feature-rich dashboard for managing and monitoring Proxmox VE clusters
 - **Health Score**: Progress indicator with component breakdown
 - **Regional Statistics**: Breakdown by AMER, APAC, EMEA, and CME regions
 - **Resource Metrics**: CPU, Memory, and Disk usage tracking
+- **VictoriaMetrics Integration**: Quick links for node/VM CPU, RAM, Disk and Network observability
 - **VM Analytics**: Running/stopped VM statistics
 
 ### Export Options
