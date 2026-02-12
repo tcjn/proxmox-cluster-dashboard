@@ -29,6 +29,8 @@ function calculateStatistics() {
     totalDiskUsage: 0,
     nodesWithData: 0,
 
+    networkUsageClusters: [],
+
     occupancyBuckets: {
       low: { cpu: 0, memory: 0, disk: 0 },
       medium: { cpu: 0, memory: 0, disk: 0 },
@@ -104,6 +106,14 @@ function calculateStatistics() {
       }
       
       const nodes = [cluster.node1, cluster.node2, cluster.node3].filter(Boolean);
+      const clusterNetworkUsage = calculateClusterNetworkUsage(cluster.name, nodes);
+      stats.networkUsageClusters.push({
+        clusterName: cluster.name,
+        rxBytesPerSec: clusterNetworkUsage.rx,
+        txBytesPerSec: clusterNetworkUsage.tx,
+        totalBytesPerSec: clusterNetworkUsage.total
+      });
+
       nodes.forEach(node => {
         stats.totalNodes++;
         if (stats.regionStats[clusterRegion]) {
@@ -208,8 +218,64 @@ function calculateStatistics() {
   stats.subscription.healthPercent = stats.subscription.total > 0
     ? Math.round((stats.subscription.active / stats.subscription.total) * 100)
     : 0;
+
+  stats.networkUsageClusters.sort((a, b) => b.totalBytesPerSec - a.totalBytesPerSec);
   
   return stats;
+}
+
+function calculateClusterNetworkUsage(clusterName, clusterNodes) {
+  const clusterInfra = getClusterInfra(clusterName);
+  const infraNetwork = normalizeNetworkThroughput(clusterInfra?.network || clusterInfra?.networkUsage || clusterInfra);
+
+  if (infraNetwork.total > 0) {
+    return infraNetwork;
+  }
+
+  return (clusterNodes || []).reduce((acc, nodeName) => {
+    const nodeData = getNodeData(nodeName);
+    if (!nodeData) return acc;
+
+    const nodeNetwork = normalizeNetworkThroughput(nodeData.network || nodeData.networkUsage || nodeData);
+    acc.rx += nodeNetwork.rx;
+    acc.tx += nodeNetwork.tx;
+
+    if (Array.isArray(nodeData.vms)) {
+      nodeData.vms.forEach(vm => {
+        const vmNetwork = normalizeNetworkThroughput(vm.network || vm.networkUsage || vm);
+        acc.rx += vmNetwork.rx;
+        acc.tx += vmNetwork.tx;
+      });
+    }
+
+    acc.total = acc.rx + acc.tx;
+    return acc;
+  }, { rx: 0, tx: 0, total: 0 });
+}
+
+function normalizeNetworkThroughput(source) {
+  if (!source || typeof source !== 'object') {
+    return { rx: 0, tx: 0, total: 0 };
+  }
+
+  const pickNumber = keys => {
+    for (const key of keys) {
+      const value = source[key];
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        return value;
+      }
+    }
+    return 0;
+  };
+
+  const rx = pickNumber(['rxBytesPerSec', 'rx_bytes_per_sec', 'rx_bps', 'rx', 'rxBytes', 'rx_bytes', 'receive', 'in', 'netin', 'download', 'inbound']);
+  const tx = pickNumber(['txBytesPerSec', 'tx_bytes_per_sec', 'tx_bps', 'tx', 'txBytes', 'tx_bytes', 'transmit', 'out', 'netout', 'upload', 'outbound']);
+
+  return {
+    rx,
+    tx,
+    total: rx + tx
+  };
 }
 
 function classifySubscription(subscription) {
