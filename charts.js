@@ -16,10 +16,29 @@ function formatNetworkRate(bytesPerSec) {
   return `${Math.round(bytesPerSec)} B/s`;
 }
 
+function updateNetworkUsageHeading() {
+  const headingEl = document.getElementById('networkUsageAsOf');
+  if (!headingEl) return;
+
+  const lastUpdate = STATE?.statusData?.lastUpdate;
+  if (!lastUpdate) {
+    headingEl.textContent = '(last hour)';
+    return;
+  }
+
+  const formattedDate = typeof window.formatDate === 'function'
+    ? window.formatDate(lastUpdate)
+    : new Date(lastUpdate).toLocaleString();
+
+  headingEl.textContent = `(last hour, as of ${formattedDate})`;
+}
+
 function initializeCharts() {
   if (typeof window.calculateStatistics !== 'function') return;
   const stats = calculateStatistics();
   if (!stats) return;
+
+  updateNetworkUsageHeading();
   
   // Resource Usage vs Free Capacity Chart
   const resourceCtx = document.getElementById('resourceChart');
@@ -213,6 +232,8 @@ function updateCharts() {
   if (typeof window.calculateStatistics !== 'function') return;
   const stats = calculateStatistics();
   if (!stats) return;
+
+  updateNetworkUsageHeading();
   
   if (resourceChart) {
     resourceChart.data.datasets[0].data = [stats.avgCpu, stats.avgMemory, stats.avgDisk];

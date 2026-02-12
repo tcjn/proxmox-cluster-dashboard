@@ -258,6 +258,8 @@ function normalizeNetworkThroughput(source) {
     return { rx: 0, tx: 0, total: 0 };
   }
 
+  const mbpsToBytesPerSec = value => (value * 1000 * 1000) / 8;
+
   const pickNumber = keys => {
     for (const key of keys) {
       const value = source[key];
@@ -268,8 +270,15 @@ function normalizeNetworkThroughput(source) {
     return 0;
   };
 
-  const rx = pickNumber(['rxBytesPerSec', 'rx_bytes_per_sec', 'rx_bps', 'rx', 'rxBytes', 'rx_bytes', 'receive', 'in', 'netin', 'download', 'inbound']);
-  const tx = pickNumber(['txBytesPerSec', 'tx_bytes_per_sec', 'tx_bps', 'tx', 'txBytes', 'tx_bytes', 'transmit', 'out', 'netout', 'upload', 'outbound']);
+  const rxMbps = pickNumber(['rxMbps', 'rx_mbps', 'receiveMbps', 'receive_mbps', 'inboundMbps']);
+  const txMbps = pickNumber(['txMbps', 'tx_mbps', 'transmitMbps', 'transmit_mbps', 'outboundMbps']);
+
+  const rx = rxMbps > 0
+    ? mbpsToBytesPerSec(rxMbps)
+    : pickNumber(['rxBytesPerSec', 'rx_bytes_per_sec', 'rx_bps', 'rx', 'rxBytes', 'rx_bytes', 'receive', 'in', 'netin', 'download', 'inbound']);
+  const tx = txMbps > 0
+    ? mbpsToBytesPerSec(txMbps)
+    : pickNumber(['txBytesPerSec', 'tx_bytes_per_sec', 'tx_bps', 'tx', 'txBytes', 'tx_bytes', 'transmit', 'out', 'netout', 'upload', 'outbound']);
 
   return {
     rx,
