@@ -10,29 +10,6 @@ CURL_TIMEOUT=10
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
 
-json_or_default() {
-    local file="$1"
-    local filter="$2"
-    local default="$3"
-    local value
-
-    value=$(jq -c "$filter" "$file" 2>/dev/null) || value="$default"
-    [[ -z "$value" ]] && value="$default"
-    printf '%s' "$value"
-}
-
-json_text_or_default() {
-    local value="$1"
-    local default="$2"
-
-    jq -ce . >/dev/null 2>&1 <<< "$value" && {
-        printf '%s' "$value"
-        return
-    }
-
-    printf '%s' "$default"
-}
-
 process_cluster() {
     local CLUSTER_JSON="$1"
     local TMP_PREFIX="$2"
@@ -80,15 +57,8 @@ process_cluster() {
             "$URL/api2/json/$endpoint" > "${output}.raw"
 
         local code
-        code=$(awk -F'HTTPSTATUS:' 'END {print $NF}' "${output}.raw")
+        code=$(sed 's/.*HTTPSTATUS://' "${output}.raw")
         sed 's/HTTPSTATUS\:.*//' "${output}.raw" > "$output"
-
-        # Some endpoints can intermittently return non-JSON content (e.g. proxy
-        # errors or HTML). Treat those responses as failed requests so callers
-        # can safely fall back to default JSON payloads.
-        if ! jq -e . "$output" >/dev/null 2>&1; then
-            return 1
-        fi
 
         [[ "$code" == "200" ]]
     }
@@ -130,7 +100,6 @@ process_cluster() {
 
     local NODE_STATUS="{}"
     local NODE_DATA="{}"
-    local CLUSTER_NETWORK='{"rxBytesPerSec":0,"txBytesPerSec":0,"totalBytesPerSec":0}'
 
     while read -r NODE; do
         SHORT=$(cut -d'.' -f1 <<< "$NODE")
@@ -165,7 +134,7 @@ process_cluster() {
             LOADAVG=$(jq '.data.loadavg // [0,0,0]' "$TMP_PREFIX.met")
             SUBSCRIPTION=$(jq -r '.data.status // "unknown"' "$TMP_PREFIX.sub")
 
-            STORAGE_SUMMARY=$(jq -c '
+            STORAGE_SUMMARY=$(jq '
                 (.data // []) as $all |
                 {
                   pools: ($all | length),
@@ -173,54 +142,16 @@ process_cluster() {
                   used: ($all | map(.used // 0) | add // 0),
                   total: ($all | map(.total // 0) | add // 0)
                 }
-            ' "$TMP_PREFIX.storage" 2>/dev/null || echo '{"pools":0,"activePools":0,"used":0,"total":0}')
+            ' "$TMP_PREFIX.storage")
 
-            NETWORK_SUMMARY=$(jq -c '
-                def firstnum($v):
-                  ($v | map(select(type == "number" and (isfinite))) | .[0]) // 0;
-
+            NETWORK_SUMMARY=$(jq '
                 (.data // []) as $all |
-                ($all | map(firstnum([
-                  .rxBytesPerSec,
-                  .rx_bytes_per_sec,
-                  .rx_bps,
-                  .statistics.rx_bytes_per_sec,
-                  .statistics.rx,
-                  .statistics.rx_bytes,
-                  .statistics."rx-bytes",
-                  ."rx-bytes",
-                  .rx,
-                  .receive,
-                  .netin
-                ])) | add // 0) as $rx |
-                ($all | map(firstnum([
-                  .txBytesPerSec,
-                  .tx_bytes_per_sec,
-                  .tx_bps,
-                  .statistics.tx_bytes_per_sec,
-                  .statistics.tx,
-                  .statistics.tx_bytes,
-                  .statistics."tx-bytes",
-                  ."tx-bytes",
-                  .tx,
-                  .transmit,
-                  .netout
-                ])) | add // 0) as $tx |
                 {
                   interfaces: ($all | length),
                   activeInterfaces: ($all | map(select(.active == 1)) | length),
-                  bridges: ($all | map(select(.type == "bridge")) | map(.iface) | unique),
-                  rxBytesPerSec: $rx,
-                  txBytesPerSec: $tx,
-                  totalBytesPerSec: ($rx + $tx)
+                  bridges: ($all | map(select(.type == "bridge")) | map(.iface) | unique)
                 }
-            ' "$TMP_PREFIX.network" 2>/dev/null || echo '{"interfaces":0,"activeInterfaces":0,"bridges":[],"rxBytesPerSec":0,"txBytesPerSec":0,"totalBytesPerSec":0}')
-
-            CLUSTER_NETWORK=$(jq -c                 --argjson cluster "$CLUSTER_NETWORK"                 --argjson node "$NETWORK_SUMMARY"                 '{
-                  rxBytesPerSec: (($cluster.rxBytesPerSec // 0) + ($node.rxBytesPerSec // 0)),
-                  txBytesPerSec: (($cluster.txBytesPerSec // 0) + ($node.txBytesPerSec // 0))
-                }
-                | .totalBytesPerSec = ((.rxBytesPerSec // 0) + (.txBytesPerSec // 0))' 2>/dev/null || echo '{"rxBytesPerSec":0,"txBytesPerSec":0,"totalBytesPerSec":0}')
+            ' "$TMP_PREFIX.network")
 
             jq '[.data[]? | {vmid,name,status,cpu,mem,uptime}]' \
                 "$TMP_PREFIX.vms" > "$TMP_PREFIX.vm.clean"
@@ -247,30 +178,17 @@ process_cluster() {
                 --slurpfile v "$TMP_PREFIX.vm.clean" \
                 --slurpfile c "$TMP_PREFIX.ct.clean" \
                 '. + {($node):{cpu:$cpu,mem:$mem,maxmem:$maxmem,disk:$disk,maxdisk:$maxdisk,swap:$swap,maxswap:$maxswap,uptime:$uptime,pveversion:$pve,kernel:$kernel,cpus:$cpus,subscription:$sub,loadavg:$loadavg,storage:$storage,network:$network,vms:$v[0],containers:$c[0]}}' \
-                <<< "$NODE_DATA" 2>/dev/null || echo "$NODE_DATA")
+                <<< "$NODE_DATA")
         fi
 
     done < "$TMP_PREFIX.nodes.list"
 
     echo "$NODE_STATUS" > "${TMP_PREFIX}.nodes.json"
     echo "$NODE_DATA" > "${TMP_PREFIX}.data.json"
-
-    CLUSTER_NETWORK=$(json_text_or_default "$CLUSTER_NETWORK" '{"rxBytesPerSec":0,"txBytesPerSec":0,"totalBytesPerSec":0}')
-    jq --arg name "$NAME" --argjson network "$CLUSTER_NETWORK" '
-      .[$name] = ((.[$name] // {}) + {
-        network: {
-          rxBytesPerSec: ($network.rxBytesPerSec // 0),
-          txBytesPerSec: ($network.txBytesPerSec // 0),
-          totalBytesPerSec: ($network.totalBytesPerSec // (($network.rxBytesPerSec // 0) + ($network.txBytesPerSec // 0)))
-        }
-      })
-    ' "${TMP_PREFIX}.infra.json" > "${TMP_PREFIX}.infra.tmp" 2>/dev/null || cp "${TMP_PREFIX}.infra.json" "${TMP_PREFIX}.infra.tmp"
-    mv "${TMP_PREFIX}.infra.tmp" "${TMP_PREFIX}.infra.json"
-
     jq -n --arg name "$NAME" '{($name):"online"}' > "${TMP_PREFIX}.cluster.json"
 }
 
-export -f process_cluster json_or_default json_text_or_default
+export -f process_cluster
 export USERNAME PASSWORD TMPDIR CURL_TIMEOUT
 
 jq -c 'to_entries[] | .value[] |
