@@ -55,7 +55,7 @@ function buildNetworkChartSeries(networkUsageClusters, maxItems = 6) {
   }
 
   return {
-    labels: items.map(cluster => cluster.clusterName || cluster.name || 'Unknown cluster'),
+    labels: items.map(cluster => cluster.name || 'Unknown cluster'),
     rxData: items.map(cluster => cluster.rxBytesPerSec || 0),
     txData: items.map(cluster => cluster.txBytesPerSec || 0)
   };
