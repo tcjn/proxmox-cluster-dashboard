@@ -33,6 +33,28 @@ function updateNetworkUsageHeading() {
   headingEl.textContent = `(last hour, as of ${formattedDate})`;
 }
 
+function buildNetworkChartSeries(networkUsageClusters, maxItems = 6) {
+  const items = Array.isArray(networkUsageClusters)
+    ? networkUsageClusters
+      .filter(cluster => cluster && Number.isFinite(cluster.totalBytesPerSec) && cluster.totalBytesPerSec > 0)
+      .slice(0, maxItems)
+    : [];
+
+  if (items.length === 0) {
+    return {
+      labels: ['No network data'],
+      rxData: [0],
+      txData: [0]
+    };
+  }
+
+  return {
+    labels: items.map(cluster => cluster.name || 'Unknown cluster'),
+    rxData: items.map(cluster => cluster.rxBytesPerSec || 0),
+    txData: items.map(cluster => cluster.txBytesPerSec || 0)
+  };
+}
+
 function initializeCharts() {
   if (typeof window.calculateStatistics !== 'function') return;
   const stats = calculateStatistics();
