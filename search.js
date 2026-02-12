@@ -197,16 +197,16 @@ function createVMSearchCard(vmResult) {
         </div>
       </div>
       
-      <div style="display: flex; gap: 0.75rem; justify-content: center;">
+      <div style="display: flex; gap: 0.75rem; justify-content: center;" data-nautobot-meta>
         <a href="${vmResult.clusterUrl}/#v1:0:=qemu%2F${vm.vmid}:4::::::" class="btn-primary" target="_blank" style="flex: 1; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
           <i class="fas fa-external-link-alt"></i> Open VM
         </a>
-        ${nautobotInfo.url ? `<a href="${nautobotInfo.url}" class="btn-primary" target="_blank" rel="noopener noreferrer" style="flex: 1; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: transparent; border-color: var(--link); color: var(--link);">
+        ${nautobotInfo.url ? `<a href="${nautobotInfo.url}" class="btn-primary hidden" data-nautobot-link target="_blank" rel="noopener noreferrer" style="flex: 1; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: transparent; border-color: var(--link); color: var(--link);">
           <i class="fas fa-link"></i> Nautobot
-          <span class="nautobot-presence-icon unknown" data-nautobot-vm-key="${vmNautobotKey}" data-nautobot-vm-name="${safeVmName}" title="Nautobot status unknown" aria-label="Nautobot status unknown">
-            <i class="fas fa-question-circle"></i>
-          </span>
-        </a>` : ''}
+        </a>
+        <span class="nautobot-presence-icon unknown" data-nautobot-vm-key="${vmNautobotKey}" data-nautobot-vm-name="${safeVmName}" title="Nautobot status unknown" aria-label="Nautobot status unknown" style="align-self: center; font-size: 0.95rem;">
+          <span class="nautobot-presence-letter">N</span>
+        </span>` : ''}
       </div>
     </div>
   `;

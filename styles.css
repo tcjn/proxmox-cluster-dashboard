@@ -1940,6 +1940,24 @@ header h1 a:hover {
   color: var(--maintenance);
 }
 
+.nautobot-link.hidden,
+.btn-primary.hidden[data-nautobot-link] {
+  display: none !important;
+}
+
+.nautobot-presence-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  font-size: 0.65rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
 .vm-status {
   width: 8px;
   height: 8px;

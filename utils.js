@@ -328,21 +328,27 @@ function setNautobotPresenceIconState(iconEl, state, title) {
   iconEl.classList.remove('present', 'missing', 'unknown');
   iconEl.classList.add(state);
 
-  const iconMap = {
-    present: 'fa-check-circle',
-    missing: 'fa-times-circle',
-    unknown: 'fa-question-circle'
-  };
-
   const statusText = {
     present: 'Present in Nautobot',
     missing: 'Missing in Nautobot',
     unknown: 'Nautobot status unknown'
   };
 
-  iconEl.innerHTML = `<i class="fas ${iconMap[state] || iconMap.unknown}"></i>`;
+  iconEl.innerHTML = '<span class="nautobot-presence-letter">N</span>';
   iconEl.title = title || statusText[state] || statusText.unknown;
   iconEl.setAttribute('aria-label', iconEl.title);
+}
+
+function setNautobotLinkVisibility(iconEl, isVisible) {
+  if (!iconEl) return;
+
+  const metaEl = iconEl.closest('[data-nautobot-meta]');
+  if (!metaEl) return;
+
+  const linkEl = metaEl.querySelector('[data-nautobot-link]');
+  if (!linkEl) return;
+
+  linkEl.classList.toggle('hidden', !isVisible);
 }
 
 function getNautobotPresenceRequestUrl(vmName) {
@@ -460,6 +466,7 @@ function refreshNautobotPresenceIndicators(root = document) {
     const vmName = iconEl.getAttribute('data-nautobot-vm-name') || '';
 
     setNautobotPresenceIconState(iconEl, 'unknown');
+    setNautobotLinkVisibility(iconEl, false);
 
     if (!vmKeyToElements.has(vmKey)) {
       vmKeyToElements.set(vmKey, {
@@ -475,6 +482,7 @@ function refreshNautobotPresenceIndicators(root = document) {
     fetchNautobotVmPresence(vmName || vmKey).then(result => {
       elements.forEach(iconEl => {
         setNautobotPresenceIconState(iconEl, result.state, result.title);
+        setNautobotLinkVisibility(iconEl, result.state === 'present');
       });
     });
   });

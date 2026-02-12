@@ -279,10 +279,10 @@ function createVMHTML(vm, cluster) {
     : '';
   const vmNautobotMetaMarkup = nautobotInfo.url
     ? `
-      <div class="vm-nautobot-meta">
-        <a href="${nautobotInfo.url}" class="nautobot-link" target="_blank" rel="noopener noreferrer"><i class="fas fa-link"></i> Nautobot</a>
+      <div class="vm-nautobot-meta" data-nautobot-meta>
+        <a href="${nautobotInfo.url}" class="nautobot-link hidden" data-nautobot-link target="_blank" rel="noopener noreferrer"><i class="fas fa-link"></i> Nautobot</a>
         <span class="nautobot-presence-icon unknown" data-nautobot-vm-key="${vmNautobotKey}" data-nautobot-vm-name="${safeVmName}" title="Nautobot status unknown" aria-label="Nautobot status unknown">
-          <i class="fas fa-question-circle"></i>
+          <span class="nautobot-presence-letter">N</span>
         </span>
       </div>
     `
