@@ -34,7 +34,7 @@ const CONFIG = {
   // VictoriaMetrics integration
   victoriaMetrics: {
     enabled: true,
-    // If true, VictoriaMetrics coverage counters/queries are read from status.json
+    // If true, VictoriaMetrics panel settings are sourced from status.json
     // using the `victoriaMetrics` object.
     useStatusData: true,
     baseUrl: 'https://pve-console.expereo.com/metrics',

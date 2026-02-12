@@ -483,12 +483,13 @@ function renderVictoriaMetricsPanel(stats) {
 
   const vmConfig = CONFIG.victoriaMetrics || {};
   const statusVictoria = STATE.statusData?.victoriaMetrics || {};
-  const dataSource = vmConfig.useStatusData ? statusVictoria : {};
+  const useStatusData = vmConfig.useStatusData === true;
+  const dataSource = useStatusData ? statusVictoria : vmConfig;
 
   const isEnabled = typeof dataSource.enabled === 'boolean'
     ? dataSource.enabled
-    : vmConfig.enabled;
-  const baseUrl = dataSource.baseUrl || vmConfig.baseUrl || '';
+    : !useStatusData && vmConfig.enabled;
+  const baseUrl = dataSource.baseUrl || '';
 
   if (!isEnabled || !baseUrl) {
     panel.style.display = 'none';
@@ -508,10 +509,9 @@ function renderVictoriaMetricsPanel(stats) {
 
   openLink.href = baseUrl;
 
-  const queries = {
-    ...vmConfig.queries,
-    ...(dataSource.queries || {})
-  };
+  const queries = useStatusData
+    ? (dataSource.queries || {})
+    : (vmConfig.queries || {});
 
   const links = [
     { label: 'Node CPU', icon: 'fa-microchip', query: queries.nodeCpu },

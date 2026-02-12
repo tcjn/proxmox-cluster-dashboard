@@ -335,7 +335,7 @@ const CONFIG = {
 > Set `nautobot.enabled` to `false` to disable all Nautobot links and API presence checks in the UI.
 > `apiToken` is used client-side to check whether each VM exists in Nautobot and render a presence icon next to the Nautobot link when integration is enabled.
 > Set `victoriaMetrics.enabled` to `false` to hide the VictoriaMetrics panel entirely.
-> Set `victoriaMetrics.useStatusData` to `true` to source coverage counters and optional query/base URL overrides from `status.json` (`victoriaMetrics` object).
+> Set `victoriaMetrics.useStatusData` to `true` to source the VictoriaMetrics panel configuration (enabled flag, base URL, coverage counters, and queries) directly from `status.json` (`victoriaMetrics` object).
 
 ### Country Flags
 
