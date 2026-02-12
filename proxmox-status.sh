@@ -10,6 +10,17 @@ CURL_TIMEOUT=10
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
 
+json_or_default() {
+    local file="$1"
+    local filter="$2"
+    local default="$3"
+    local value
+
+    value=$(jq -c "$filter" "$file" 2>/dev/null) || value="$default"
+    [[ -z "$value" ]] && value="$default"
+    printf '%s' "$value"
+}
+
 process_cluster() {
     local CLUSTER_JSON="$1"
     local TMP_PREFIX="$2"
@@ -57,8 +68,15 @@ process_cluster() {
             "$URL/api2/json/$endpoint" > "${output}.raw"
 
         local code
-        code=$(sed 's/.*HTTPSTATUS://' "${output}.raw")
+        code=$(awk -F'HTTPSTATUS:' 'END {print $NF}' "${output}.raw")
         sed 's/HTTPSTATUS\:.*//' "${output}.raw" > "$output"
+
+        # Some endpoints can intermittently return non-JSON content (e.g. proxy
+        # errors or HTML). Treat those responses as failed requests so callers
+        # can safely fall back to default JSON payloads.
+        if ! jq -e . "$output" >/dev/null 2>&1; then
+            return 1
+        fi
 
         [[ "$code" == "200" ]]
     }
@@ -121,21 +139,30 @@ process_cluster() {
             pve_get "nodes/$SHORT/network" "$TMP_PREFIX.network" || echo '{"data":[]}' > "$TMP_PREFIX.network"
             pve_get "nodes/$SHORT/subscription" "$TMP_PREFIX.sub" || echo '{"data":{}}' > "$TMP_PREFIX.sub"
 
-            CPU=$(jq '.data.cpu // 0' "$TMP_PREFIX.met")
-            MEM=$(( $(jq '.data.memory.used // 0' "$TMP_PREFIX.met") / 1024 / 1024 ))
-            MAXMEM=$(( $(jq '.data.memory.total // 0' "$TMP_PREFIX.met") / 1024 / 1024 ))
-            DISK=$(( $(jq '.data.rootfs.used // 0' "$TMP_PREFIX.met") / 1024 / 1024 ))
-            MAXDISK=$(( $(jq '.data.rootfs.total // 0' "$TMP_PREFIX.met") / 1024 / 1024 ))
-            SWAP=$(( $(jq '.data.swap.used // 0' "$TMP_PREFIX.met") / 1024 / 1024 ))
-            MAXSWAP=$(( $(jq '.data.swap.total // 0' "$TMP_PREFIX.met") / 1024 / 1024 ))
-            UPTIME=$(jq '.data.uptime // 0' "$TMP_PREFIX.met")
-            PVERSION=$(jq -r '.data.version // "unknown"' "$TMP_PREFIX.ver")
-            KERNEL=$(jq -r '.data.kversion // "unknown"' "$TMP_PREFIX.met")
-            CPUS=$(jq '.data.cpuinfo.cpus // 0' "$TMP_PREFIX.met")
-            LOADAVG=$(jq '.data.loadavg // [0,0,0]' "$TMP_PREFIX.met")
-            SUBSCRIPTION=$(jq -r '.data.status // "unknown"' "$TMP_PREFIX.sub")
+            CPU=$(json_or_default "$TMP_PREFIX.met" '.data.cpu // 0' '0')
 
-            STORAGE_SUMMARY=$(jq '
+            MEM_BYTES=$(json_or_default "$TMP_PREFIX.met" '.data.memory.used // 0' '0')
+            MAXMEM_BYTES=$(json_or_default "$TMP_PREFIX.met" '.data.memory.total // 0' '0')
+            DISK_BYTES=$(json_or_default "$TMP_PREFIX.met" '.data.rootfs.used // 0' '0')
+            MAXDISK_BYTES=$(json_or_default "$TMP_PREFIX.met" '.data.rootfs.total // 0' '0')
+            SWAP_BYTES=$(json_or_default "$TMP_PREFIX.met" '.data.swap.used // 0' '0')
+            MAXSWAP_BYTES=$(json_or_default "$TMP_PREFIX.met" '.data.swap.total // 0' '0')
+
+            MEM=$(( MEM_BYTES / 1024 / 1024 ))
+            MAXMEM=$(( MAXMEM_BYTES / 1024 / 1024 ))
+            DISK=$(( DISK_BYTES / 1024 / 1024 ))
+            MAXDISK=$(( MAXDISK_BYTES / 1024 / 1024 ))
+            SWAP=$(( SWAP_BYTES / 1024 / 1024 ))
+            MAXSWAP=$(( MAXSWAP_BYTES / 1024 / 1024 ))
+
+            UPTIME=$(json_or_default "$TMP_PREFIX.met" '.data.uptime // 0' '0')
+            PVERSION=$(jq -r '.data.version // "unknown"' "$TMP_PREFIX.ver" 2>/dev/null || echo "unknown")
+            KERNEL=$(jq -r '.data.kversion // "unknown"' "$TMP_PREFIX.met" 2>/dev/null || echo "unknown")
+            CPUS=$(json_or_default "$TMP_PREFIX.met" '.data.cpuinfo.cpus // 0' '0')
+            LOADAVG=$(json_or_default "$TMP_PREFIX.met" '.data.loadavg // [0,0,0]' '[0,0,0]')
+            SUBSCRIPTION=$(jq -r '.data.status // "unknown"' "$TMP_PREFIX.sub" 2>/dev/null || echo "unknown")
+
+            STORAGE_SUMMARY=$(jq -c '
                 (.data // []) as $all |
                 {
                   pools: ($all | length),
@@ -143,9 +170,9 @@ process_cluster() {
                   used: ($all | map(.used // 0) | add // 0),
                   total: ($all | map(.total // 0) | add // 0)
                 }
-            ' "$TMP_PREFIX.storage")
+            ' "$TMP_PREFIX.storage" 2>/dev/null || echo '{"pools":0,"activePools":0,"used":0,"total":0}')
 
-            NETWORK_SUMMARY=$(jq '
+            NETWORK_SUMMARY=$(jq -c '
                 def firstnum($v):
                   ($v | map(select(type == "number" and (isfinite))) | .[0]) // 0;
 
@@ -184,13 +211,13 @@ process_cluster() {
                   txBytesPerSec: $tx,
                   totalBytesPerSec: ($rx + $tx)
                 }
-            ' "$TMP_PREFIX.network")
+            ' "$TMP_PREFIX.network" 2>/dev/null || echo '{"interfaces":0,"activeInterfaces":0,"bridges":[],"rxBytesPerSec":0,"txBytesPerSec":0,"totalBytesPerSec":0}')
 
-            CLUSTER_NETWORK=$(jq                 --argjson cluster "$CLUSTER_NETWORK"                 --argjson node "$NETWORK_SUMMARY"                 '{
+            CLUSTER_NETWORK=$(jq -c                 --argjson cluster "$CLUSTER_NETWORK"                 --argjson node "$NETWORK_SUMMARY"                 '{
                   rxBytesPerSec: (($cluster.rxBytesPerSec // 0) + ($node.rxBytesPerSec // 0)),
                   txBytesPerSec: (($cluster.txBytesPerSec // 0) + ($node.txBytesPerSec // 0))
                 }
-                | .totalBytesPerSec = ((.rxBytesPerSec // 0) + (.txBytesPerSec // 0))')
+                | .totalBytesPerSec = ((.rxBytesPerSec // 0) + (.txBytesPerSec // 0))' 2>/dev/null || echo '{"rxBytesPerSec":0,"txBytesPerSec":0,"totalBytesPerSec":0}')
 
             jq '[.data[]? | {vmid,name,status,cpu,mem,uptime}]' \
                 "$TMP_PREFIX.vms" > "$TMP_PREFIX.vm.clean"
@@ -217,7 +244,7 @@ process_cluster() {
                 --slurpfile v "$TMP_PREFIX.vm.clean" \
                 --slurpfile c "$TMP_PREFIX.ct.clean" \
                 '. + {($node):{cpu:$cpu,mem:$mem,maxmem:$maxmem,disk:$disk,maxdisk:$maxdisk,swap:$swap,maxswap:$maxswap,uptime:$uptime,pveversion:$pve,kernel:$kernel,cpus:$cpus,subscription:$sub,loadavg:$loadavg,storage:$storage,network:$network,vms:$v[0],containers:$c[0]}}' \
-                <<< "$NODE_DATA")
+                <<< "$NODE_DATA" 2>/dev/null || echo "$NODE_DATA")
         fi
 
     done < "$TMP_PREFIX.nodes.list"
@@ -238,7 +265,7 @@ process_cluster() {
     jq -n --arg name "$NAME" '{($name):"online"}' > "${TMP_PREFIX}.cluster.json"
 }
 
-export -f process_cluster
+export -f process_cluster json_or_default
 export USERNAME PASSWORD TMPDIR CURL_TIMEOUT
 
 jq -c 'to_entries[] | .value[] |
