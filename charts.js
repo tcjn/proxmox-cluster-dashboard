@@ -22,54 +22,15 @@ function updateNetworkUsageHeading() {
 
   const lastUpdate = STATE?.statusData?.lastUpdate;
   if (!lastUpdate) {
-    headingEl.textContent = '(1h avg)';
+    headingEl.textContent = '(last hour)';
     return;
   }
 
-  const date = new Date(lastUpdate);
-  const formattedDate = Number.isNaN(date.getTime())
-    ? String(lastUpdate)
-    : date.toLocaleString('pl-PL', {
-      day: '2-digit',
-      month: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const formattedDate = typeof window.formatDate === 'function'
+    ? window.formatDate(lastUpdate)
+    : new Date(lastUpdate).toLocaleString();
 
-  headingEl.textContent = `(1h avg • ${formattedDate})`;
-}
-
-function buildNetworkChartSeries(networkUsageClusters, limit = 6) {
-  const usage = Array.isArray(networkUsageClusters) ? networkUsageClusters : [];
-
-  if (usage.length === 0) {
-    return {
-      labels: ['No network data'],
-      rxData: [0],
-      txData: [0]
-    };
-  }
-
-  const topUsage = usage.slice(0, limit);
-  const remaining = usage.slice(limit);
-
-  const labels = topUsage.map(item => item.clusterName);
-  const rxData = topUsage.map(item => item.rxBytesPerSec);
-  const txData = topUsage.map(item => item.txBytesPerSec);
-
-  if (remaining.length > 0) {
-    const otherTotals = remaining.reduce((acc, item) => {
-      acc.rx += item.rxBytesPerSec || 0;
-      acc.tx += item.txBytesPerSec || 0;
-      return acc;
-    }, { rx: 0, tx: 0 });
-
-    labels.push(`Others (${remaining.length})`);
-    rxData.push(otherTotals.rx);
-    txData.push(otherTotals.tx);
-  }
-
-  return { labels, rxData, txData };
+  headingEl.textContent = `(last hour, as of ${formattedDate})`;
 }
 
 function initializeCharts() {
