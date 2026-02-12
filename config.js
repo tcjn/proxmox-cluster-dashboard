@@ -34,6 +34,9 @@ const CONFIG = {
   // VictoriaMetrics integration
   victoriaMetrics: {
     enabled: true,
+    // If true, VictoriaMetrics coverage counters/queries are read from status.json
+    // using the `victoriaMetrics` object.
+    useStatusData: true,
     baseUrl: 'https://pve-console.expereo.com/metrics',
     // Common PromQL templates for quick navigation in VMUI.
     // Adjust metric names if your scrape jobs expose different labels.

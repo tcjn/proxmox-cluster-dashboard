@@ -215,6 +215,13 @@ Optional per-VM fields for Nautobot integration:
 - `nautobotVisible`: `true`, `false`, or omitted when unknown.
 - `nautobotUrl`: direct URL for the VM record in Nautobot (optional, fallback URL is generated from VM name).
 
+
+Optional VictoriaMetrics fields in `status.json`:
+- `victoriaMetrics.enabled`: runtime enable/disable from data source.
+- `victoriaMetrics.baseUrl`: runtime VictoriaMetrics URL override.
+- `victoriaMetrics.coverage`: object with `clusters`, `nodes`, and `vms` counters for dashboard display.
+- `victoriaMetrics.queries`: optional query overrides (`nodeCpu`, `nodeMemory`, `nodeDisk`, `nodeNetwork`, `vmCpu`, `vmMemory`).
+
 ### 5. Configure Web Server
 
 #### Apache
@@ -304,6 +311,13 @@ const CONFIG = {
     apiToken: 'YOUR_READ_ONLY_TOKEN'
   },
 
+  // VictoriaMetrics integration
+  victoriaMetrics: {
+    enabled: true,
+    useStatusData: true,
+    baseUrl: 'https://pve-console.expereo.com/metrics'
+  },
+
   // Alert thresholds
   thresholds: {
     cpuWarning: 80,          // percentage
@@ -320,6 +334,8 @@ const CONFIG = {
 
 > Set `nautobot.enabled` to `false` to disable all Nautobot links and API presence checks in the UI.
 > `apiToken` is used client-side to check whether each VM exists in Nautobot and render a presence icon next to the Nautobot link when integration is enabled.
+> Set `victoriaMetrics.enabled` to `false` to hide the VictoriaMetrics panel entirely.
+> Set `victoriaMetrics.useStatusData` to `true` to source coverage counters and optional query/base URL overrides from `status.json` (`victoriaMetrics` object).
 
 ### Country Flags
 

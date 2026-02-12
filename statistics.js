@@ -482,28 +482,44 @@ function renderVictoriaMetricsPanel(stats) {
   if (!panel || !linksContainer || !openLink) return;
 
   const vmConfig = CONFIG.victoriaMetrics || {};
-  const baseUrl = vmConfig.baseUrl || '';
+  const statusVictoria = STATE.statusData?.victoriaMetrics || {};
+  const dataSource = vmConfig.useStatusData ? statusVictoria : {};
 
-  if (!vmConfig.enabled || !baseUrl) {
+  const isEnabled = typeof dataSource.enabled === 'boolean'
+    ? dataSource.enabled
+    : vmConfig.enabled;
+  const baseUrl = dataSource.baseUrl || vmConfig.baseUrl || '';
+
+  if (!isEnabled || !baseUrl) {
     panel.style.display = 'none';
     return;
   }
 
   panel.style.display = 'block';
 
-  document.getElementById('victoriaClustersCount').textContent = stats.totalClusters;
-  document.getElementById('victoriaNodesCount').textContent = stats.totalNodes;
-  document.getElementById('victoriaVMsCount').textContent = stats.totalVMs;
+  const coverage = dataSource.coverage || {};
+  const clustersCount = Number.isFinite(coverage.clusters) ? coverage.clusters : stats.totalClusters;
+  const nodesCount = Number.isFinite(coverage.nodes) ? coverage.nodes : stats.totalNodes;
+  const vmsCount = Number.isFinite(coverage.vms) ? coverage.vms : stats.totalVMs;
+
+  document.getElementById('victoriaClustersCount').textContent = clustersCount;
+  document.getElementById('victoriaNodesCount').textContent = nodesCount;
+  document.getElementById('victoriaVMsCount').textContent = vmsCount;
 
   openLink.href = baseUrl;
 
+  const queries = {
+    ...vmConfig.queries,
+    ...(dataSource.queries || {})
+  };
+
   const links = [
-    { label: 'Node CPU', icon: 'fa-microchip', query: vmConfig.queries?.nodeCpu },
-    { label: 'Node RAM', icon: 'fa-memory', query: vmConfig.queries?.nodeMemory },
-    { label: 'Node Disk', icon: 'fa-hard-drive', query: vmConfig.queries?.nodeDisk },
-    { label: 'Node Network', icon: 'fa-network-wired', query: vmConfig.queries?.nodeNetwork },
-    { label: 'VM CPU', icon: 'fa-server', query: vmConfig.queries?.vmCpu },
-    { label: 'VM RAM', icon: 'fa-desktop', query: vmConfig.queries?.vmMemory }
+    { label: 'Node CPU', icon: 'fa-microchip', query: queries.nodeCpu },
+    { label: 'Node RAM', icon: 'fa-memory', query: queries.nodeMemory },
+    { label: 'Node Disk', icon: 'fa-hard-drive', query: queries.nodeDisk },
+    { label: 'Node Network', icon: 'fa-network-wired', query: queries.nodeNetwork },
+    { label: 'VM CPU', icon: 'fa-server', query: queries.vmCpu },
+    { label: 'VM RAM', icon: 'fa-desktop', query: queries.vmMemory }
   ].filter(item => Boolean(item.query));
 
   linksContainer.innerHTML = links.map(link => {
