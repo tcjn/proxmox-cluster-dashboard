@@ -2,6 +2,19 @@
 
 let resourceChart = null;
 let statusChart = null;
+let networkChart = null;
+
+function formatNetworkRate(bytesPerSec) {
+  if (!Number.isFinite(bytesPerSec) || bytesPerSec <= 0) {
+    return '0 B/s';
+  }
+
+  if (typeof window.formatBytes === 'function') {
+    return `${window.formatBytes(bytesPerSec)}/s`;
+  }
+
+  return `${Math.round(bytesPerSec)} B/s`;
+}
 
 function initializeCharts() {
   if (typeof window.calculateStatistics !== 'function') return;
@@ -138,6 +151,62 @@ function initializeCharts() {
       }
     });
   }
+
+  // Cluster Network Usage Chart
+  const networkCtx = document.getElementById('networkChart');
+  if (networkCtx && !networkChart) {
+    const networkUsage = Array.isArray(stats.networkUsageClusters) ? stats.networkUsageClusters.slice(0, 10) : [];
+    const labels = networkUsage.length > 0
+      ? networkUsage.map(item => item.clusterName)
+      : ['No network data'];
+
+    networkChart = new Chart(networkCtx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'RX',
+          data: networkUsage.length > 0 ? networkUsage.map(item => item.rxBytesPerSec) : [0],
+          backgroundColor: 'rgba(59, 130, 246, 0.8)',
+          borderColor: 'rgb(59, 130, 246)',
+          borderWidth: 1
+        }, {
+          label: 'TX',
+          data: networkUsage.length > 0 ? networkUsage.map(item => item.txBytesPerSec) : [0],
+          backgroundColor: 'rgba(16, 185, 129, 0.8)',
+          borderColor: 'rgb(16, 185, 129)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `${context.dataset.label}: ${formatNetworkRate(context.parsed.x)}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return formatNetworkRate(value);
+              }
+            }
+          }
+        }
+      }
+    });
+  }
 }
 
 function updateCharts() {
@@ -171,5 +240,21 @@ function updateCharts() {
       stats.occupancyBuckets.critical.disk
     ];
     statusChart.update();
+  }
+
+  if (networkChart) {
+    const networkUsage = Array.isArray(stats.networkUsageClusters) ? stats.networkUsageClusters.slice(0, 10) : [];
+    networkChart.data.labels = networkUsage.length > 0
+      ? networkUsage.map(item => item.clusterName)
+      : ['No network data'];
+
+    networkChart.data.datasets[0].data = networkUsage.length > 0
+      ? networkUsage.map(item => item.rxBytesPerSec)
+      : [0];
+    networkChart.data.datasets[1].data = networkUsage.length > 0
+      ? networkUsage.map(item => item.txBytesPerSec)
+      : [0];
+
+    networkChart.update();
   }
 }
