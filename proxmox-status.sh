@@ -100,6 +100,7 @@ process_cluster() {
 
     local NODE_STATUS="{}"
     local NODE_DATA="{}"
+    local CLUSTER_NETWORK='{"rxBytesPerSec":0,"txBytesPerSec":0,"totalBytesPerSec":0}'
 
     while read -r NODE; do
         SHORT=$(cut -d'.' -f1 <<< "$NODE")
@@ -145,13 +146,51 @@ process_cluster() {
             ' "$TMP_PREFIX.storage")
 
             NETWORK_SUMMARY=$(jq '
+                def firstnum($v):
+                  ($v | map(select(type == "number" and (isfinite))) | .[0]) // 0;
+
                 (.data // []) as $all |
+                ($all | map(firstnum([
+                  .rxBytesPerSec,
+                  .rx_bytes_per_sec,
+                  .rx_bps,
+                  .statistics.rx_bytes_per_sec,
+                  .statistics.rx,
+                  .statistics.rx_bytes,
+                  .statistics."rx-bytes",
+                  ."rx-bytes",
+                  .rx,
+                  .receive,
+                  .netin
+                ])) | add // 0) as $rx |
+                ($all | map(firstnum([
+                  .txBytesPerSec,
+                  .tx_bytes_per_sec,
+                  .tx_bps,
+                  .statistics.tx_bytes_per_sec,
+                  .statistics.tx,
+                  .statistics.tx_bytes,
+                  .statistics."tx-bytes",
+                  ."tx-bytes",
+                  .tx,
+                  .transmit,
+                  .netout
+                ])) | add // 0) as $tx |
                 {
                   interfaces: ($all | length),
                   activeInterfaces: ($all | map(select(.active == 1)) | length),
-                  bridges: ($all | map(select(.type == "bridge")) | map(.iface) | unique)
+                  bridges: ($all | map(select(.type == "bridge")) | map(.iface) | unique),
+                  rxBytesPerSec: $rx,
+                  txBytesPerSec: $tx,
+                  totalBytesPerSec: ($rx + $tx)
                 }
             ' "$TMP_PREFIX.network")
+
+            CLUSTER_NETWORK=$(jq                 --argjson cluster "$CLUSTER_NETWORK"                 --argjson node "$NETWORK_SUMMARY"                 '{
+                  rxBytesPerSec: (($cluster.rxBytesPerSec // 0) + ($node.rxBytesPerSec // 0)),
+                  txBytesPerSec: (($cluster.txBytesPerSec // 0) + ($node.txBytesPerSec // 0))
+                }
+                | .totalBytesPerSec = ((.rxBytesPerSec // 0) + (.txBytesPerSec // 0))')
 
             jq '[.data[]? | {vmid,name,status,cpu,mem,uptime}]' \
                 "$TMP_PREFIX.vms" > "$TMP_PREFIX.vm.clean"
@@ -185,6 +224,17 @@ process_cluster() {
 
     echo "$NODE_STATUS" > "${TMP_PREFIX}.nodes.json"
     echo "$NODE_DATA" > "${TMP_PREFIX}.data.json"
+
+    jq --arg name "$NAME" --argjson network "$CLUSTER_NETWORK" '
+      .[$name] = ((.[$name] // {}) + {
+        network: {
+          rxBytesPerSec: ($network.rxBytesPerSec // 0),
+          txBytesPerSec: ($network.txBytesPerSec // 0),
+          totalBytesPerSec: ($network.totalBytesPerSec // (($network.rxBytesPerSec // 0) + ($network.txBytesPerSec // 0)))
+        }
+      })
+    ' "${TMP_PREFIX}.infra.json" > "${TMP_PREFIX}.infra.tmp" && mv "${TMP_PREFIX}.infra.tmp" "${TMP_PREFIX}.infra.json"
+
     jq -n --arg name "$NAME" '{($name):"online"}' > "${TMP_PREFIX}.cluster.json"
 }
 
