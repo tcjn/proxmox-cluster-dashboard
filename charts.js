@@ -9,11 +9,17 @@ function formatNetworkRate(bytesPerSec) {
     return '0 B/s';
   }
 
-  if (typeof window.formatBytes === 'function') {
-    return `${window.formatBytes(bytesPerSec)}/s`;
+  const units = ['B/s', 'KB/s', 'MB/s', 'GB/s', 'TB/s', 'PB/s', 'EB/s'];
+  let value = bytesPerSec;
+  let unitIndex = 0;
+
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex += 1;
   }
 
-  return `${Math.round(bytesPerSec)} B/s`;
+  const decimals = value >= 100 ? 0 : value >= 10 ? 1 : 2;
+  return `${Number(value.toFixed(decimals))} ${units[unitIndex]}`;
 }
 
 function updateNetworkUsageHeading() {
@@ -31,6 +37,28 @@ function updateNetworkUsageHeading() {
     : new Date(lastUpdate).toLocaleString();
 
   headingEl.textContent = `(last hour, as of ${formattedDate})`;
+}
+
+function buildNetworkChartSeries(networkUsageClusters, maxItems = 6) {
+  const items = Array.isArray(networkUsageClusters)
+    ? networkUsageClusters
+      .filter(cluster => cluster && Number.isFinite(cluster.totalBytesPerSec) && cluster.totalBytesPerSec > 0)
+      .slice(0, maxItems)
+    : [];
+
+  if (items.length === 0) {
+    return {
+      labels: ['No network data'],
+      rxData: [0],
+      txData: [0]
+    };
+  }
+
+  return {
+    labels: items.map(cluster => cluster.clusterName || cluster.name || 'Unknown cluster'),
+    rxData: items.map(cluster => cluster.rxBytesPerSec || 0),
+    txData: items.map(cluster => cluster.txBytesPerSec || 0)
+  };
 }
 
 function initializeCharts() {
