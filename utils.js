@@ -257,25 +257,7 @@ function normalizeBoolean(value) {
 }
 
 function getNautobotBaseUrl() {
-  const nautobotConfig = CONFIG?.nautobot || {};
-  const proxyEnabled = nautobotConfig?.proxy?.enabled === true;
-  const proxyUrl = (nautobotConfig?.proxy?.url || '').trim().replace(/\/$/, '');
-  const baseUrl = (nautobotConfig?.baseUrl || '').trim().replace(/\/$/, '');
-
-  if (proxyEnabled && proxyUrl) {
-    if (isMixedContentBlockedUrl(proxyUrl)) {
-      if (!hasShownNautobotMixedContentWarning) {
-        showToast('Nautobot proxy URL uses HTTP while dashboard is HTTPS. Falling back to baseUrl to avoid browser mixed-content blocking.', 'warning', 8000);
-        hasShownNautobotMixedContentWarning = true;
-      }
-
-      return baseUrl;
-    }
-
-    return proxyUrl;
-  }
-
-  return baseUrl;
+  return (CONFIG?.nautobot?.baseUrl || '').trim().replace(/\/$/, '');
 }
 
 function getVmNautobotInfo(vm) {
@@ -339,12 +321,6 @@ function getVmNautobotInfo(vm) {
 const NAUTOBOT_PRESENCE_CACHE = new Map();
 const NAUTOBOT_PRESENCE_REQUESTS = new Map();
 let hasShownNautobotPresenceWarning = false;
-let hasShownNautobotMixedContentWarning = false;
-
-function isMixedContentBlockedUrl(url) {
-  const pageProtocol = window?.location?.protocol;
-  return pageProtocol === 'https:' && /^http:\/\//i.test(url || '');
-}
 
 function getNautobotVmKey(vmName) {
   return (vmName || '').trim().toLowerCase();

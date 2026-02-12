@@ -306,10 +306,6 @@ const CONFIG = {
   nautobot: {
     enabled: true,
     baseUrl: 'https://nautobot.example.com',
-    proxy: {
-      enabled: false,
-      url: 'http://10.140.0.60:8080'
-    },
     virtualizationPath: '/virtualization/virtual-machines/',
     apiPath: '/api/virtualization/virtual-machines/',
     apiToken: 'YOUR_READ_ONLY_TOKEN'
@@ -337,7 +333,6 @@ const CONFIG = {
 ```
 
 > Set `nautobot.enabled` to `false` to disable all Nautobot links and API presence checks in the UI.
-> Set `nautobot.proxy.enabled` to `true` and configure `nautobot.proxy.url` to route Nautobot links and API checks through an HTTP proxy; keep it `false` for direct access.
 > `apiToken` is used client-side to check whether each VM exists in Nautobot and render a presence icon next to the Nautobot link when integration is enabled.
 > Set `victoriaMetrics.enabled` to `false` to hide the VictoriaMetrics panel entirely.
 > Set `victoriaMetrics.useStatusData` to `true` to source the VictoriaMetrics panel configuration (enabled flag, base URL, coverage counters, and queries) directly from `status.json` (`victoriaMetrics` object).

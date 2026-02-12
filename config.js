@@ -26,10 +26,6 @@ const CONFIG = {
   nautobot: {
     enabled: true,
     baseUrl: 'https://nautobot.expereocloud.com',
-    proxy: {
-      enabled: false,
-      url: '' // Optional HTTP proxy URL (for example: http://10.140.0.60:8080)
-    },
     virtualizationPath: '/virtualization/virtual-machines/',
     apiPath: '/api/virtualization/virtual-machines/',
     apiToken: '' // Optional read-only token used for VM presence checks in Nautobot
