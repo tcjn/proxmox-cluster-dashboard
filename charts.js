@@ -16,10 +16,68 @@ function formatNetworkRate(bytesPerSec) {
   return `${Math.round(bytesPerSec)} B/s`;
 }
 
+function updateNetworkUsageHeading() {
+  const headingEl = document.getElementById('networkUsageAsOf');
+  if (!headingEl) return;
+
+  const lastUpdate = STATE?.statusData?.lastUpdate;
+  if (!lastUpdate) {
+    headingEl.textContent = '(1h avg)';
+    return;
+  }
+
+  const date = new Date(lastUpdate);
+  const formattedDate = Number.isNaN(date.getTime())
+    ? String(lastUpdate)
+    : date.toLocaleString('pl-PL', {
+      day: '2-digit',
+      month: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+  headingEl.textContent = `(1h avg • ${formattedDate})`;
+}
+
+function buildNetworkChartSeries(networkUsageClusters, limit = 6) {
+  const usage = Array.isArray(networkUsageClusters) ? networkUsageClusters : [];
+
+  if (usage.length === 0) {
+    return {
+      labels: ['No network data'],
+      rxData: [0],
+      txData: [0]
+    };
+  }
+
+  const topUsage = usage.slice(0, limit);
+  const remaining = usage.slice(limit);
+
+  const labels = topUsage.map(item => item.clusterName);
+  const rxData = topUsage.map(item => item.rxBytesPerSec);
+  const txData = topUsage.map(item => item.txBytesPerSec);
+
+  if (remaining.length > 0) {
+    const otherTotals = remaining.reduce((acc, item) => {
+      acc.rx += item.rxBytesPerSec || 0;
+      acc.tx += item.txBytesPerSec || 0;
+      return acc;
+    }, { rx: 0, tx: 0 });
+
+    labels.push(`Others (${remaining.length})`);
+    rxData.push(otherTotals.rx);
+    txData.push(otherTotals.tx);
+  }
+
+  return { labels, rxData, txData };
+}
+
 function initializeCharts() {
   if (typeof window.calculateStatistics !== 'function') return;
   const stats = calculateStatistics();
   if (!stats) return;
+
+  updateNetworkUsageHeading();
   
   // Resource Usage vs Free Capacity Chart
   const resourceCtx = document.getElementById('resourceChart');
@@ -155,24 +213,21 @@ function initializeCharts() {
   // Cluster Network Usage Chart
   const networkCtx = document.getElementById('networkChart');
   if (networkCtx && !networkChart) {
-    const networkUsage = Array.isArray(stats.networkUsageClusters) ? stats.networkUsageClusters.slice(0, 10) : [];
-    const labels = networkUsage.length > 0
-      ? networkUsage.map(item => item.clusterName)
-      : ['No network data'];
+    const networkChartData = buildNetworkChartSeries(stats.networkUsageClusters, 6);
 
     networkChart = new Chart(networkCtx, {
       type: 'bar',
       data: {
-        labels,
+        labels: networkChartData.labels,
         datasets: [{
           label: 'RX',
-          data: networkUsage.length > 0 ? networkUsage.map(item => item.rxBytesPerSec) : [0],
+          data: networkChartData.rxData,
           backgroundColor: 'rgba(59, 130, 246, 0.8)',
           borderColor: 'rgb(59, 130, 246)',
           borderWidth: 1
         }, {
           label: 'TX',
-          data: networkUsage.length > 0 ? networkUsage.map(item => item.txBytesPerSec) : [0],
+          data: networkChartData.txData,
           backgroundColor: 'rgba(16, 185, 129, 0.8)',
           borderColor: 'rgb(16, 185, 129)',
           borderWidth: 1
@@ -190,6 +245,10 @@ function initializeCharts() {
             callbacks: {
               label: function(context) {
                 return `${context.dataset.label}: ${formatNetworkRate(context.parsed.x)}`;
+              },
+              footer: function(items) {
+                const total = items.reduce((sum, item) => sum + (item.parsed.x || 0), 0);
+                return `Total: ${formatNetworkRate(total)}`;
               }
             }
           }
@@ -197,11 +256,15 @@ function initializeCharts() {
         scales: {
           x: {
             beginAtZero: true,
+            stacked: true,
             ticks: {
               callback: function(value) {
                 return formatNetworkRate(value);
               }
             }
+          },
+          y: {
+            stacked: true
           }
         }
       }
@@ -213,6 +276,8 @@ function updateCharts() {
   if (typeof window.calculateStatistics !== 'function') return;
   const stats = calculateStatistics();
   if (!stats) return;
+
+  updateNetworkUsageHeading();
   
   if (resourceChart) {
     resourceChart.data.datasets[0].data = [stats.avgCpu, stats.avgMemory, stats.avgDisk];
@@ -243,17 +308,10 @@ function updateCharts() {
   }
 
   if (networkChart) {
-    const networkUsage = Array.isArray(stats.networkUsageClusters) ? stats.networkUsageClusters.slice(0, 10) : [];
-    networkChart.data.labels = networkUsage.length > 0
-      ? networkUsage.map(item => item.clusterName)
-      : ['No network data'];
-
-    networkChart.data.datasets[0].data = networkUsage.length > 0
-      ? networkUsage.map(item => item.rxBytesPerSec)
-      : [0];
-    networkChart.data.datasets[1].data = networkUsage.length > 0
-      ? networkUsage.map(item => item.txBytesPerSec)
-      : [0];
+    const networkChartData = buildNetworkChartSeries(stats.networkUsageClusters, 6);
+    networkChart.data.labels = networkChartData.labels;
+    networkChart.data.datasets[0].data = networkChartData.rxData;
+    networkChart.data.datasets[1].data = networkChartData.txData;
 
     networkChart.update();
   }
