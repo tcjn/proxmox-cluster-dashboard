@@ -257,6 +257,7 @@ function normalizeBoolean(value) {
 }
 
 function getVmNautobotInfo(vm) {
+  const nautobotEnabled = CONFIG?.nautobot?.enabled !== false;
   const vmName = vm?.name || `VM ${vm?.vmid || ''}`;
 
   const visibilitySignals = [
@@ -274,6 +275,14 @@ function getVmNautobotInfo(vm) {
     .find(value => value !== null);
 
   const isVisible = firstVisibilitySignal;
+
+  if (!nautobotEnabled) {
+    return {
+      url: null,
+      isVisible,
+      hasExplicitUrl: false
+    };
+  }
 
   const explicitUrl = vm?.nautobotUrl || vm?.nautobot_url || vm?.nautobot?.url;
   if (explicitUrl) {
@@ -348,7 +357,15 @@ function getNautobotPresenceRequestUrl(vmName) {
 }
 
 async function fetchNautobotVmPresence(vmName) {
+  const nautobotEnabled = CONFIG?.nautobot?.enabled !== false;
   const vmKey = getNautobotVmKey(vmName);
+  if (!nautobotEnabled) {
+    return {
+      state: 'unknown',
+      title: 'Nautobot integration is disabled in config.js.'
+    };
+  }
+
   if (!vmKey) {
     return {
       state: 'unknown',
@@ -432,6 +449,8 @@ async function fetchNautobotVmPresence(vmName) {
 }
 
 function refreshNautobotPresenceIndicators(root = document) {
+  if (CONFIG?.nautobot?.enabled === false) return;
+
   const iconElements = Array.from(root.querySelectorAll('[data-nautobot-vm-key]'));
   if (iconElements.length === 0) return;
 

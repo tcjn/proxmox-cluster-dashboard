@@ -296,6 +296,7 @@ const CONFIG = {
   
   // Nautobot integration
   nautobot: {
+    enabled: true,
     baseUrl: 'https://nautobot.example.com',
     virtualizationPath: '/virtualization/virtual-machines/',
     apiPath: '/api/virtualization/virtual-machines/',
@@ -316,7 +317,8 @@ const CONFIG = {
 };
 ```
 
-> `apiToken` is used client-side to check whether each VM exists in Nautobot and render a presence icon next to the Nautobot link.
+> Set `nautobot.enabled` to `false` to disable all Nautobot links and API presence checks in the UI.
+> `apiToken` is used client-side to check whether each VM exists in Nautobot and render a presence icon next to the Nautobot link when integration is enabled.
 
 ### Country Flags
 
