@@ -10,6 +10,29 @@ CURL_TIMEOUT=10
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
 
+json_or_default() {
+    local file="$1"
+    local filter="$2"
+    local default="$3"
+    local value
+
+    value=$(jq -c "$filter" "$file" 2>/dev/null) || value="$default"
+    [[ -z "$value" ]] && value="$default"
+    printf '%s' "$value"
+}
+
+json_text_or_default() {
+    local value="$1"
+    local default="$2"
+
+    jq -ce . >/dev/null 2>&1 <<< "$value" && {
+        printf '%s' "$value"
+        return
+    }
+
+    printf '%s' "$default"
+}
+
 process_cluster() {
     local CLUSTER_JSON="$1"
     local TMP_PREFIX="$2"
@@ -232,6 +255,7 @@ process_cluster() {
     echo "$NODE_STATUS" > "${TMP_PREFIX}.nodes.json"
     echo "$NODE_DATA" > "${TMP_PREFIX}.data.json"
 
+    CLUSTER_NETWORK=$(json_text_or_default "$CLUSTER_NETWORK" '{"rxBytesPerSec":0,"txBytesPerSec":0,"totalBytesPerSec":0}')
     jq --arg name "$NAME" --argjson network "$CLUSTER_NETWORK" '
       .[$name] = ((.[$name] // {}) + {
         network: {
@@ -240,12 +264,13 @@ process_cluster() {
           totalBytesPerSec: ($network.totalBytesPerSec // (($network.rxBytesPerSec // 0) + ($network.txBytesPerSec // 0)))
         }
       })
-    ' "${TMP_PREFIX}.infra.json" > "${TMP_PREFIX}.infra.tmp" && mv "${TMP_PREFIX}.infra.tmp" "${TMP_PREFIX}.infra.json"
+    ' "${TMP_PREFIX}.infra.json" > "${TMP_PREFIX}.infra.tmp" 2>/dev/null || cp "${TMP_PREFIX}.infra.json" "${TMP_PREFIX}.infra.tmp"
+    mv "${TMP_PREFIX}.infra.tmp" "${TMP_PREFIX}.infra.json"
 
     jq -n --arg name "$NAME" '{($name):"online"}' > "${TMP_PREFIX}.cluster.json"
 }
 
-export -f process_cluster
+export -f process_cluster json_or_default json_text_or_default
 export USERNAME PASSWORD TMPDIR CURL_TIMEOUT
 
 jq -c 'to_entries[] | .value[] |
