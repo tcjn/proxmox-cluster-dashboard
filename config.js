@@ -24,6 +24,7 @@ const CONFIG = {
 
   // Nautobot integration
   nautobot: {
+    enabled: true,
     baseUrl: 'https://nautobot.expereocloud.com',
     virtualizationPath: '/virtualization/virtual-machines/',
     apiPath: '/api/virtualization/virtual-machines/',
