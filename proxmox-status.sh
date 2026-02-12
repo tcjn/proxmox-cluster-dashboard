@@ -142,7 +142,7 @@ process_cluster() {
             LOADAVG=$(jq '.data.loadavg // [0,0,0]' "$TMP_PREFIX.met")
             SUBSCRIPTION=$(jq -r '.data.status // "unknown"' "$TMP_PREFIX.sub")
 
-            STORAGE_SUMMARY=$(jq '
+            STORAGE_SUMMARY=$(jq -c '
                 (.data // []) as $all |
                 {
                   pools: ($all | length),
@@ -150,9 +150,9 @@ process_cluster() {
                   used: ($all | map(.used // 0) | add // 0),
                   total: ($all | map(.total // 0) | add // 0)
                 }
-            ' "$TMP_PREFIX.storage")
+            ' "$TMP_PREFIX.storage" 2>/dev/null || echo '{"pools":0,"activePools":0,"used":0,"total":0}')
 
-            NETWORK_SUMMARY=$(jq '
+            NETWORK_SUMMARY=$(jq -c '
                 def firstnum($v):
                   ($v | map(select(type == "number" and (isfinite))) | .[0]) // 0;
 
@@ -191,13 +191,13 @@ process_cluster() {
                   txBytesPerSec: $tx,
                   totalBytesPerSec: ($rx + $tx)
                 }
-            ' "$TMP_PREFIX.network")
+            ' "$TMP_PREFIX.network" 2>/dev/null || echo '{"interfaces":0,"activeInterfaces":0,"bridges":[],"rxBytesPerSec":0,"txBytesPerSec":0,"totalBytesPerSec":0}')
 
-            CLUSTER_NETWORK=$(jq                 --argjson cluster "$CLUSTER_NETWORK"                 --argjson node "$NETWORK_SUMMARY"                 '{
+            CLUSTER_NETWORK=$(jq -c                 --argjson cluster "$CLUSTER_NETWORK"                 --argjson node "$NETWORK_SUMMARY"                 '{
                   rxBytesPerSec: (($cluster.rxBytesPerSec // 0) + ($node.rxBytesPerSec // 0)),
                   txBytesPerSec: (($cluster.txBytesPerSec // 0) + ($node.txBytesPerSec // 0))
                 }
-                | .totalBytesPerSec = ((.rxBytesPerSec // 0) + (.txBytesPerSec // 0))')
+                | .totalBytesPerSec = ((.rxBytesPerSec // 0) + (.txBytesPerSec // 0))' 2>/dev/null || echo '{"rxBytesPerSec":0,"txBytesPerSec":0,"totalBytesPerSec":0}')
 
             jq '[.data[]? | {vmid,name,status,cpu,mem,uptime}]' \
                 "$TMP_PREFIX.vms" > "$TMP_PREFIX.vm.clean"
@@ -224,7 +224,7 @@ process_cluster() {
                 --slurpfile v "$TMP_PREFIX.vm.clean" \
                 --slurpfile c "$TMP_PREFIX.ct.clean" \
                 '. + {($node):{cpu:$cpu,mem:$mem,maxmem:$maxmem,disk:$disk,maxdisk:$maxdisk,swap:$swap,maxswap:$maxswap,uptime:$uptime,pveversion:$pve,kernel:$kernel,cpus:$cpus,subscription:$sub,loadavg:$loadavg,storage:$storage,network:$network,vms:$v[0],containers:$c[0]}}' \
-                <<< "$NODE_DATA")
+                <<< "$NODE_DATA" 2>/dev/null || echo "$NODE_DATA")
         fi
 
     done < "$TMP_PREFIX.nodes.list"
