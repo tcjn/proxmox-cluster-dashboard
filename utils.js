@@ -256,6 +256,19 @@ function normalizeBoolean(value) {
   return null;
 }
 
+function getNautobotBaseUrl() {
+  const nautobotConfig = CONFIG?.nautobot || {};
+  const proxyEnabled = nautobotConfig?.proxy?.enabled === true;
+  const proxyUrl = (nautobotConfig?.proxy?.url || '').trim().replace(/\/$/, '');
+  const baseUrl = (nautobotConfig?.baseUrl || '').trim().replace(/\/$/, '');
+
+  if (proxyEnabled && proxyUrl) {
+    return proxyUrl;
+  }
+
+  return baseUrl;
+}
+
 function getVmNautobotInfo(vm) {
   const nautobotEnabled = CONFIG?.nautobot?.enabled !== false;
   const vmName = vm?.name || `VM ${vm?.vmid || ''}`;
@@ -293,7 +306,7 @@ function getVmNautobotInfo(vm) {
     };
   }
 
-  const baseUrl = (CONFIG?.nautobot?.baseUrl || '').replace(/\/$/, '');
+  const baseUrl = getNautobotBaseUrl();
   const virtualizationPath = CONFIG?.nautobot?.virtualizationPath || '/virtualization/virtual-machines/';
   const cleanPath = virtualizationPath.startsWith('/') ? virtualizationPath : `/${virtualizationPath}`;
   if (!baseUrl) {
@@ -352,7 +365,7 @@ function setNautobotLinkVisibility(iconEl, isVisible) {
 }
 
 function getNautobotPresenceRequestUrl(vmName) {
-  const baseUrl = (CONFIG?.nautobot?.baseUrl || '').replace(/\/$/, '');
+  const baseUrl = getNautobotBaseUrl();
   const apiPath = CONFIG?.nautobot?.apiPath || '/api/virtualization/virtual-machines/';
   const normalizedApiPath = apiPath.startsWith('/') ? apiPath : `/${apiPath}`;
 
