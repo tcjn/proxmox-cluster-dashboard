@@ -309,6 +309,7 @@ function updateStatisticsUI() {
   document.getElementById('subscriptionHealthScore').textContent = `${stats.subscription.healthPercent}% active`;
   
   renderCephStatus(stats.ceph);
+  renderVictoriaMetricsPanel(stats);
   
   // Footer stats
   document.getElementById('footerStats').textContent = 
@@ -404,4 +405,57 @@ function extractCephMetrics(cephStatus) {
   }
 
   return metrics.slice(0, 5);
+}
+
+
+function renderVictoriaMetricsPanel(stats) {
+  const panel = document.getElementById('victoriaPanel');
+  const linksContainer = document.getElementById('victoriaLinks');
+  const openLink = document.getElementById('victoriaOpenLink');
+
+  if (!panel || !linksContainer || !openLink) return;
+
+  const vmConfig = CONFIG.victoriaMetrics || {};
+  const baseUrl = vmConfig.baseUrl || '';
+
+  if (!vmConfig.enabled || !baseUrl) {
+    panel.style.display = 'none';
+    return;
+  }
+
+  panel.style.display = 'block';
+
+  document.getElementById('victoriaClustersCount').textContent = stats.totalClusters;
+  document.getElementById('victoriaNodesCount').textContent = stats.totalNodes;
+  document.getElementById('victoriaVMsCount').textContent = stats.totalVMs;
+
+  openLink.href = baseUrl;
+
+  const links = [
+    { label: 'Node CPU', icon: 'fa-microchip', query: vmConfig.queries?.nodeCpu },
+    { label: 'Node RAM', icon: 'fa-memory', query: vmConfig.queries?.nodeMemory },
+    { label: 'Node Disk', icon: 'fa-hard-drive', query: vmConfig.queries?.nodeDisk },
+    { label: 'Node Network', icon: 'fa-network-wired', query: vmConfig.queries?.nodeNetwork },
+    { label: 'VM CPU', icon: 'fa-server', query: vmConfig.queries?.vmCpu },
+    { label: 'VM RAM', icon: 'fa-desktop', query: vmConfig.queries?.vmMemory }
+  ].filter(item => Boolean(item.query));
+
+  linksContainer.innerHTML = links.map(link => {
+    const url = buildVictoriaQueryUrl(baseUrl, link.query);
+    return `
+      <a class="victoria-link" href="${sanitizeHTML(url)}" target="_blank" rel="noopener noreferrer">
+        <i class="fas ${sanitizeHTML(link.icon)}"></i>
+        <span>${sanitizeHTML(link.label)}</span>
+      </a>
+    `;
+  }).join('');
+}
+
+function buildVictoriaQueryUrl(baseUrl, query) {
+  if (!query) return baseUrl;
+
+  const url = new URL(baseUrl, window.location.origin);
+  url.searchParams.set('g0.expr', query);
+  url.searchParams.set('g0.tab', '0');
+  return url.toString();
 }

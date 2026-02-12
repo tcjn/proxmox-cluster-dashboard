@@ -2577,6 +2577,85 @@ footer {
   gap: 0.5rem;
 }
 
+.victoria-card {
+  border-left: 4px solid var(--link);
+}
+
+.victoria-subtitle {
+  margin: 0 0 0.9rem;
+  color: var(--copy);
+  font-size: 0.88rem;
+}
+
+.victoria-coverage-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.victoria-coverage-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--node-bg);
+  padding: 0.45rem 0.55rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.victoria-coverage-label {
+  font-size: 0.68rem;
+  color: var(--copy);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.victoria-coverage-value {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.victoria-link-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.victoria-link {
+  text-decoration: none;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--node-bg);
+  padding: 0.5rem 0.6rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all var(--transition-base);
+}
+
+.victoria-link:hover {
+  border-color: var(--link);
+  color: var(--link);
+}
+
+.victoria-open-link {
+  margin-top: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--link);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.victoria-open-link:hover {
+  text-decoration: underline;
+}
+
 .ops-risk-list {
   display: grid;
   gap: 0.6rem;
@@ -2677,5 +2756,9 @@ footer {
 
   .ceph-status-summary {
     justify-content: flex-start;
+  }
+
+  .victoria-link-grid {
+    grid-template-columns: 1fr;
   }
 }

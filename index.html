@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0" />
   <title>Proxmox Cluster Dashboard</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <link rel="stylesheet" href="styles.css?v=20260211c" />
+  <link rel="stylesheet" href="styles.css?v=20260212a" />
 </head>
 <body>
   <div class="overlay">
@@ -397,6 +397,29 @@
             </div>
             <div class="license-health-score" id="subscriptionHealthScore">0% active</div>
           </div>
+
+          <div class="ops-insight-card victoria-card" id="victoriaPanel" style="display: none;">
+            <h3><i class="fas fa-wave-square"></i> VictoriaMetrics</h3>
+            <p class="victoria-subtitle">External time-series platform for CPU, RAM, Disk and Network telemetry across clusters, nodes and VMs.</p>
+            <div class="victoria-coverage-grid">
+              <div class="victoria-coverage-item">
+                <span class="victoria-coverage-label">Clusters</span>
+                <span class="victoria-coverage-value" id="victoriaClustersCount">0</span>
+              </div>
+              <div class="victoria-coverage-item">
+                <span class="victoria-coverage-label">Nodes</span>
+                <span class="victoria-coverage-value" id="victoriaNodesCount">0</span>
+              </div>
+              <div class="victoria-coverage-item">
+                <span class="victoria-coverage-label">VMs</span>
+                <span class="victoria-coverage-value" id="victoriaVMsCount">0</span>
+              </div>
+            </div>
+            <div class="victoria-link-grid" id="victoriaLinks"></div>
+            <a class="victoria-open-link" id="victoriaOpenLink" href="#" target="_blank" rel="noopener noreferrer">
+              <i class="fas fa-external-link-alt"></i> Open VictoriaMetrics
+            </a>
+          </div>
         </div>
 
         <!-- Charts Section -->
@@ -477,10 +500,10 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   
   <!-- Main Application Scripts -->
-  <script src="config.js?v=20260211c"></script>
+  <script src="config.js?v=20260212a"></script>
   <script src="utils.js?v=20260211c"></script>
   <script src="cache.js?v=20260211b"></script>
-  <script src="statistics.js?v=20260211b"></script>
+  <script src="statistics.js?v=20260212a"></script>
   <script src="notifications.js?v=20260211b"></script>
   <script src="search.js?v=20260211c"></script>
   <script src="filters.js?v=20260211b"></script>

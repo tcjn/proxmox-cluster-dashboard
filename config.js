@@ -30,6 +30,22 @@ const CONFIG = {
     apiPath: '/api/virtualization/virtual-machines/',
     apiToken: '' // Optional read-only token used for VM presence checks in Nautobot
   },
+
+  // VictoriaMetrics integration
+  victoriaMetrics: {
+    enabled: true,
+    baseUrl: 'https://pve-console.expereo.com/metrics',
+    // Common PromQL templates for quick navigation in VMUI.
+    // Adjust metric names if your scrape jobs expose different labels.
+    queries: {
+      nodeCpu: '100 - avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100',
+      nodeMemory: '(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100',
+      nodeDisk: '(1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"})) * 100',
+      nodeNetwork: 'sum by(instance) (rate(node_network_receive_bytes_total{device!~"lo"}[5m]) + rate(node_network_transmit_bytes_total{device!~"lo"}[5m]))',
+      vmCpu: 'avg by(vm_name) (rate(qemu_cpu_usage_seconds_total[5m])) * 100',
+      vmMemory: 'avg by(vm_name) (qemu_memory_usage_bytes / qemu_memory_max_bytes) * 100'
+    }
+  },
   
   // Alert thresholds
   thresholds: {
