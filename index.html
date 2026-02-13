@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pl">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,6 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="styles.css?v=20260212b" />
 </head>
+
 <body>
   <div class="overlay">
     <header>
@@ -32,7 +34,8 @@
         <a href="https://pdm-console.expereo.com/" class="header-icon" title="Proxmox Cluster Manager" target="_blank">
           <i class="fa-solid fa-sitemap"></i>
         </a>
-        <a href="https://expereo.kb.eu-central-1.aws.cloud.es.io/s/devops/app/dashboards#/view/1c5bf9c2-06cb-4458-af5e-412bf5a6ed36" class="header-icon" title="Elasticsearch Dashboard" target="_blank">
+        <a href="https://expereo.kb.eu-central-1.aws.cloud.es.io/s/devops/app/dashboards#/view/1c5bf9c2-06cb-4458-af5e-412bf5a6ed36"
+          class="header-icon" title="Elasticsearch Dashboard" target="_blank">
           <i class="fas fa-chart-line"></i>
         </a>
         <button class="header-icon" id="themeToggle" title="Toggle Dark Mode" aria-label="Toggle dark mode">
@@ -77,7 +80,8 @@
         <div class="search-wrapper">
           <div class="search-input-wrapper">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" id="searchInput" class="search-input" placeholder="Search clusters, VMs, or nodes... (Press / to focus)" />
+            <input type="text" id="searchInput" class="search-input"
+              placeholder="Search clusters, VMs, or nodes... (Press / to focus)" />
             <button class="clear-search" id="clearSearch" title="Clear search">
               <i class="fas fa-times"></i>
             </button>
@@ -85,7 +89,7 @@
               <i class="fas fa-plug"></i> Online only
             </button>
           </div>
-          
+
           <!-- Advanced Filters -->
           <div class="filters-bar">
             <button class="filter-toggle" id="filterToggle">
@@ -136,7 +140,7 @@
               <button class="btn-primary" id="applyFilters">Apply</button>
             </div>
           </div>
-          
+
           <div class="search-type-indicator">
             <button class="search-type-btn active" data-type="all">
               <i class="fas fa-search"></i> All
@@ -161,10 +165,8 @@
       <!-- Statistics Dashboard -->
       <div class="statistics-section" id="statisticsSection" style="display: none;">
         <h2><i class="fas fa-chart-pie"></i> Infrastructure Statistics</h2>
-        <p class="statistics-summary" id="nautobotVmSummary">
-          Running VM Nautobot summary will appear after data loads.
-        </p>
-        
+
+
         <!-- Overview Cards -->
         <div class="statistics-grid">
           <!-- Overall Health Card -->
@@ -384,7 +386,8 @@
 
           <div class="ops-insight-card victoria-card" id="victoriaPanel" style="display: none;">
             <h3><i class="fas fa-wave-square"></i> VictoriaMetrics</h3>
-            <p class="victoria-subtitle">External time-series platform for CPU, RAM, Disk and Network telemetry across clusters, nodes and VMs.</p>
+            <p class="victoria-subtitle">External time-series platform for CPU, RAM, Disk and Network telemetry across
+              clusters, nodes and VMs.</p>
             <div class="victoria-coverage-grid">
               <div class="victoria-coverage-item">
                 <span class="victoria-coverage-label">Clusters</span>
@@ -417,7 +420,8 @@
             <canvas id="statusChart"></canvas>
           </div>
           <div class="chart-card">
-            <h3><i class="fas fa-network-wired"></i> Network utilization <span id="networkUsageAsOf">(last hour)</span></h3>
+            <h3><i class="fas fa-network-wired"></i> Network utilization <span id="networkUsageAsOf">(last hour)</span>
+            </h3>
             <canvas id="networkChart"></canvas>
           </div>
         </div>
@@ -528,7 +532,7 @@
 
   <!-- Chart.js -->
   <script src="chart.umd.min.js"></script>
-  
+
   <!-- Main Application Scripts -->
   <script src="config.js?v=20260212a"></script>
   <script src="utils.js?v=20260211c"></script>
@@ -541,4 +545,5 @@
   <script src="charts.js?v=20260212c"></script>
   <script src="app.js?v=20260211b"></script>
 </body>
+
 </html>
