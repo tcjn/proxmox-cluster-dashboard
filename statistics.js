@@ -377,6 +377,7 @@ function isVmRunningStatus(status) {
 function updateStatisticsUI() {
   const stats = calculateStatistics();
   if (!stats) return;
+  const nautobotEnabled = CONFIG?.nautobot?.enabled !== false;
   
   document.getElementById('totalClusters').textContent = stats.totalClusters;
   document.getElementById('onlineClusters').textContent = stats.onlineClusters;
@@ -428,15 +429,42 @@ function updateStatisticsUI() {
   
   renderCephStatus(stats.ceph);
   renderVictoriaMetricsPanel(stats);
+  renderNautobotCoveragePanel(stats, nautobotEnabled);
 
   const nautobotSummaryEl = document.getElementById('nautobotVmSummary');
   if (nautobotSummaryEl) {
-    nautobotSummaryEl.textContent = `Nautobot visibility (running VMs): ${stats.nautobot.present}/${stats.nautobot.runningTotal} present (${stats.nautobot.runningPresentPercent}%), ${stats.nautobot.missing} missing, ${stats.nautobot.unknown} unknown.`;
+    nautobotSummaryEl.textContent = nautobotEnabled
+      ? `Nautobot visibility (running VMs): ${stats.nautobot.present}/${stats.nautobot.runningTotal} present (${stats.nautobot.runningPresentPercent}%), ${stats.nautobot.missing} missing, ${stats.nautobot.unknown} unknown.`
+      : 'Nautobot integration is disabled in config.js.';
   }
   
   // Footer stats
   document.getElementById('footerStats').textContent = 
     `${stats.totalClusters} Clusters • ${stats.totalNodes} Nodes • ${stats.totalVMs} VMs`;
+}
+
+function renderNautobotCoveragePanel(stats, nautobotEnabled) {
+  const nautobotPanel = document.querySelector('.nautobot-card');
+  if (!nautobotPanel) return;
+
+  if (!nautobotEnabled) {
+    nautobotPanel.style.display = 'none';
+    return;
+  }
+
+  nautobotPanel.style.display = 'block';
+
+  const presentEl = document.getElementById('nautobotPresent');
+  const missingEl = document.getElementById('nautobotMissing');
+  const unknownEl = document.getElementById('nautobotUnknown');
+  const totalEl = document.getElementById('nautobotRunningTotal');
+  const scoreEl = document.getElementById('nautobotCoverageScore');
+
+  if (presentEl) presentEl.textContent = stats.nautobot.present;
+  if (missingEl) missingEl.textContent = stats.nautobot.missing;
+  if (unknownEl) unknownEl.textContent = stats.nautobot.unknown;
+  if (totalEl) totalEl.textContent = stats.nautobot.runningTotal;
+  if (scoreEl) scoreEl.textContent = `${stats.nautobot.runningPresentPercent}% present in Nautobot`;
 }
 
 function renderCephStatus(cephStats) {
