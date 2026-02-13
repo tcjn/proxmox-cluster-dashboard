@@ -42,6 +42,7 @@
             "txBytesPerSec": 1800000
           },
           "uptime": 604800,
+          "nautobotStatus": "exist",
           "nautobotVisible": true,
           "nautobotUrl": "https://nautobot.expereocloud.com/virtualization/virtual-machines/3f59473f-1de8-4a21-93e4-a6ed637cc3f6/"
         },
@@ -60,6 +61,7 @@
           "cpu": 0,
           "mem": 0,
           "uptime": 0,
+          "nautobotStatus": "missing",
           "nautobotVisible": false
         }
       ]

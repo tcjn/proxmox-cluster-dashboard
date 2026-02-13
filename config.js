@@ -28,7 +28,7 @@ const CONFIG = {
     baseUrl: 'https://nautobot.expereocloud.com',
     virtualizationPath: '/virtualization/virtual-machines/',
     apiPath: '/api/virtualization/virtual-machines/',
-    apiToken: '' // Optional read-only token used for VM presence checks in Nautobot
+    apiToken: '' // Optional; used by external status enrichment scripts
   },
 
   // VictoriaMetrics integration
