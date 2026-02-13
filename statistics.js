@@ -418,11 +418,10 @@ function updateStatisticsUI() {
   renderCephStatus(stats.ceph);
   renderVictoriaMetricsPanel(stats);
 
-  document.getElementById('nautobotPresent').textContent = stats.nautobot.present;
-  document.getElementById('nautobotMissing').textContent = stats.nautobot.missing;
-  document.getElementById('nautobotUnknown').textContent = stats.nautobot.unknown;
-  document.getElementById('nautobotRunningTotal').textContent = stats.nautobot.runningTotal;
-  document.getElementById('nautobotCoverageScore').textContent = `${stats.nautobot.runningPresentPercent}% present in Nautobot`;
+  const nautobotSummaryEl = document.getElementById('nautobotVmSummary');
+  if (nautobotSummaryEl) {
+    nautobotSummaryEl.textContent = `Nautobot visibility (running VMs): ${stats.nautobot.present}/${stats.nautobot.runningTotal} present (${stats.nautobot.runningPresentPercent}%), ${stats.nautobot.missing} missing, ${stats.nautobot.unknown} unknown.`;
+  }
   
   // Footer stats
   document.getElementById('footerStats').textContent = 

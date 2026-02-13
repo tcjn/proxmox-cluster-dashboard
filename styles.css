@@ -793,11 +793,17 @@ header h1 a:hover {
   font-size: 1.8rem;
   font-weight: 700;
   padding-bottom: 1rem;
-  margin-bottom: 2rem;
+  margin-bottom: 0.8rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
   border-bottom: 3px solid var(--section-title-line);
+}
+
+.statistics-summary {
+  margin: 0 0 1.6rem;
+  color: var(--text-light);
+  font-size: 0.95rem;
 }
 
 .statistics-grid {
