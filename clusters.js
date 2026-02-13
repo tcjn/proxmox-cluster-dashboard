@@ -281,7 +281,7 @@ function createVMHTML(vm, cluster) {
     ? `
       <div class="vm-nautobot-meta" data-nautobot-meta>
         <a href="${nautobotInfo.url}" class="nautobot-link hidden" data-nautobot-link target="_blank" rel="noopener noreferrer"><i class="fas fa-link"></i> Nautobot</a>
-        <span class="nautobot-presence-icon unknown" data-nautobot-vm-key="${vmNautobotKey}" data-nautobot-vm-name="${safeVmName}" title="Nautobot status unknown" aria-label="Nautobot status unknown">
+        <span class="nautobot-presence-icon ${nautobotInfo.state}" data-nautobot-vm-key="${vmNautobotKey}" data-nautobot-vm-name="${safeVmName}" data-nautobot-state="${nautobotInfo.state}" data-nautobot-title="${sanitizeHTML(nautobotInfo.title)}" data-nautobot-link-visible="${nautobotInfo.isVisible === true}" title="${sanitizeHTML(nautobotInfo.title)}" aria-label="${sanitizeHTML(nautobotInfo.title)}">
           <span class="nautobot-presence-letter">N</span>
         </span>
       </div>

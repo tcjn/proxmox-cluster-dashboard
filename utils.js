@@ -249,9 +249,20 @@ function normalizeBoolean(value) {
   if (typeof value === 'number') return value > 0;
   if (typeof value === 'string') {
     const normalized = value.trim().toLowerCase();
-    if (['1', 'true', 'yes', 'visible', 'found', 'present'].includes(normalized)) return true;
+    if (['1', 'true', 'yes', 'visible', 'found', 'present', 'exist', 'exists'].includes(normalized)) return true;
     if (['0', 'false', 'no', 'hidden', 'missing', 'absent'].includes(normalized)) return false;
   }
+
+  return null;
+}
+
+function normalizeNautobotStatus(statusValue) {
+  if (typeof statusValue !== 'string') return null;
+
+  const normalized = statusValue.trim().toLowerCase();
+  if (['exist', 'exists', 'present', 'found'].includes(normalized)) return 'present';
+  if (['missing', 'absent', 'not-found', 'not_found'].includes(normalized)) return 'missing';
+  if (['unknown', 'n/a', 'na'].includes(normalized)) return 'unknown';
 
   return null;
 }
@@ -278,13 +289,34 @@ function getVmNautobotInfo(vm) {
     .map(normalizeBoolean)
     .find(value => value !== null);
 
-  const isVisible = firstVisibilitySignal;
+  const statusSignals = [
+    vm?.nautobotStatus,
+    vm?.nautobot_status,
+    vm?.nautobot?.status
+  ];
+
+  const firstStatusSignal = statusSignals
+    .map(normalizeNautobotStatus)
+    .find(value => value !== null);
+
+  const state = firstStatusSignal || 'unknown';
+  const title = {
+    present: 'VM record found in Nautobot.',
+    missing: 'No matching VM record in Nautobot.',
+    unknown: 'Nautobot status unknown.'
+  }[state] || 'Nautobot status unknown.';
+
+  const isVisible = firstVisibilitySignal !== undefined && firstVisibilitySignal !== null
+    ? firstVisibilitySignal
+    : state === 'present';
 
   if (!nautobotEnabled) {
     return {
       url: null,
       isVisible,
-      hasExplicitUrl: false
+      hasExplicitUrl: false,
+      state,
+      title
     };
   }
 
@@ -293,7 +325,9 @@ function getVmNautobotInfo(vm) {
     return {
       url: explicitUrl,
       isVisible,
-      hasExplicitUrl: true
+      hasExplicitUrl: true,
+      state,
+      title
     };
   }
 
@@ -304,7 +338,9 @@ function getVmNautobotInfo(vm) {
     return {
       url: null,
       isVisible,
-      hasExplicitUrl: false
+      hasExplicitUrl: false,
+      state,
+      title
     };
   }
 
@@ -314,13 +350,11 @@ function getVmNautobotInfo(vm) {
   return {
     url: `${baseUrl}${cleanPath}?${queryParam}`,
     isVisible,
-    hasExplicitUrl: false
+    hasExplicitUrl: false,
+    state,
+    title
   };
 }
-
-const NAUTOBOT_PRESENCE_CACHE = new Map();
-const NAUTOBOT_PRESENCE_REQUESTS = new Map();
-let hasShownNautobotPresenceWarning = false;
 
 function getNautobotVmKey(vmName) {
   return (vmName || '').trim().toLowerCase();
@@ -355,140 +389,19 @@ function setNautobotLinkVisibility(iconEl, isVisible) {
   linkEl.classList.toggle('hidden', !isVisible);
 }
 
-function getNautobotPresenceRequestUrl(vmName) {
-  const baseUrl = getNautobotBaseUrl();
-  const apiPath = CONFIG?.nautobot?.apiPath || '/api/virtualization/virtual-machines/';
-  const normalizedApiPath = apiPath.startsWith('/') ? apiPath : `/${apiPath}`;
-
-  if (!baseUrl || !vmName) return null;
-
-  const encodedVmName = encodeURIComponent(vmName);
-  return `${baseUrl}${normalizedApiPath}?name=${encodedVmName}`;
-}
-
-async function fetchNautobotVmPresence(vmName) {
-  const nautobotEnabled = CONFIG?.nautobot?.enabled !== false;
-  const vmKey = getNautobotVmKey(vmName);
-  if (!nautobotEnabled) {
-    return {
-      state: 'unknown',
-      title: 'Nautobot integration is disabled in config.js.'
-    };
-  }
-
-  if (!vmKey) {
-    return {
-      state: 'unknown',
-      title: 'VM name is missing; cannot verify Nautobot presence.'
-    };
-  }
-
-  if (NAUTOBOT_PRESENCE_CACHE.has(vmKey)) {
-    return NAUTOBOT_PRESENCE_CACHE.get(vmKey);
-  }
-
-  if (NAUTOBOT_PRESENCE_REQUESTS.has(vmKey)) {
-    return NAUTOBOT_PRESENCE_REQUESTS.get(vmKey);
-  }
-
-  const requestUrl = getNautobotPresenceRequestUrl(vmName);
-  const token = (CONFIG?.nautobot?.apiToken || '').trim();
-  if (!requestUrl || !token) {
-    const unknownResult = {
-      state: 'unknown',
-      title: 'Nautobot API check is disabled (missing base URL or API token in config.js).'
-    };
-    NAUTOBOT_PRESENCE_CACHE.set(vmKey, unknownResult);
-    return unknownResult;
-  }
-
-  const requestPromise = fetch(requestUrl, {
-    method: 'GET',
-    headers: {
-      Authorization: `Token ${token}`,
-      Accept: 'application/json'
-    }
-  })
-    .then(async response => {
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const payload = await response.json();
-      const resultCount = Number(payload?.count);
-      const listLength = Array.isArray(payload?.results) ? payload.results.length : null;
-      const hasMatch = Number.isFinite(resultCount)
-        ? resultCount > 0
-        : Number.isFinite(listLength)
-          ? listLength > 0
-          : false;
-
-      const result = hasMatch
-        ? {
-          state: 'present',
-          title: 'VM record found in Nautobot.'
-        }
-        : {
-          state: 'missing',
-          title: 'No matching VM record in Nautobot.'
-        };
-
-      NAUTOBOT_PRESENCE_CACHE.set(vmKey, result);
-      return result;
-    })
-    .catch(error => {
-      const unknownResult = {
-        state: 'unknown',
-        title: `Unable to verify Nautobot status (${error.message}).`
-      };
-      NAUTOBOT_PRESENCE_CACHE.set(vmKey, unknownResult);
-
-      if (!hasShownNautobotPresenceWarning) {
-        showToast('Unable to validate Nautobot VM presence. Check API token/CORS.', 'warning', 6000);
-        hasShownNautobotPresenceWarning = true;
-      }
-
-      return unknownResult;
-    })
-    .finally(() => {
-      NAUTOBOT_PRESENCE_REQUESTS.delete(vmKey);
-    });
-
-  NAUTOBOT_PRESENCE_REQUESTS.set(vmKey, requestPromise);
-  return requestPromise;
-}
-
 function refreshNautobotPresenceIndicators(root = document) {
   if (CONFIG?.nautobot?.enabled === false) return;
 
   const iconElements = Array.from(root.querySelectorAll('[data-nautobot-vm-key]'));
   if (iconElements.length === 0) return;
 
-  const vmKeyToElements = new Map();
   iconElements.forEach(iconEl => {
-    const vmKey = iconEl.getAttribute('data-nautobot-vm-key');
-    const vmName = iconEl.getAttribute('data-nautobot-vm-name') || '';
+    const state = normalizeNautobotStatus(iconEl.getAttribute('data-nautobot-state')) || 'unknown';
+    const title = iconEl.getAttribute('data-nautobot-title') || null;
+    const shouldShowLink = iconEl.getAttribute('data-nautobot-link-visible') === 'true';
 
-    setNautobotPresenceIconState(iconEl, 'unknown');
-    setNautobotLinkVisibility(iconEl, false);
-
-    if (!vmKeyToElements.has(vmKey)) {
-      vmKeyToElements.set(vmKey, {
-        vmName,
-        elements: []
-      });
-    }
-
-    vmKeyToElements.get(vmKey).elements.push(iconEl);
-  });
-
-  vmKeyToElements.forEach(({ vmName, elements }, vmKey) => {
-    fetchNautobotVmPresence(vmName || vmKey).then(result => {
-      elements.forEach(iconEl => {
-        setNautobotPresenceIconState(iconEl, result.state, result.title);
-        setNautobotLinkVisibility(iconEl, result.state === 'present');
-      });
-    });
+    setNautobotPresenceIconState(iconEl, state, title);
+    setNautobotLinkVisibility(iconEl, shouldShowLink);
   });
 }
 

@@ -202,6 +202,7 @@ echo "}" >> "$OUTPUT_FILE"
           "cpu": 0.12,
           "mem": 4294967296,
           "uptime": 604800,
+          "nautobotStatus": "exist",
           "nautobotVisible": true,
           "nautobotUrl": "https://nautobot.expereocloud.com/virtualization/virtual-machines/3f59473f-1de8-4a21-93e4-a6ed637cc3f6/"
         }
@@ -212,8 +213,21 @@ echo "}" >> "$OUTPUT_FILE"
 ```
 
 Optional per-VM fields for Nautobot integration:
-- `nautobotVisible`: `true`, `false`, or omitted when unknown.
+- `nautobotStatus`: `exist`, `missing`, or `unknown` (recommended).
+- `nautobotVisible`: `true`/`false` compatibility flag (optional, derived from `nautobotStatus` when omitted).
 - `nautobotUrl`: direct URL for the VM record in Nautobot (optional, fallback URL is generated from VM name).
+
+To avoid client-side Nautobot API calls on each dashboard refresh, run `nautobot-status-enrich.sh` after your Proxmox collection step:
+
+```bash
+# 1) Generate status.json from Proxmox
+./proxmox-status.sh
+
+# 2) Enrich VM records with Nautobot status
+NAUTOBOT_BASE_URL="https://nautobot.example.com" \
+NAUTOBOT_TOKEN="YOUR_READ_ONLY_TOKEN" \
+./nautobot-status-enrich.sh /var/www/proxmox-dashboard/status.json
+```
 
 
 Optional VictoriaMetrics fields in `status.json`:
@@ -308,7 +322,7 @@ const CONFIG = {
     baseUrl: 'https://nautobot.example.com',
     virtualizationPath: '/virtualization/virtual-machines/',
     apiPath: '/api/virtualization/virtual-machines/',
-    apiToken: 'YOUR_READ_ONLY_TOKEN'
+    apiToken: '' // Optional; only needed by external enrichment scripts
   },
 
   // VictoriaMetrics integration
@@ -332,8 +346,8 @@ const CONFIG = {
 };
 ```
 
-> Set `nautobot.enabled` to `false` to disable all Nautobot links and API presence checks in the UI.
-> `apiToken` is used client-side to check whether each VM exists in Nautobot and render a presence icon next to the Nautobot link when integration is enabled.
+> Set `nautobot.enabled` to `false` to disable Nautobot links/presence indicators in the UI.
+> The dashboard now reads per-VM Nautobot status from `status.json` and does not call the Nautobot API from the browser.
 > Set `victoriaMetrics.enabled` to `false` to hide the VictoriaMetrics panel entirely.
 > Set `victoriaMetrics.useStatusData` to `true` to source the VictoriaMetrics panel configuration (enabled flag, base URL, coverage counters, and queries) directly from `status.json` (`victoriaMetrics` object).
 
