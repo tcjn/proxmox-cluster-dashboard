@@ -2601,6 +2601,10 @@ footer {
   gap: 0.5rem;
 }
 
+.nautobot-card {
+  border-left: 4px solid var(--link);
+}
+
 .victoria-card {
   border-left: 4px solid var(--link);
 }
