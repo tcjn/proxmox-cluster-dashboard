@@ -161,7 +161,6 @@
       <!-- Statistics Dashboard -->
       <div class="statistics-section" id="statisticsSection" style="display: none;">
         <h2><i class="fas fa-chart-pie"></i> Infrastructure Statistics</h2>
-        
         <!-- Overview Cards -->
         <div class="statistics-grid">
           <!-- Overall Health Card -->
@@ -333,6 +332,29 @@
         </div>
 
         <div class="ops-insights-grid">
+          <div class="ops-insight-card nautobot-card">
+            <h3><i class="fas fa-diagram-project"></i> Nautobot VM Coverage</h3>
+            <div class="license-summary-grid">
+              <div class="license-summary-item healthy">
+                <span class="license-label">Present</span>
+                <span class="license-value" id="nautobotPresent">0</span>
+              </div>
+              <div class="license-summary-item warning">
+                <span class="license-label">Missing</span>
+                <span class="license-value" id="nautobotMissing">0</span>
+              </div>
+              <div class="license-summary-item unknown">
+                <span class="license-label">Unknown</span>
+                <span class="license-value" id="nautobotUnknown">0</span>
+              </div>
+              <div class="license-summary-item total">
+                <span class="license-label">Running VMs</span>
+                <span class="license-value" id="nautobotRunningTotal">0</span>
+              </div>
+            </div>
+            <div class="license-health-score" id="nautobotCoverageScore">0% present in Nautobot</div>
+          </div>
+
           <div class="ops-insight-card">
             <h3><i class="fas fa-id-card"></i> Subscription / License Health</h3>
             <div class="license-summary-grid">

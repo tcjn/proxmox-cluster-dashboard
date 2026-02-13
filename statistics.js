@@ -67,6 +67,13 @@ function calculateStatistics() {
       warning: 0,
       unknown: 0,
       total: 0
+    },
+
+    nautobot: {
+      runningTotal: 0,
+      present: 0,
+      missing: 0,
+      unknown: 0
     }
   };
   
@@ -168,6 +175,16 @@ function calculateStatistics() {
               }
               if (vm.status === 'running') {
                 stats.runningVMs++;
+                stats.nautobot.runningTotal++;
+
+                const vmNautobotInfo = getVmNautobotInfo(vm);
+                if (vmNautobotInfo.state === 'present') {
+                  stats.nautobot.present++;
+                } else if (vmNautobotInfo.state === 'missing') {
+                  stats.nautobot.missing++;
+                } else {
+                  stats.nautobot.unknown++;
+                }
               } else {
                 stats.stoppedVMs++;
               }
@@ -218,6 +235,10 @@ function calculateStatistics() {
 
   stats.subscription.healthPercent = stats.subscription.total > 0
     ? Math.round((stats.subscription.active / stats.subscription.total) * 100)
+    : 0;
+
+  stats.nautobot.runningPresentPercent = stats.nautobot.runningTotal > 0
+    ? Math.round((stats.nautobot.present / stats.nautobot.runningTotal) * 100)
     : 0;
 
   stats.networkUsageClusters.sort((a, b) => b.totalBytesPerSec - a.totalBytesPerSec);
@@ -396,6 +417,12 @@ function updateStatisticsUI() {
   
   renderCephStatus(stats.ceph);
   renderVictoriaMetricsPanel(stats);
+
+  document.getElementById('nautobotPresent').textContent = stats.nautobot.present;
+  document.getElementById('nautobotMissing').textContent = stats.nautobot.missing;
+  document.getElementById('nautobotUnknown').textContent = stats.nautobot.unknown;
+  document.getElementById('nautobotRunningTotal').textContent = stats.nautobot.runningTotal;
+  document.getElementById('nautobotCoverageScore').textContent = `${stats.nautobot.runningPresentPercent}% present in Nautobot`;
   
   // Footer stats
   document.getElementById('footerStats').textContent = 
