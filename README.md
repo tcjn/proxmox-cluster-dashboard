@@ -235,7 +235,6 @@ NAUTOBOT_TOKEN="YOUR_READ_ONLY_TOKEN" \
 
 > `nautobot-status-enrich.sh` first reads `CONFIG.nautobot.baseUrl`, `CONFIG.nautobot.apiPath`, and `CONFIG.nautobot.apiToken` from `config.js`.
 > Environment variables (`NAUTOBOT_BASE_URL`, `NAUTOBOT_API_PATH`, `NAUTOBOT_TOKEN`/`NAUTOBOT_API_KEY`) override values from `config.js`.
-> The script can parse `config.js` directly even when `node` is not installed on the host.
 
 
 Optional VictoriaMetrics fields in `status.json`:

@@ -18,12 +18,10 @@ fi
 
 load_nautobot_defaults_from_config() {
   [[ -f "$CONFIG_FILE" ]] || return 0
+  command -v node >/dev/null 2>&1 || return 0
 
-  local CFG_BASE_URL="" CFG_API_PATH="" CFG_API_TOKEN=""
-
-  if command -v node >/dev/null 2>&1; then
-    local CONFIG_JSON
-    if CONFIG_JSON=$(node - "$CONFIG_FILE" <<'NODE'
+  local CONFIG_JSON
+  if ! CONFIG_JSON=$(node - "$CONFIG_FILE" <<'NODE'
 const fs = require('fs');
 const vm = require('vm');
 
@@ -40,38 +38,14 @@ process.stdout.write(JSON.stringify({
   apiToken: nautobot.apiToken || ''
 }));
 NODE
-    ); then
-      CFG_BASE_URL=$(jq -r '.baseUrl // empty' <<< "$CONFIG_JSON")
-      CFG_API_PATH=$(jq -r '.apiPath // empty' <<< "$CONFIG_JSON")
-      CFG_API_TOKEN=$(jq -r '.apiToken // empty' <<< "$CONFIG_JSON")
-    fi
+  ); then
+    return 0
   fi
 
-  if [[ -z "$CFG_BASE_URL" || -z "$CFG_API_PATH" || -z "$CFG_API_TOKEN" ]]; then
-    local AWK_BASE_URL AWK_API_PATH AWK_API_TOKEN
-    IFS=$'\t' read -r AWK_BASE_URL AWK_API_PATH AWK_API_TOKEN < <(
-      awk '
-        BEGIN { in_nautobot=0; baseUrl=""; apiPath=""; apiToken="" }
-        {
-          line=$0
-          if (!in_nautobot && line ~ /nautobot[[:space:]]*:[[:space:]]*\{/) {
-            in_nautobot=1
-          }
-          if (in_nautobot) {
-            if (match(line, /baseUrl[[:space:]]*:[[:space:]]*["\047]([^"\047]*)["\047]/, m)) baseUrl=m[1]
-            if (match(line, /apiPath[[:space:]]*:[[:space:]]*["\047]([^"\047]*)["\047]/, m)) apiPath=m[1]
-            if (match(line, /apiToken[[:space:]]*:[[:space:]]*["\047]([^"\047]*)["\047]/, m)) apiToken=m[1]
-            if (line ~ /^[[:space:]]*\}[[:space:]]*,?[[:space:]]*$/) exit
-          }
-        }
-        END { printf "%s\t%s\t%s\n", baseUrl, apiPath, apiToken }
-      ' "$CONFIG_FILE"
-    )
-
-    CFG_BASE_URL="${CFG_BASE_URL:-$AWK_BASE_URL}"
-    CFG_API_PATH="${CFG_API_PATH:-$AWK_API_PATH}"
-    CFG_API_TOKEN="${CFG_API_TOKEN:-$AWK_API_TOKEN}"
-  fi
+  local CFG_BASE_URL CFG_API_PATH CFG_API_TOKEN
+  CFG_BASE_URL=$(jq -r '.baseUrl // empty' <<< "$CONFIG_JSON")
+  CFG_API_PATH=$(jq -r '.apiPath // empty' <<< "$CONFIG_JSON")
+  CFG_API_TOKEN=$(jq -r '.apiToken // empty' <<< "$CONFIG_JSON")
 
   NAUTOBOT_BASE_URL="${NAUTOBOT_BASE_URL:-$CFG_BASE_URL}"
   NAUTOBOT_API_PATH="${NAUTOBOT_API_PATH:-$CFG_API_PATH}"
