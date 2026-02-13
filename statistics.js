@@ -431,12 +431,7 @@ function updateStatisticsUI() {
   renderVictoriaMetricsPanel(stats);
   renderNautobotCoveragePanel(stats, nautobotEnabled);
 
-  const nautobotSummaryEl = document.getElementById('nautobotVmSummary');
-  if (nautobotSummaryEl) {
-    nautobotSummaryEl.textContent = nautobotEnabled
-      ? `Nautobot visibility (running VMs): ${stats.nautobot.present}/${stats.nautobot.runningTotal} present (${stats.nautobot.runningPresentPercent}%), ${stats.nautobot.missing} missing, ${stats.nautobot.unknown} unknown.`
-      : 'Nautobot integration is disabled in config.js.';
-  }
+
   
   // Footer stats
   document.getElementById('footerStats').textContent = 
