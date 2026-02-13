@@ -224,10 +224,17 @@ To avoid client-side Nautobot API calls on each dashboard refresh, run `nautobot
 ./proxmox-status.sh
 
 # 2) Enrich VM records with Nautobot status
+# Uses CONFIG.nautobot.baseUrl/apiPath/apiToken from ./config.js by default
+./nautobot-status-enrich.sh /var/www/proxmox-dashboard/status.json
+
+# Optional: override config.js values with environment variables
 NAUTOBOT_BASE_URL="https://nautobot.example.com" \
 NAUTOBOT_TOKEN="YOUR_READ_ONLY_TOKEN" \
 ./nautobot-status-enrich.sh /var/www/proxmox-dashboard/status.json
 ```
+
+> `nautobot-status-enrich.sh` first reads `CONFIG.nautobot.baseUrl`, `CONFIG.nautobot.apiPath`, and `CONFIG.nautobot.apiToken` from `config.js`.
+> Environment variables (`NAUTOBOT_BASE_URL`, `NAUTOBOT_API_PATH`, `NAUTOBOT_TOKEN`/`NAUTOBOT_API_KEY`) override values from `config.js`.
 
 
 Optional VictoriaMetrics fields in `status.json`:
