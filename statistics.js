@@ -5,6 +5,8 @@ function calculateStatistics() {
     return null;
   }
   
+  const nautobotEnabled = CONFIG?.nautobot?.enabled !== false;
+
   const stats = {
     totalClusters: 0,
     onlineClusters: 0,
@@ -173,7 +175,7 @@ function calculateStatistics() {
               if (stats.regionStats[clusterRegion]) {
                 stats.regionStats[clusterRegion].vms++;
               }
-              if (vm.status === 'running') {
+              if (isVmRunningStatus(vm?.status)) {
                 stats.runningVMs++;
                 stats.nautobot.runningTotal++;
 
@@ -361,6 +363,15 @@ function getOccupancyBucket(usage) {
   if (usage < 70) return 'medium';
   if (usage < 85) return 'high';
   return 'critical';
+}
+
+function isVmRunningStatus(status) {
+  if (typeof status === 'boolean') return status;
+  if (typeof status === 'number') return status > 0;
+  if (typeof status !== 'string') return false;
+
+  const normalized = status.trim().toLowerCase();
+  return ['running', 'started', 'up', 'on', 'active'].includes(normalized);
 }
 
 function updateStatisticsUI() {

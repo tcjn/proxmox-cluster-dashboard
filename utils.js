@@ -299,7 +299,9 @@ function getVmNautobotInfo(vm) {
     .map(normalizeNautobotStatus)
     .find(value => value !== null);
 
-  const state = firstStatusSignal || 'unknown';
+  const state = firstStatusSignal || (
+    firstVisibilitySignal === true ? 'present' : firstVisibilitySignal === false ? 'missing' : 'unknown'
+  );
   const title = {
     present: 'VM record found in Nautobot.',
     missing: 'No matching VM record in Nautobot.',
