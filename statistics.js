@@ -67,6 +67,13 @@ function calculateStatistics() {
       warning: 0,
       unknown: 0,
       total: 0
+    },
+
+    nautobot: {
+      runningTotal: 0,
+      present: 0,
+      missing: 0,
+      unknown: 0
     }
   };
   
@@ -168,6 +175,16 @@ function calculateStatistics() {
               }
               if (vm.status === 'running') {
                 stats.runningVMs++;
+                stats.nautobot.runningTotal++;
+
+                const vmNautobotInfo = getVmNautobotInfo(vm);
+                if (vmNautobotInfo.state === 'present') {
+                  stats.nautobot.present++;
+                } else if (vmNautobotInfo.state === 'missing') {
+                  stats.nautobot.missing++;
+                } else {
+                  stats.nautobot.unknown++;
+                }
               } else {
                 stats.stoppedVMs++;
               }
@@ -218,6 +235,10 @@ function calculateStatistics() {
 
   stats.subscription.healthPercent = stats.subscription.total > 0
     ? Math.round((stats.subscription.active / stats.subscription.total) * 100)
+    : 0;
+
+  stats.nautobot.runningPresentPercent = stats.nautobot.runningTotal > 0
+    ? Math.round((stats.nautobot.present / stats.nautobot.runningTotal) * 100)
     : 0;
 
   stats.networkUsageClusters.sort((a, b) => b.totalBytesPerSec - a.totalBytesPerSec);
@@ -396,6 +417,11 @@ function updateStatisticsUI() {
   
   renderCephStatus(stats.ceph);
   renderVictoriaMetricsPanel(stats);
+
+  const nautobotSummaryEl = document.getElementById('nautobotVmSummary');
+  if (nautobotSummaryEl) {
+    nautobotSummaryEl.textContent = `Nautobot visibility (running VMs): ${stats.nautobot.present}/${stats.nautobot.runningTotal} present (${stats.nautobot.runningPresentPercent}%), ${stats.nautobot.missing} missing, ${stats.nautobot.unknown} unknown.`;
+  }
   
   // Footer stats
   document.getElementById('footerStats').textContent = 
