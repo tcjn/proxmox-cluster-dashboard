@@ -15,6 +15,10 @@ function refreshStatisticsModules() {
 }
 
 function initializeStatisticsModules() {
+  if (typeof window.initializeStatisticsTabs === 'function') {
+    window.initializeStatisticsTabs();
+  }
+
   if (typeof window.updateStatisticsUI === 'function') {
     window.updateStatisticsUI();
   } else {
@@ -275,12 +279,12 @@ function initializeEventListeners() {
     
     if (STATE.statisticsVisible) {
       section.style.display = 'block';
-      btn.innerHTML = '<i class="fas fa-chart-bar"></i> Hide Statistics Dashboard';
+      btn.innerHTML = '<i class="fas fa-chart-bar"></i> Hide Additional Statistics';
       btn.classList.add('active');
       initializeStatisticsModules();
     } else {
       section.style.display = 'none';
-      btn.innerHTML = '<i class="fas fa-chart-bar"></i> Show Statistics Dashboard';
+      btn.innerHTML = '<i class="fas fa-chart-bar"></i> Show Additional Statistics';
       btn.classList.remove('active');
     }
     
@@ -372,7 +376,11 @@ function loadPreferences() {
     STATE.statisticsVisible = true;
     document.getElementById('statisticsSection').style.display = 'block';
     document.getElementById('summaryToggle').classList.add('active');
-    document.getElementById('summaryToggle').innerHTML = '<i class="fas fa-chart-bar"></i> Hide Statistics Dashboard';
+    document.getElementById('summaryToggle').innerHTML = '<i class="fas fa-chart-bar"></i> Hide Additional Statistics';
+  }
+
+  if (statisticsVisible) {
+    initializeStatisticsModules();
   }
   
   // Maintenance collapsed
