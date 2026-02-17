@@ -72,7 +72,7 @@ function calculateStatistics() {
     },
 
     nautobot: {
-      total: 0,
+      runningTotal: 0,
       present: 0,
       missing: 0,
       unknown: 0
@@ -177,21 +177,20 @@ function calculateStatistics() {
               }
               if (isVmRunningStatus(vm?.status)) {
                 stats.runningVMs++;
+                if (!isNautobotExcludedVmId(vm?.vmid)) {
+                  stats.nautobot.runningTotal++;
+
+                  const vmNautobotInfo = getVmNautobotInfo(vm);
+                  if (vmNautobotInfo.state === 'present') {
+                    stats.nautobot.present++;
+                  } else if (vmNautobotInfo.state === 'missing') {
+                    stats.nautobot.missing++;
+                  } else {
+                    stats.nautobot.unknown++;
+                  }
+                }
               } else {
                 stats.stoppedVMs++;
-              }
-
-              if (!isNautobotExcludedVmId(vm?.vmid)) {
-                stats.nautobot.total++;
-
-                const vmNautobotInfo = getVmNautobotInfo(vm);
-                if (vmNautobotInfo.state === 'present') {
-                  stats.nautobot.present++;
-                } else if (vmNautobotInfo.state === 'missing') {
-                  stats.nautobot.missing++;
-                } else {
-                  stats.nautobot.unknown++;
-                }
               }
             });
           }
@@ -242,8 +241,8 @@ function calculateStatistics() {
     ? Math.round((stats.subscription.active / stats.subscription.total) * 100)
     : 0;
 
-  stats.nautobot.presentPercent = stats.nautobot.total > 0
-    ? Math.round((stats.nautobot.present / stats.nautobot.total) * 100)
+  stats.nautobot.runningPresentPercent = stats.nautobot.runningTotal > 0
+    ? Math.round((stats.nautobot.present / stats.nautobot.runningTotal) * 100)
     : 0;
 
   stats.networkUsageClusters.sort((a, b) => b.totalBytesPerSec - a.totalBytesPerSec);
@@ -466,8 +465,8 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
   if (presentEl) presentEl.textContent = stats.nautobot.present;
   if (missingEl) missingEl.textContent = stats.nautobot.missing;
   if (unknownEl) unknownEl.textContent = stats.nautobot.unknown;
-  if (totalEl) totalEl.textContent = stats.nautobot.total;
-  if (scoreEl) scoreEl.textContent = `${stats.nautobot.presentPercent}% present in Nautobot`;
+  if (totalEl) totalEl.textContent = stats.nautobot.runningTotal;
+  if (scoreEl) scoreEl.textContent = `${stats.nautobot.runningPresentPercent}% present in Nautobot`;
 }
 
 function renderCephStatus(cephStats) {
