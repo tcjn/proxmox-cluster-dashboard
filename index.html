@@ -158,13 +158,19 @@
       <!-- Statistics Toggle -->
       <div class="summary-toggle">
         <button class="summary-toggle-btn" id="summaryToggle">
-          <i class="fas fa-chart-bar"></i> Show Statistics Dashboard
+          <i class="fas fa-chart-bar"></i> Show Additional Statistics
         </button>
       </div>
 
       <!-- Statistics Dashboard -->
       <div class="statistics-section" id="statisticsSection" style="display: none;">
         <h2><i class="fas fa-chart-pie"></i> Infrastructure Statistics</h2>
+        <div class="statistics-tabs" id="statisticsTabs">
+          <button class="statistics-tab active" data-tab="overview"><i class="fas fa-chart-line"></i> Overview</button>
+          <button class="statistics-tab" data-tab="compliance"><i class="fas fa-shield-halved"></i> Compliance</button>
+        </div>
+
+        <div class="statistics-tab-panel" id="statisticsOverviewPanel">
 
 
         <!-- Overview Cards -->
@@ -464,6 +470,41 @@
                 <i class="fas fa-server"></i>
                 <span>0 VMs</span>
               </div>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <div class="statistics-tab-panel" id="statisticsCompliancePanel" style="display: none;">
+          <div class="compliance-grid">
+            <div class="ops-insight-card">
+              <h3><i class="fas fa-linux"></i> Kernel Version Summary</h3>
+              <div class="compliance-summary-list" id="kernelVersionSummary">
+                <p class="compliance-empty">No kernel version data available.</p>
+              </div>
+            </div>
+            <div class="ops-insight-card">
+              <h3><i class="fas fa-code-branch"></i> PVE Version Summary</h3>
+              <div class="compliance-summary-list" id="pveVersionSummary">
+                <p class="compliance-empty">No PVE version data available.</p>
+              </div>
+            </div>
+          </div>
+          <div class="ops-insight-card compliance-table-card">
+            <h3><i class="fas fa-list-check"></i> Node Compliance Details</h3>
+            <div class="compliance-table-wrapper">
+              <table class="compliance-table">
+                <thead>
+                  <tr>
+                    <th>Node</th>
+                    <th>Status</th>
+                    <th>Kernel</th>
+                    <th>PVE</th>
+                    <th>Subscription</th>
+                  </tr>
+                </thead>
+                <tbody id="complianceNodeRows"></tbody>
+              </table>
             </div>
           </div>
         </div>
