@@ -9,7 +9,7 @@ A modern, feature-rich dashboard for managing and monitoring Proxmox VE clusters
 - **Advanced Search**: Search across clusters, nodes, and VMs with instant results
 - **Smart Filtering**: Filter by status, type, region, and version
 - **Multiple Sorting**: Sort by name, status, CPU, memory, VM count, or region
-- **Statistics Dashboard**: Comprehensive overview with charts and metrics
+- **Statistics Dashboard**: Comprehensive statistics with charts and metrics
 - **Health Monitoring**: System health score with progress and breakdown indicators
 - **Notifications**: Automatic alerts for critical thresholds
 - **Auto-refresh**: Optional automatic data updates (60s interval)
