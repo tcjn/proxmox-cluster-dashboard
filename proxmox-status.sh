@@ -281,7 +281,13 @@ enrich_nautobot_visibility() {
       .nodeData |= with_entries(
         .value.vms |= (
           (. // []) | map(
-            if .status == "running" then
+            if ((.vmid // -1) >= 500 and (.vmid // -1) <= 510) then
+              . + {
+                nautobotStatus: "unknown",
+                nautobotVisible: false,
+                nautobotMatchedBy: "excluded-vmid"
+              }
+            elif .status == "running" then
               . as $vm |
               (($vm.name // "") | ascii_downcase) as $name |
               (($vm.name // "") | split(".")[0] | ascii_downcase) as $shortName |
