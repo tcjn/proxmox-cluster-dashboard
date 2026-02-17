@@ -6,6 +6,10 @@ CLUSTERS_FILE="/var/www/html/pve-console.expereo.com/clusters.json"
 OUTPUT_FILE="/var/www/html/pve-console.expereo.com/status.json"
 MAX_PARALLEL=10
 CURL_TIMEOUT=10
+NAUTOBOT_CHECK_ENABLED="${NAUTOBOT_CHECK_ENABLED:-true}"
+NAUTOBOT_BASE_URL="${NAUTOBOT_BASE_URL:-}"
+NAUTOBOT_TOKEN="${NAUTOBOT_TOKEN:-}"
+NAUTOBOT_API_PATH="${NAUTOBOT_API_PATH:-/api/virtualization/virtual-machines/}"
 
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
@@ -224,5 +228,82 @@ jq -n --arg t "$LAST_UPDATE" \
 --slurpfile infra "$TMPDIR/f5" \
 '{lastUpdate:$t,clusterStatus:$c[0],nodeStatus:$n[0],nodeData:$d[0],cephStatus:$ce[0],clusterInfra:$infra[0]}' \
 > "$OUTPUT_FILE"
+
+enrich_nautobot_visibility() {
+    local input_file="$1"
+    local output_file="$2"
+
+    if [[ "${NAUTOBOT_CHECK_ENABLED,,}" != "true" ]]; then
+        echo "INFO: Nautobot visibility check disabled (NAUTOBOT_CHECK_ENABLED=$NAUTOBOT_CHECK_ENABLED)."
+        [[ "$input_file" != "$output_file" ]] && cp "$input_file" "$output_file"
+        return
+    fi
+
+    if [[ -z "$NAUTOBOT_BASE_URL" || -z "$NAUTOBOT_TOKEN" ]]; then
+        echo "WARNING: NAUTOBOT_BASE_URL or NAUTOBOT_TOKEN not set. Skipping Nautobot visibility check." >&2
+        [[ "$input_file" != "$output_file" ]] && cp "$input_file" "$output_file"
+        return
+    fi
+
+    local nb_tmpdir
+    nb_tmpdir=$(mktemp -d)
+
+    local normalized_base_url="${NAUTOBOT_BASE_URL%/}"
+    local normalized_api_path="${NAUTOBOT_API_PATH#/}"
+    local api_url="${normalized_base_url}/${normalized_api_path}"
+
+    echo "INFO: Fetching VM list from Nautobot..."
+
+    if ! curl -fsS --connect-timeout 5 --max-time "$CURL_TIMEOUT" \
+        -H "Authorization: Token ${NAUTOBOT_TOKEN}" \
+        -H "Accept: application/json" \
+        "${api_url}?limit=0" > "$nb_tmpdir/nautobot_vms.json"; then
+        echo "WARNING: Failed to fetch VMs from Nautobot. Keeping status output without Nautobot enrichment." >&2
+        rm -rf "$nb_tmpdir"
+        [[ "$input_file" != "$output_file" ]] && cp "$input_file" "$output_file"
+        return
+    fi
+
+    jq '
+      (.results // [])
+      | reduce .[] as $vm ({};
+          ($vm.name // "") as $raw |
+          ($raw | ascii_downcase) as $full |
+          ($raw | split(".")[0] | ascii_downcase) as $short |
+          if $full == "" then .
+          else . + {($full):true, ($short):true}
+          end
+        )
+    ' "$nb_tmpdir/nautobot_vms.json" > "$nb_tmpdir/nautobot_vm_map.json"
+
+    jq --slurpfile vmMap "$nb_tmpdir/nautobot_vm_map.json" '
+      ($vmMap[0]) as $lookup |
+      .nodeData |= with_entries(
+        .value.vms |= (
+          (. // []) | map(
+            if .status == "running" then
+              . as $vm |
+              (($vm.name // "") | ascii_downcase) as $name |
+              (($vm.name // "") | split(".")[0] | ascii_downcase) as $shortName |
+              (($lookup[$name] == true) or ($lookup[$shortName] == true)) as $visible |
+              . + {
+                nautobotStatus: (if $visible then "exist" else "missing" end),
+                nautobotVisible: $visible,
+                nautobotMatchedBy: (if ($lookup[$name] == true) then "exact" elif ($lookup[$shortName] == true) then "short-name" else "none" end)
+              }
+            else
+              .
+            end
+          )
+        )
+      )
+    ' "$input_file" > "$nb_tmpdir/status_enriched.json"
+
+    mv "$nb_tmpdir/status_enriched.json" "$output_file"
+    rm -rf "$nb_tmpdir"
+    echo "INFO: Nautobot visibility check completed."
+}
+
+enrich_nautobot_visibility "$OUTPUT_FILE" "$OUTPUT_FILE"
 
 echo "OK: $OUTPUT_FILE"
