@@ -77,12 +77,6 @@ function calculateStatistics() {
       missing: 0,
       unknown: 0
     },
-
-    compliance: {
-      kernelVersions: {},
-      pveVersions: {},
-      nodes: []
-    }
   };
   
   Object.entries(STATE.clustersData).forEach(([region, clusters]) => {
@@ -174,19 +168,6 @@ function calculateStatistics() {
               stats.outdatedNodes++;
             }
           }
-
-          const kernelVersion = extractKernelVersion(nodeData);
-          const pveVersion = nodeData.pveversion || 'unknown';
-          stats.compliance.kernelVersions[kernelVersion] = (stats.compliance.kernelVersions[kernelVersion] || 0) + 1;
-          stats.compliance.pveVersions[pveVersion] = (stats.compliance.pveVersions[pveVersion] || 0) + 1;
-          stats.compliance.nodes.push({
-            name: node,
-            status: nodeStatus,
-            kernelVersion,
-            pveVersion,
-            subscription: classifySubscription(nodeData.subscription)
-          });
-          
           if (nodeData.vms && Array.isArray(nodeData.vms)) {
             nodeData.vms.forEach(vm => {
               stats.totalVMs++;
@@ -455,7 +436,6 @@ function updateStatisticsUI() {
   renderCephStatus(stats.ceph);
   renderVictoriaMetricsPanel(stats);
   renderNautobotCoveragePanel(stats, nautobotEnabled);
-  renderCompliancePanel(stats.compliance);
 
 
   
@@ -464,78 +444,6 @@ function updateStatisticsUI() {
     `${stats.totalClusters} Clusters • ${stats.totalNodes} Nodes • ${stats.totalVMs} VMs`;
 }
 
-
-function extractKernelVersion(nodeData) {
-  if (!nodeData || typeof nodeData !== 'object') return 'unknown';
-
-  return nodeData.kernel
-    || nodeData.kernelVersion
-    || nodeData.runningKernel
-    || nodeData.uname
-    || nodeData.kversion
-    || 'unknown';
-}
-
-function renderCompliancePanel(complianceStats) {
-  const kernelSummary = document.getElementById('kernelVersionSummary');
-  const pveSummary = document.getElementById('pveVersionSummary');
-  const nodeRows = document.getElementById('complianceNodeRows');
-
-  if (!kernelSummary || !pveSummary || !nodeRows) return;
-
-  kernelSummary.innerHTML = renderComplianceSummaryItems(complianceStats?.kernelVersions || {}, 'kernel');
-  pveSummary.innerHTML = renderComplianceSummaryItems(complianceStats?.pveVersions || {}, 'version');
-
-  const nodes = Array.isArray(complianceStats?.nodes) ? complianceStats.nodes : [];
-  nodes.sort((a, b) => a.name.localeCompare(b.name));
-
-  nodeRows.innerHTML = nodes.map(node => `
-    <tr>
-      <td>${sanitizeHTML(node.name)}</td>
-      <td><span class="compliance-badge ${sanitizeHTML(node.status)}">${sanitizeHTML(node.status)}</span></td>
-      <td>${sanitizeHTML(node.kernelVersion)}</td>
-      <td>${sanitizeHTML(node.pveVersion)}</td>
-      <td><span class="compliance-badge ${sanitizeHTML(node.subscription)}">${sanitizeHTML(node.subscription)}</span></td>
-    </tr>
-  `).join('') || '<tr><td colspan="5" class="compliance-empty">No compliance data available.</td></tr>';
-}
-
-function renderComplianceSummaryItems(values, label) {
-  const entries = Object.entries(values || {})
-    .sort((a, b) => b[1] - a[1]);
-
-  if (!entries.length) {
-    return `<p class="compliance-empty">No ${label} data available.</p>`;
-  }
-
-  return entries.map(([name, count]) => `
-    <div class="compliance-summary-item">
-      <span class="compliance-summary-label">${sanitizeHTML(name)}</span>
-      <span class="compliance-summary-value">${count}</span>
-    </div>
-  `).join('');
-}
-
-function initializeStatisticsTabs() {
-  const tabs = document.querySelectorAll('.statistics-tab');
-  if (!tabs.length || window.__statisticsTabsInitialized) return;
-
-  const overviewPanel = document.getElementById('statisticsOverviewPanel');
-  const compliancePanel = document.getElementById('statisticsCompliancePanel');
-
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(item => item.classList.remove('active'));
-      tab.classList.add('active');
-
-      const target = tab.getAttribute('data-tab');
-      if (overviewPanel) overviewPanel.style.display = target === 'overview' ? 'block' : 'none';
-      if (compliancePanel) compliancePanel.style.display = target === 'compliance' ? 'block' : 'none';
-    });
-  });
-
-  window.__statisticsTabsInitialized = true;
-}
 
 function renderNautobotCoveragePanel(stats, nautobotEnabled) {
   const nautobotPanel = document.querySelector('.nautobot-card');
