@@ -445,6 +445,25 @@ function updateStatisticsUI() {
 }
 
 
+function initializeStatisticsTabs() {
+  const tabs = document.querySelectorAll('.statistics-tab');
+  if (!tabs.length || window.__statisticsTabsInitialized) return;
+
+  const overviewPanel = document.getElementById('statisticsOverviewPanel');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(item => item.classList.remove('active'));
+      tab.classList.add('active');
+
+      const target = tab.getAttribute('data-tab');
+      if (overviewPanel) overviewPanel.style.display = target === 'overview' ? 'block' : 'none';
+    });
+  });
+
+  window.__statisticsTabsInitialized = true;
+}
+
 function renderNautobotCoveragePanel(stats, nautobotEnabled) {
   const nautobotPanel = document.querySelector('.nautobot-card');
   if (!nautobotPanel) return;
