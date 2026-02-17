@@ -15,10 +15,6 @@ function refreshStatisticsModules() {
 }
 
 function initializeStatisticsModules() {
-  if (typeof window.initializeStatisticsTabs === 'function') {
-    window.initializeStatisticsTabs();
-  }
-
   if (typeof window.updateStatisticsUI === 'function') {
     window.updateStatisticsUI();
   } else {

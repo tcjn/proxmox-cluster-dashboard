@@ -2791,27 +2791,6 @@ footer {
   }
 }
 
-.statistics-tabs {
-  display: flex;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-}
-
-.statistics-tab {
-  border: 1px solid var(--border);
-  background: var(--card);
-  color: var(--text);
-  border-radius: 8px;
-  padding: 0.5rem 0.9rem;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.statistics-tab.active {
-  background: var(--link);
-  color: #fff;
-}
-
 .compliance-grid {
   display: grid;
   gap: 1rem;

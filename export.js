@@ -91,7 +91,7 @@ function exportToHTML() {
   <h1>Proxmox Infrastructure Report</h1>
   <p><strong>Generated:</strong> ${formatDate(new Date())}</p>
   
-  <h2>Overview Statistics</h2>
+  <h2>Infrastructure Statistics</h2>
   <div>
     <div class="stat-card">
       <div class="stat-value">${stats.totalClusters}</div>
