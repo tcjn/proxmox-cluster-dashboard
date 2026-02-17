@@ -177,15 +177,17 @@ function calculateStatistics() {
               }
               if (isVmRunningStatus(vm?.status)) {
                 stats.runningVMs++;
-                stats.nautobot.runningTotal++;
+                if (!isNautobotExcludedVmId(vm?.vmid)) {
+                  stats.nautobot.runningTotal++;
 
-                const vmNautobotInfo = getVmNautobotInfo(vm);
-                if (vmNautobotInfo.state === 'present') {
-                  stats.nautobot.present++;
-                } else if (vmNautobotInfo.state === 'missing') {
-                  stats.nautobot.missing++;
-                } else {
-                  stats.nautobot.unknown++;
+                  const vmNautobotInfo = getVmNautobotInfo(vm);
+                  if (vmNautobotInfo.state === 'present') {
+                    stats.nautobot.present++;
+                  } else if (vmNautobotInfo.state === 'missing') {
+                    stats.nautobot.missing++;
+                  } else {
+                    stats.nautobot.unknown++;
+                  }
                 }
               } else {
                 stats.stoppedVMs++;
@@ -372,6 +374,11 @@ function isVmRunningStatus(status) {
 
   const normalized = status.trim().toLowerCase();
   return ['running', 'started', 'up', 'on', 'active'].includes(normalized);
+}
+
+function isNautobotExcludedVmId(vmid) {
+  const normalizedVmid = Number(vmid);
+  return Number.isFinite(normalizedVmid) && normalizedVmid >= 500 && normalizedVmid <= 510;
 }
 
 function updateStatisticsUI() {
