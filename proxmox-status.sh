@@ -177,7 +177,7 @@ process_cluster() {
               netin,netout,diskread,diskwrite,pid,qmpstatus,tags
             }]' "$TMP_PREFIX.vms" > "$TMP_PREFIX.vm.base"
 
-            if ! jq 'map(. + {
+            jq 'map(. + {
               guestAgent: {
                 reachable: false,
                 os: null,
@@ -191,10 +191,7 @@ process_cluster() {
                   usagePercent: 0
                 }
               }
-            })' "$TMP_PREFIX.vm.base" > "$TMP_PREFIX.vm.clean"; then
-                echo "WARNING: Failed to initialize guestAgent defaults for node $NODE. Keeping base VM list." >&2
-                cp "$TMP_PREFIX.vm.base" "$TMP_PREFIX.vm.clean"
-            fi
+            })' "$TMP_PREFIX.vm.base" > "$TMP_PREFIX.vm.clean"
 
             while read -r VMID; do
                 [[ -z "$VMID" ]] && continue
@@ -258,8 +255,8 @@ process_cluster() {
                           ) else [] end),
                           filesystems: (if $fsok then (
                             ($fs[0].data.result // []) as $mounts |
-                            ($mounts | map(.["total-bytes"] // 0) | add // 0) as $total |
-                            ($mounts | map(.["used-bytes"] // 0) | add // 0) as $used |
+                            ($mounts | map(.total-bytes // 0) | add // 0) as $total |
+                            ($mounts | map(.used-bytes // 0) | add // 0) as $used |
                             {
                               mounts: ($mounts | length),
                               totalBytes: $total,
@@ -280,12 +277,7 @@ process_cluster() {
                   )
                 ' "$TMP_PREFIX.vm.clean" > "$TMP_PREFIX.vm.clean.next"
 
-                if [[ -s "$TMP_PREFIX.vm.clean.next" ]]; then
-                    mv "$TMP_PREFIX.vm.clean.next" "$TMP_PREFIX.vm.clean"
-                else
-                    echo "WARNING: Failed to enrich guest-agent data for VMID $VMID on node $NODE. Keeping previous VM payload." >&2
-                    rm -f "$TMP_PREFIX.vm.clean.next"
-                fi
+                mv "$TMP_PREFIX.vm.clean.next" "$TMP_PREFIX.vm.clean"
             done < <(jq -r '.data[]? | select(.status == "running") | .vmid' "$TMP_PREFIX.vms")
 
             jq '[.data[]? | {vmid,hostname,status,cpu,mem,maxmem,uptime}]' "$TMP_PREFIX.cts" > "$TMP_PREFIX.ct.clean"
