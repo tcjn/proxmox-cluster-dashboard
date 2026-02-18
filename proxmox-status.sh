@@ -129,14 +129,14 @@ process_cluster() {
             '. + {($n):$s}' <<< "$NODE_STATUS")
 
         if [[ "$STATUS" == "online" ]]; then
-            pve_get "nodes/$SHORT/status" "$TMP_PREFIX.met"
-            pve_get "nodes/$SHORT/qemu" "$TMP_PREFIX.vms"
-            pve_get "nodes/$SHORT/lxc" "$TMP_PREFIX.cts"
-            pve_get "nodes/$SHORT/version" "$TMP_PREFIX.ver"
-            pve_get "nodes/$SHORT/storage" "$TMP_PREFIX.storage"
-            pve_get "nodes/$SHORT/network" "$TMP_PREFIX.network"
-            pve_get "nodes/$SHORT/subscription" "$TMP_PREFIX.sub"
-            pve_get "nodes/$SHORT/rrddata?timeframe=hour" "$TMP_PREFIX.rrd"
+            pve_get "nodes/$SHORT/status" "$TMP_PREFIX.met" || echo '{"data":{}}' > "$TMP_PREFIX.met"
+            pve_get "nodes/$SHORT/qemu" "$TMP_PREFIX.vms" || echo '{"data":[]}' > "$TMP_PREFIX.vms"
+            pve_get "nodes/$SHORT/lxc" "$TMP_PREFIX.cts" || echo '{"data":[]}' > "$TMP_PREFIX.cts"
+            pve_get "nodes/$SHORT/version" "$TMP_PREFIX.ver" || echo '{"data":{}}' > "$TMP_PREFIX.ver"
+            pve_get "nodes/$SHORT/storage" "$TMP_PREFIX.storage" || echo '{"data":[]}' > "$TMP_PREFIX.storage"
+            pve_get "nodes/$SHORT/network" "$TMP_PREFIX.network" || echo '{"data":[]}' > "$TMP_PREFIX.network"
+            pve_get "nodes/$SHORT/subscription" "$TMP_PREFIX.sub" || echo '{"data":{}}' > "$TMP_PREFIX.sub"
+            pve_get "nodes/$SHORT/rrddata?timeframe=hour" "$TMP_PREFIX.rrd" || echo '{"data":[]}' > "$TMP_PREFIX.rrd"
 
             NET_USAGE=$(jq '
               (.data // [])[-1] as $x |
