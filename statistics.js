@@ -77,18 +77,6 @@ function calculateStatistics() {
       missing: 0,
       unknown: 0
     },
-
-    qemuAgent: {
-      runningTotal: 0,
-      reachable: 0,
-      missing: 0,
-      withGuestIp: 0,
-      linuxGuests: 0,
-      windowsGuests: 0,
-      unknownOs: 0,
-      avgFilesystemUsage: 0,
-      filesystemSamples: 0
-    },
   };
   
   Object.entries(STATE.clustersData).forEach(([region, clusters]) => {
@@ -188,35 +176,6 @@ function calculateStatistics() {
               }
               if (isVmRunningStatus(vm?.status)) {
                 stats.runningVMs++;
-                stats.qemuAgent.runningTotal++;
-
-                const guestAgent = vm?.guestAgent;
-                const guestAgentReachable = guestAgent?.reachable === true;
-                if (guestAgentReachable) {
-                  stats.qemuAgent.reachable++;
-
-                  if (Array.isArray(guestAgent?.primaryIps) && guestAgent.primaryIps.length > 0) {
-                    stats.qemuAgent.withGuestIp++;
-                  }
-
-                  const osName = `${guestAgent?.os?.id || ''} ${guestAgent?.os?.name || ''} ${guestAgent?.os?.prettyName || ''}`.toLowerCase();
-                  if (osName.includes('win')) {
-                    stats.qemuAgent.windowsGuests++;
-                  } else if (osName.includes('linux') || osName.includes('ubuntu') || osName.includes('debian') || osName.includes('centos') || osName.includes('rhel')) {
-                    stats.qemuAgent.linuxGuests++;
-                  } else {
-                    stats.qemuAgent.unknownOs++;
-                  }
-
-                  const fsUsage = guestAgent?.filesystems?.usagePercent;
-                  if (typeof fsUsage === 'number' && Number.isFinite(fsUsage) && fsUsage > 0) {
-                    stats.qemuAgent.avgFilesystemUsage += fsUsage;
-                    stats.qemuAgent.filesystemSamples++;
-                  }
-                } else {
-                  stats.qemuAgent.missing++;
-                }
-
                 if (!isNautobotExcludedVmId(vm?.vmid)) {
                   stats.nautobot.runningTotal++;
 
@@ -283,18 +242,6 @@ function calculateStatistics() {
 
   stats.nautobot.runningPresentPercent = stats.nautobot.runningTotal > 0
     ? Math.round((stats.nautobot.present / stats.nautobot.runningTotal) * 100)
-    : 0;
-
-  stats.qemuAgent.coveragePercent = stats.qemuAgent.runningTotal > 0
-    ? Math.round((stats.qemuAgent.reachable / stats.qemuAgent.runningTotal) * 100)
-    : 0;
-
-  stats.qemuAgent.guestIpPercent = stats.qemuAgent.runningTotal > 0
-    ? Math.round((stats.qemuAgent.withGuestIp / stats.qemuAgent.runningTotal) * 100)
-    : 0;
-
-  stats.qemuAgent.avgFilesystemUsage = stats.qemuAgent.filesystemSamples > 0
-    ? Math.round(stats.qemuAgent.avgFilesystemUsage / stats.qemuAgent.filesystemSamples)
     : 0;
 
   stats.networkUsageClusters.sort((a, b) => b.totalBytesPerSec - a.totalBytesPerSec);
@@ -494,7 +441,7 @@ function updateStatisticsUI() {
   
   // Footer stats
   document.getElementById('footerStats').textContent = 
-    `${stats.totalClusters} Clusters • ${stats.totalNodes} Nodes • ${stats.totalVMs} VMs • QEMU GA ${stats.qemuAgent.reachable}/${stats.qemuAgent.runningTotal} (${stats.qemuAgent.coveragePercent}%)`;
+    `${stats.totalClusters} Clusters • ${stats.totalNodes} Nodes • ${stats.totalVMs} VMs`;
 }
 
 

@@ -217,21 +217,6 @@ Optional per-VM fields for Nautobot integration:
 - `nautobotVisible`: `true`/`false` compatibility flag (optional, derived from `nautobotStatus` when omitted).
 - `nautobotUrl`: direct URL for the VM record in Nautobot (optional, fallback URL is generated from VM name).
 
-New optional per-VM fields (QEMU Guest Agent enrichment in `proxmox-status.sh`):
-- `guestAgent.reachable`: indicates whether at least one QEMU Guest Agent API call succeeded.
-- `guestAgent.os`: includes `id`, `name`, `prettyName`, `version`, `versionId`, `kernelRelease`, and `machine`.
-- `guestAgent.version`: guest-agent package/service version when available.
-- `guestAgent.interfaces`: interface list with MAC and guest-reported IP addresses.
-- `guestAgent.primaryIps`: deduplicated non-loopback IP list (helpful for CMDB/monitoring correlation).
-- `guestAgent.filesystems`: aggregated mount count, total bytes, used bytes, and usage percent from agent `get-fsinfo`.
-
-Suggested new dashboard KPIs using the enriched data:
-- QEMU Guest Agent coverage: reachable/running VMs and percentage by cluster/region.
-- Guest IP discovery rate: running VMs with at least one guest-reported IP.
-- Guest OS distribution: Linux vs Windows vs Unknown based on `guestAgent.os`.
-- Guest filesystem pressure: average guest filesystem usage and top-N VMs above a threshold (for example >85%).
-- VM telemetry completeness score: combine QEMU GA reachability + Nautobot visibility for running VMs.
-
 To avoid client-side Nautobot API calls on each dashboard refresh, run `nautobot-status-enrich.sh` after your Proxmox collection step:
 
 ```bash
