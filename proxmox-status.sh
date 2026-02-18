@@ -6,7 +6,6 @@ CLUSTERS_FILE="/var/www/html/pve-console.expereo.com/clusters.json"
 OUTPUT_FILE="/var/www/html/pve-console.expereo.com/status.json"
 MAX_PARALLEL=10
 CURL_TIMEOUT=10
-CURL_AGENT_TIMEOUT=4
 NAUTOBOT_CHECK_ENABLED="${NAUTOBOT_CHECK_ENABLED:-true}"
 NAUTOBOT_BASE_URL="${NAUTOBOT_BASE_URL:-}"
 NAUTOBOT_TOKEN="${NAUTOBOT_TOKEN:-}"
@@ -67,23 +66,6 @@ process_cluster() {
         [[ "$code" == "200" ]]
     }
 
-    pve_get_vm_agent() {
-        local vmid="$1"
-        local command="$2"
-        local output="$3"
-
-        curl -sk --connect-timeout 3 --max-time "$CURL_AGENT_TIMEOUT" \
-            -w "HTTPSTATUS:%{http_code}" \
-            -H "Cookie: PVEAuthCookie=$TICKET" \
-            "$URL/api2/json/nodes/$SHORT/qemu/$vmid/agent/$command" > "${output}.raw"
-
-        local code
-        code=$(sed 's/.*HTTPSTATUS://' "${output}.raw")
-        sed 's/HTTPSTATUS\:.*//' "${output}.raw" > "$output"
-
-        [[ "$code" == "200" ]]
-    }
-
     # Ceph
     if ! pve_get "cluster/ceph/status" "$TMP_PREFIX.ceph.body"; then
         jq -n --arg name "$NAME" '{($name):{health:"not-installed"}}' > "${TMP_PREFIX}.ceph.json"
@@ -129,14 +111,14 @@ process_cluster() {
             '. + {($n):$s}' <<< "$NODE_STATUS")
 
         if [[ "$STATUS" == "online" ]]; then
-            pve_get "nodes/$SHORT/status" "$TMP_PREFIX.met" || echo '{"data":{}}' > "$TMP_PREFIX.met"
-            pve_get "nodes/$SHORT/qemu" "$TMP_PREFIX.vms" || echo '{"data":[]}' > "$TMP_PREFIX.vms"
-            pve_get "nodes/$SHORT/lxc" "$TMP_PREFIX.cts" || echo '{"data":[]}' > "$TMP_PREFIX.cts"
-            pve_get "nodes/$SHORT/version" "$TMP_PREFIX.ver" || echo '{"data":{}}' > "$TMP_PREFIX.ver"
-            pve_get "nodes/$SHORT/storage" "$TMP_PREFIX.storage" || echo '{"data":[]}' > "$TMP_PREFIX.storage"
-            pve_get "nodes/$SHORT/network" "$TMP_PREFIX.network" || echo '{"data":[]}' > "$TMP_PREFIX.network"
-            pve_get "nodes/$SHORT/subscription" "$TMP_PREFIX.sub" || echo '{"data":{}}' > "$TMP_PREFIX.sub"
-            pve_get "nodes/$SHORT/rrddata?timeframe=hour" "$TMP_PREFIX.rrd" || echo '{"data":[]}' > "$TMP_PREFIX.rrd"
+            pve_get "nodes/$SHORT/status" "$TMP_PREFIX.met"
+            pve_get "nodes/$SHORT/qemu" "$TMP_PREFIX.vms"
+            pve_get "nodes/$SHORT/lxc" "$TMP_PREFIX.cts"
+            pve_get "nodes/$SHORT/version" "$TMP_PREFIX.ver"
+            pve_get "nodes/$SHORT/storage" "$TMP_PREFIX.storage"
+            pve_get "nodes/$SHORT/network" "$TMP_PREFIX.network"
+            pve_get "nodes/$SHORT/subscription" "$TMP_PREFIX.sub"
+            pve_get "nodes/$SHORT/rrddata?timeframe=hour" "$TMP_PREFIX.rrd"
 
             NET_USAGE=$(jq '
               (.data // [])[-1] as $x |
@@ -172,114 +154,7 @@ process_cluster() {
                activeInterfaces:($a|map(select(.active==1))|length),
                bridges:($a|map(select(.type=="bridge"))|map(.iface)|unique)}' "$TMP_PREFIX.network")
 
-            jq '[.data[]? | {
-              vmid,name,status,cpu,mem,maxmem,disk,maxdisk,uptime,
-              netin,netout,diskread,diskwrite,pid,qmpstatus,tags
-            }]' "$TMP_PREFIX.vms" > "$TMP_PREFIX.vm.base"
-
-            jq 'map(. + {
-              guestAgent: {
-                reachable: false,
-                os: null,
-                version: null,
-                interfaces: [],
-                primaryIps: [],
-                filesystems: {
-                  mounts: 0,
-                  totalBytes: 0,
-                  usedBytes: 0,
-                  usagePercent: 0
-                }
-              }
-            })' "$TMP_PREFIX.vm.base" > "$TMP_PREFIX.vm.clean"
-
-            while read -r VMID; do
-                [[ -z "$VMID" ]] && continue
-
-                local os_ok=false
-                local net_ok=false
-                local fs_ok=false
-
-                pve_get_vm_agent "$VMID" "get-osinfo" "$TMP_PREFIX.vm${VMID}.os" && os_ok=true
-                pve_get_vm_agent "$VMID" "network-get-interfaces" "$TMP_PREFIX.vm${VMID}.net" && net_ok=true
-                pve_get_vm_agent "$VMID" "get-fsinfo" "$TMP_PREFIX.vm${VMID}.fs" && fs_ok=true
-
-                if ! $os_ok && ! $net_ok && ! $fs_ok; then
-                    continue
-                fi
-
-                jq --argjson vmid "$VMID" \
-                  --argjson osok "$os_ok" \
-                  --argjson netok "$net_ok" \
-                  --argjson fsok "$fs_ok" \
-                  --slurpfile os "$TMP_PREFIX.vm${VMID}.os" \
-                  --slurpfile net "$TMP_PREFIX.vm${VMID}.net" \
-                  --slurpfile fs "$TMP_PREFIX.vm${VMID}.fs" '
-                  map(
-                    if .vmid == $vmid then
-                      . + {
-                        guestAgent: {
-                          reachable: ($osok or $netok or $fsok),
-                          os: (if $osok then {
-                            id: ($os[0].data.id // null),
-                            kernelRelease: ($os[0].data["kernel-release"] // null),
-                            machine: ($os[0].data.machine // null),
-                            name: ($os[0].data.name // null),
-                            prettyName: ($os[0].data["pretty-name"] // null),
-                            version: ($os[0].data.version // null),
-                            versionId: ($os[0].data["version-id"] // null)
-                          } else null end),
-                          version: (if $osok then ($os[0].data["agent-version"] // null) else null end),
-                          interfaces: (if $netok then [
-                            ($net[0].data.result // [])[] |
-                            {
-                              name: (.name // ""),
-                              hardwareAddress: (."hardware-address" // ""),
-                              ipAddresses: [
-                                (."ip-addresses" // [])[] |
-                                {
-                                  type: (."ip-address-type" // ""),
-                                  address: (."ip-address" // ""),
-                                  prefix: (.prefix // null)
-                                }
-                              ]
-                            }
-                          ] else [] end),
-                          primaryIps: (if $netok then (
-                            [
-                              ($net[0].data.result // [])[] |
-                              (."ip-addresses" // [])[] |
-                              select((."ip-address" // "") != "" and (."ip-address" != "127.0.0.1") and (."ip-address" != "::1")) |
-                              ."ip-address"
-                            ] | unique
-                          ) else [] end),
-                          filesystems: (if $fsok then (
-                            ($fs[0].data.result // []) as $mounts |
-                            ($mounts | map(.total-bytes // 0) | add // 0) as $total |
-                            ($mounts | map(.used-bytes // 0) | add // 0) as $used |
-                            {
-                              mounts: ($mounts | length),
-                              totalBytes: $total,
-                              usedBytes: $used,
-                              usagePercent: (if $total > 0 then (($used * 100 / $total) | floor) else 0 end)
-                            }
-                          ) else {
-                            mounts: 0,
-                            totalBytes: 0,
-                            usedBytes: 0,
-                            usagePercent: 0
-                          } end)
-                        }
-                      }
-                    else
-                      .
-                    end
-                  )
-                ' "$TMP_PREFIX.vm.clean" > "$TMP_PREFIX.vm.clean.next"
-
-                mv "$TMP_PREFIX.vm.clean.next" "$TMP_PREFIX.vm.clean"
-            done < <(jq -r '.data[]? | select(.status == "running") | .vmid' "$TMP_PREFIX.vms")
-
+            jq '[.data[]? | {vmid,name,status,cpu,mem,uptime}]' "$TMP_PREFIX.vms" > "$TMP_PREFIX.vm.clean"
             jq '[.data[]? | {vmid,hostname,status,cpu,mem,maxmem,uptime}]' "$TMP_PREFIX.cts" > "$TMP_PREFIX.ct.clean"
 
             NODE_DATA=$(jq \
