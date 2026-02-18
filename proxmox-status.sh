@@ -255,8 +255,8 @@ process_cluster() {
                           ) else [] end),
                           filesystems: (if $fsok then (
                             ($fs[0].data.result // []) as $mounts |
-                            ($mounts | map(.["total-bytes"] // 0) | add // 0) as $total |
-                            ($mounts | map(.["used-bytes"] // 0) | add // 0) as $used |
+                            ($mounts | map(.total-bytes // 0) | add // 0) as $total |
+                            ($mounts | map(.used-bytes // 0) | add // 0) as $used |
                             {
                               mounts: ($mounts | length),
                               totalBytes: $total,
