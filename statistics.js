@@ -500,7 +500,6 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
 
   if (!missingListEl) return;
 
-  const maxItems = 6;
   const missingVms = Array.isArray(stats?.nautobot?.missingVms) ? stats.nautobot.missingVms : [];
   const hasMissingVms = missingVms.length > 0;
 
@@ -554,7 +553,7 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
     <button class="nautobot-missing-toggle" type="button" id="nautobotMissingToggle">Hide missing VMs</button>
     <div class="nautobot-missing-title"><i class="fas fa-triangle-exclamation"></i> Missing running VMs</div>
     <div class="nautobot-missing-grid">
-      ${visibleItems.map(vm => {
+      ${missingVms.map(vm => {
         const label = sanitizeHTML(vm.name || `VM ${vm.vmid}`);
         const location = sanitizeHTML(`${vm.cluster} · ${vm.node}`);
         const vmid = sanitizeHTML(String(vm.vmid ?? '-'));
@@ -567,7 +566,6 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
         return `<div class="nautobot-missing-item"><span class="nautobot-missing-name">${label}</span><span class="nautobot-missing-meta">VM ${vmid} · ${location}</span></div>`;
       }).join('')}
     </div>
-    ${hiddenCount > 0 ? `<div class="nautobot-missing-more">+${hiddenCount} more not shown</div>` : ''}
   `;
 
   const toggleButton = document.getElementById('nautobotMissingToggle');
