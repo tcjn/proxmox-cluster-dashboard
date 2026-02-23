@@ -2772,6 +2772,64 @@ footer {
   color: var(--link);
 }
 
+.nautobot-missing-list {
+  margin-top: 0.85rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.nautobot-missing-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--degraded);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.nautobot-missing-grid {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.nautobot-missing-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--degraded);
+  border-radius: var(--radius-sm);
+  background: var(--node-bg);
+  padding: 0.45rem 0.55rem;
+  text-decoration: none;
+  transition: border-color var(--transition-base), transform var(--transition-base);
+}
+
+a.nautobot-missing-item:hover {
+  border-color: var(--degraded);
+  transform: translateY(-1px);
+}
+
+.nautobot-missing-name {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.nautobot-missing-meta {
+  font-size: 0.74rem;
+  color: var(--copy);
+}
+
+.nautobot-missing-more,
+.nautobot-missing-empty {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--copy);
+}
+
 .ops-empty {
   margin: 0;
   color: var(--copy);
