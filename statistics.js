@@ -490,7 +490,7 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
   const totalEl = document.getElementById('nautobotRunningTotal');
   const scoreEl = document.getElementById('nautobotCoverageScore');
   const missingListEl = document.getElementById('nautobotMissingList');
-  const missingCardEl = document.getElementById('nautobotMissingCard') || (missingEl ? missingEl.closest('.license-summary-item') : null);
+  const missingCardEl = missingEl ? missingEl.closest('.license-summary-item') : null;
 
   if (presentEl) presentEl.textContent = stats.nautobot.present;
   if (missingEl) missingEl.textContent = stats.nautobot.missing;
@@ -506,18 +506,10 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
   if (missingCardEl && !missingCardEl.dataset.toggleBound) {
     missingCardEl.dataset.toggleBound = 'true';
     missingCardEl.classList.add('nautobot-missing-toggle-target');
-
-    const toggleMissingDetails = () => {
+    missingCardEl.addEventListener('click', () => {
       if (!Array.isArray(window.__nautobotMissingVms) || window.__nautobotMissingVms.length === 0) return;
       window.__nautobotMissingExpanded = !window.__nautobotMissingExpanded;
       renderNautobotCoveragePanel(window.__lastStatisticsSnapshot, true);
-    };
-
-    missingCardEl.addEventListener('click', toggleMissingDetails);
-    missingCardEl.addEventListener('keydown', event => {
-      if (event.key !== 'Enter' && event.key !== ' ') return;
-      event.preventDefault();
-      toggleMissingDetails();
     });
   }
 
@@ -543,11 +535,22 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
   }
 
   if (!isExpanded) {
-    missingListEl.innerHTML = '';
+    missingListEl.innerHTML = '<button class="nautobot-missing-toggle" type="button" id="nautobotMissingToggle">Show missing VMs</button>';
+    const toggleButton = document.getElementById('nautobotMissingToggle');
+    if (toggleButton) {
+      toggleButton.addEventListener('click', () => {
+        window.__nautobotMissingExpanded = true;
+        renderNautobotCoveragePanel(window.__lastStatisticsSnapshot, true);
+      });
+    }
     return;
   }
 
+  const visibleItems = missingVms.slice(0, maxItems);
+  const hiddenCount = Math.max(0, missingVms.length - visibleItems.length);
+
   missingListEl.innerHTML = `
+    <button class="nautobot-missing-toggle" type="button" id="nautobotMissingToggle">Hide missing VMs</button>
     <div class="nautobot-missing-title"><i class="fas fa-triangle-exclamation"></i> Missing running VMs</div>
     <div class="nautobot-missing-grid">
       ${missingVms.map(vm => {
@@ -564,6 +567,14 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
       }).join('')}
     </div>
   `;
+
+  const toggleButton = document.getElementById('nautobotMissingToggle');
+  if (toggleButton) {
+    toggleButton.addEventListener('click', () => {
+      window.__nautobotMissingExpanded = false;
+      renderNautobotCoveragePanel(window.__lastStatisticsSnapshot, true);
+    });
+  }
 }
 
 function renderCephStatus(cephStats) {
