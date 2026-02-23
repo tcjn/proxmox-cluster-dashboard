@@ -2787,6 +2787,22 @@ footer {
   gap: 0.45rem;
 }
 
+.nautobot-missing-toggle {
+  justify-self: start;
+  border: 1px solid var(--border);
+  background: var(--node-bg);
+  color: var(--text);
+  padding: 0.3rem 0.55rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.nautobot-missing-toggle:hover {
+  border-color: var(--degraded);
+  color: var(--degraded);
+}
 
 .nautobot-missing-title {
   display: inline-flex;
