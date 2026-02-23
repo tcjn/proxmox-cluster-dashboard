@@ -271,9 +271,15 @@ function getNautobotBaseUrl() {
   return (CONFIG?.nautobot?.baseUrl || '').trim().replace(/\/$/, '');
 }
 
+function getShortVmName(vmName) {
+  if (!vmName) return '';
+  return String(vmName).trim().split('.')[0];
+}
+
 function getVmNautobotInfo(vm) {
   const nautobotEnabled = CONFIG?.nautobot?.enabled !== false;
   const vmName = vm?.name || `VM ${vm?.vmid || ''}`;
+  const vmLookupName = getShortVmName(vmName) || vmName;
 
   const visibilitySignals = [
     vm?.nautobotVisible,
@@ -346,7 +352,7 @@ function getVmNautobotInfo(vm) {
     };
   }
 
-  const encodedName = encodeURIComponent(vmName);
+  const encodedName = encodeURIComponent(vmLookupName);
   const queryParam = `q=${encodedName}`;
 
   return {
