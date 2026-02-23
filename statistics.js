@@ -392,6 +392,7 @@ function updateStatisticsUI() {
   const stats = calculateStatistics();
   if (!stats) return;
   const nautobotEnabled = CONFIG?.nautobot?.enabled !== false;
+  window.__lastStatisticsSnapshot = stats;
   
   document.getElementById('totalClusters').textContent = stats.totalClusters;
   document.getElementById('onlineClusters').textContent = stats.onlineClusters;
@@ -489,6 +490,7 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
   const totalEl = document.getElementById('nautobotRunningTotal');
   const scoreEl = document.getElementById('nautobotCoverageScore');
   const missingListEl = document.getElementById('nautobotMissingList');
+  const missingCardEl = document.getElementById('nautobotMissingCard') || (missingEl ? missingEl.closest('.license-summary-item') : null);
 
   if (presentEl) presentEl.textContent = stats.nautobot.present;
   if (missingEl) missingEl.textContent = stats.nautobot.missing;
@@ -498,21 +500,57 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
 
   if (!missingListEl) return;
 
-  const maxItems = 6;
   const missingVms = Array.isArray(stats?.nautobot?.missingVms) ? stats.nautobot.missingVms : [];
+  const hasMissingVms = missingVms.length > 0;
 
-  if (missingVms.length === 0) {
+  if (missingCardEl && !missingCardEl.dataset.toggleBound) {
+    missingCardEl.dataset.toggleBound = 'true';
+    missingCardEl.classList.add('nautobot-missing-toggle-target');
+
+    const toggleMissingDetails = () => {
+      if (!Array.isArray(window.__nautobotMissingVms) || window.__nautobotMissingVms.length === 0) return;
+      window.__nautobotMissingExpanded = !window.__nautobotMissingExpanded;
+      renderNautobotCoveragePanel(window.__lastStatisticsSnapshot, true);
+    };
+
+    missingCardEl.addEventListener('click', toggleMissingDetails);
+    missingCardEl.addEventListener('keydown', event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      toggleMissingDetails();
+    });
+  }
+
+  window.__nautobotMissingVms = missingVms;
+
+  if (!hasMissingVms) {
+    window.__nautobotMissingExpanded = false;
+    if (missingCardEl) {
+      missingCardEl.classList.remove('is-expandable');
+      missingCardEl.removeAttribute('title');
+      missingCardEl.setAttribute('aria-expanded', 'false');
+    }
     missingListEl.innerHTML = '<p class="nautobot-missing-empty">Great news — no running VMs are missing from Nautobot.</p>';
     return;
   }
 
-  const visibleItems = missingVms.slice(0, maxItems);
-  const hiddenCount = Math.max(0, missingVms.length - visibleItems.length);
+  const isExpanded = Boolean(window.__nautobotMissingExpanded);
+
+  if (missingCardEl) {
+    missingCardEl.classList.add('is-expandable');
+    missingCardEl.setAttribute('title', 'Click to toggle missing VM details');
+    missingCardEl.setAttribute('aria-expanded', String(isExpanded));
+  }
+
+  if (!isExpanded) {
+    missingListEl.innerHTML = '';
+    return;
+  }
 
   missingListEl.innerHTML = `
     <div class="nautobot-missing-title"><i class="fas fa-triangle-exclamation"></i> Missing running VMs</div>
     <div class="nautobot-missing-grid">
-      ${visibleItems.map(vm => {
+      ${missingVms.map(vm => {
         const label = sanitizeHTML(vm.name || `VM ${vm.vmid}`);
         const location = sanitizeHTML(`${vm.cluster} · ${vm.node}`);
         const vmid = sanitizeHTML(String(vm.vmid ?? '-'));
@@ -525,7 +563,6 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
         return `<div class="nautobot-missing-item"><span class="nautobot-missing-name">${label}</span><span class="nautobot-missing-meta">VM ${vmid} · ${location}</span></div>`;
       }).join('')}
     </div>
-    ${hiddenCount > 0 ? `<div class="nautobot-missing-more">+${hiddenCount} more not shown</div>` : ''}
   `;
 }
 
