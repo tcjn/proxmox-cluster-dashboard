@@ -2754,6 +2754,28 @@ footer {
 .license-summary-item.unknown { border-left: 4px solid var(--offline); }
 .license-summary-item.total { border-left: 4px solid var(--link); }
 
+.nautobot-missing-toggle-target {
+  user-select: none;
+}
+
+.nautobot-missing-toggle-target:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+.nautobot-missing-toggle {
+  display: none !important;
+}
+
+.nautobot-missing-toggle-target.is-expandable {
+  cursor: pointer;
+}
+
+.nautobot-missing-toggle-target.is-expandable:hover {
+  border-left-color: var(--degraded);
+  background: color-mix(in srgb, var(--degraded) 8%, var(--panel-bg));
+}
+
 .license-label {
   font-size: 0.75rem;
   color: var(--copy);
@@ -2777,6 +2799,7 @@ footer {
   display: grid;
   gap: 0.45rem;
 }
+
 
 .nautobot-missing-title {
   display: inline-flex;
