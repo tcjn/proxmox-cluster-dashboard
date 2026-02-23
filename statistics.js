@@ -75,7 +75,8 @@ function calculateStatistics() {
       runningTotal: 0,
       present: 0,
       missing: 0,
-      unknown: 0
+      unknown: 0,
+      missingVms: []
     },
   };
   
@@ -184,6 +185,13 @@ function calculateStatistics() {
                     stats.nautobot.present++;
                   } else if (vmNautobotInfo.state === 'missing') {
                     stats.nautobot.missing++;
+                    stats.nautobot.missingVms.push({
+                      name: vm?.name || `VM ${vm?.vmid || ''}`,
+                      vmid: vm?.vmid ?? '-',
+                      cluster: cluster.name,
+                      node: getShortNodeName(node),
+                      url: vmNautobotInfo.url
+                    });
                   } else {
                     stats.nautobot.unknown++;
                   }
@@ -480,12 +488,62 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
   const unknownEl = document.getElementById('nautobotUnknown');
   const totalEl = document.getElementById('nautobotRunningTotal');
   const scoreEl = document.getElementById('nautobotCoverageScore');
+  const missingToggleEl = document.getElementById('nautobotMissingToggle');
+  const missingListEl = document.getElementById('nautobotMissingList');
 
   if (presentEl) presentEl.textContent = stats.nautobot.present;
   if (missingEl) missingEl.textContent = stats.nautobot.missing;
   if (unknownEl) unknownEl.textContent = stats.nautobot.unknown;
   if (totalEl) totalEl.textContent = stats.nautobot.runningTotal;
   if (scoreEl) scoreEl.textContent = `${stats.nautobot.runningPresentPercent}% present in Nautobot`;
+
+  if (!missingListEl || !missingToggleEl) return;
+
+  const maxItems = 6;
+  const missingVms = Array.isArray(stats?.nautobot?.missingVms) ? stats.nautobot.missingVms : [];
+
+  if (missingVms.length === 0) {
+    missingToggleEl.style.display = 'none';
+    missingListEl.style.display = 'block';
+    missingListEl.innerHTML = '<p class="nautobot-missing-empty">Great news — no running VMs are missing from Nautobot.</p>';
+    window.__nautobotMissingExpanded = false;
+    return;
+  }
+
+  const visibleItems = missingVms.slice(0, maxItems);
+  const hiddenCount = Math.max(0, missingVms.length - visibleItems.length);
+
+  missingListEl.innerHTML = `
+    <div class="nautobot-missing-title"><i class="fas fa-triangle-exclamation"></i> Missing running VMs</div>
+    <div class="nautobot-missing-grid">
+      ${visibleItems.map(vm => {
+        const label = sanitizeHTML(vm.name || `VM ${vm.vmid}`);
+        const location = sanitizeHTML(`${vm.cluster} · ${vm.node}`);
+        const vmid = sanitizeHTML(String(vm.vmid ?? '-'));
+
+        if (vm.url) {
+          const safeUrl = sanitizeHTML(vm.url);
+          return `<a class="nautobot-missing-item" href="${safeUrl}" target="_blank" rel="noopener noreferrer"><span class="nautobot-missing-name">${label}</span><span class="nautobot-missing-meta">VM ${vmid} · ${location}</span></a>`;
+        }
+
+        return `<div class="nautobot-missing-item"><span class="nautobot-missing-name">${label}</span><span class="nautobot-missing-meta">VM ${vmid} · ${location}</span></div>`;
+      }).join('')}
+    </div>
+    ${hiddenCount > 0 ? `<div class="nautobot-missing-more">+${hiddenCount} more not shown</div>` : ''}
+  `;
+
+  const isExpanded = window.__nautobotMissingExpanded === true;
+  const setMissingState = expanded => {
+    window.__nautobotMissingExpanded = expanded;
+    missingListEl.style.display = expanded ? 'grid' : 'none';
+    missingToggleEl.innerHTML = expanded
+      ? `<i class="fas fa-eye-slash"></i> Hide missing VMs (${missingVms.length})`
+      : `<i class="fas fa-list"></i> Show missing VMs (${missingVms.length})`;
+  };
+
+  missingToggleEl.style.display = 'inline-flex';
+  missingToggleEl.onclick = () => setMissingState(window.__nautobotMissingExpanded !== true);
+  setMissingState(isExpanded);
 }
 
 function renderCephStatus(cephStats) {
