@@ -2772,25 +2772,6 @@ footer {
   color: var(--link);
 }
 
-.nautobot-missing-toggle {
-  margin-top: 0.7rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--node-bg);
-  color: var(--link);
-  font-size: 0.76rem;
-  font-weight: 700;
-  padding: 0.3rem 0.65rem;
-  cursor: pointer;
-}
-
-.nautobot-missing-toggle:hover {
-  border-color: var(--link);
-}
-
 .nautobot-missing-list {
   margin-top: 0.85rem;
   display: grid;
