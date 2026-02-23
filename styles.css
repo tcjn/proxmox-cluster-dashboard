@@ -2754,6 +2754,15 @@ footer {
 .license-summary-item.unknown { border-left: 4px solid var(--offline); }
 .license-summary-item.total { border-left: 4px solid var(--link); }
 
+.nautobot-missing-toggle-target.is-expandable {
+  cursor: pointer;
+}
+
+.nautobot-missing-toggle-target.is-expandable:hover {
+  border-left-color: var(--degraded);
+  background: color-mix(in srgb, var(--degraded) 8%, var(--panel-bg));
+}
+
 .license-label {
   font-size: 0.75rem;
   color: var(--copy);
@@ -2776,6 +2785,23 @@ footer {
   margin-top: 0.85rem;
   display: grid;
   gap: 0.45rem;
+}
+
+.nautobot-missing-toggle {
+  justify-self: start;
+  border: 1px solid var(--border);
+  background: var(--node-bg);
+  color: var(--text);
+  padding: 0.3rem 0.55rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.nautobot-missing-toggle:hover {
+  border-color: var(--degraded);
+  color: var(--degraded);
 }
 
 .nautobot-missing-title {
