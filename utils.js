@@ -271,9 +271,15 @@ function getNautobotBaseUrl() {
   return (CONFIG?.nautobot?.baseUrl || '').trim().replace(/\/$/, '');
 }
 
+function getShortVmName(vmName) {
+  if (!vmName) return '';
+  return String(vmName).trim().split('.')[0];
+}
+
 function getVmNautobotInfo(vm) {
   const nautobotEnabled = CONFIG?.nautobot?.enabled !== false;
   const vmName = vm?.name || `VM ${vm?.vmid || ''}`;
+  const vmLookupName = getShortVmName(vmName) || vmName;
 
   const visibilitySignals = [
     vm?.nautobotVisible,
@@ -292,15 +298,30 @@ function getVmNautobotInfo(vm) {
   const statusSignals = [
     vm?.nautobotStatus,
     vm?.nautobot_status,
-    vm?.nautobot?.status
+    vm?.nautobot?.status,
+    vm?.nautobot,
+    vm?.nautobotExists,
+    vm?.nautobot_exists,
+    vm?.existsInNautobot,
+    vm?.exists_in_nautobot
   ];
 
   const firstStatusSignal = statusSignals
     .map(normalizeNautobotStatus)
     .find(value => value !== null);
 
+  const firstBooleanStatusSignal = statusSignals
+    .map(normalizeBoolean)
+    .find(value => value !== null);
+
+  const explicitUrl = vm?.nautobotUrl || vm?.nautobot_url || vm?.nautobot?.url;
+
   const state = firstStatusSignal || (
-    firstVisibilitySignal === true ? 'present' : firstVisibilitySignal === false ? 'missing' : 'unknown'
+    firstVisibilitySignal === true || firstBooleanStatusSignal === true || Boolean(explicitUrl)
+      ? 'present'
+      : firstVisibilitySignal === false || firstBooleanStatusSignal === false
+        ? 'missing'
+        : 'unknown'
   );
   const title = {
     present: 'VM record found in Nautobot.',
@@ -322,7 +343,6 @@ function getVmNautobotInfo(vm) {
     };
   }
 
-  const explicitUrl = vm?.nautobotUrl || vm?.nautobot_url || vm?.nautobot?.url;
   if (explicitUrl) {
     return {
       url: explicitUrl,
@@ -346,7 +366,7 @@ function getVmNautobotInfo(vm) {
     };
   }
 
-  const encodedName = encodeURIComponent(vmName);
+  const encodedName = encodeURIComponent(vmLookupName);
   const queryParam = `q=${encodedName}`;
 
   return {
