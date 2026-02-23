@@ -488,7 +488,6 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
   const unknownEl = document.getElementById('nautobotUnknown');
   const totalEl = document.getElementById('nautobotRunningTotal');
   const scoreEl = document.getElementById('nautobotCoverageScore');
-  const missingToggleEl = document.getElementById('nautobotMissingToggle');
   const missingListEl = document.getElementById('nautobotMissingList');
 
   if (presentEl) presentEl.textContent = stats.nautobot.present;
@@ -497,16 +496,13 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
   if (totalEl) totalEl.textContent = stats.nautobot.runningTotal;
   if (scoreEl) scoreEl.textContent = `${stats.nautobot.runningPresentPercent}% present in Nautobot`;
 
-  if (!missingListEl || !missingToggleEl) return;
+  if (!missingListEl) return;
 
   const maxItems = 6;
   const missingVms = Array.isArray(stats?.nautobot?.missingVms) ? stats.nautobot.missingVms : [];
 
   if (missingVms.length === 0) {
-    missingToggleEl.style.display = 'none';
-    missingListEl.style.display = 'block';
     missingListEl.innerHTML = '<p class="nautobot-missing-empty">Great news — no running VMs are missing from Nautobot.</p>';
-    window.__nautobotMissingExpanded = false;
     return;
   }
 
@@ -531,19 +527,6 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
     </div>
     ${hiddenCount > 0 ? `<div class="nautobot-missing-more">+${hiddenCount} more not shown</div>` : ''}
   `;
-
-  const isExpanded = window.__nautobotMissingExpanded === true;
-  const setMissingState = expanded => {
-    window.__nautobotMissingExpanded = expanded;
-    missingListEl.style.display = expanded ? 'grid' : 'none';
-    missingToggleEl.innerHTML = expanded
-      ? `<i class="fas fa-eye-slash"></i> Hide missing VMs (${missingVms.length})`
-      : `<i class="fas fa-list"></i> Show missing VMs (${missingVms.length})`;
-  };
-
-  missingToggleEl.style.display = 'inline-flex';
-  missingToggleEl.onclick = () => setMissingState(window.__nautobotMissingExpanded !== true);
-  setMissingState(isExpanded);
 }
 
 function renderCephStatus(cephStats) {
