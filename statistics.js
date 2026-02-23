@@ -506,10 +506,17 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
   if (missingCardEl && !missingCardEl.dataset.toggleBound) {
     missingCardEl.dataset.toggleBound = 'true';
     missingCardEl.classList.add('nautobot-missing-toggle-target');
-    missingCardEl.addEventListener('click', () => {
+    const toggleMissingVms = () => {
       if (!Array.isArray(window.__nautobotMissingVms) || window.__nautobotMissingVms.length === 0) return;
       window.__nautobotMissingExpanded = !window.__nautobotMissingExpanded;
       renderNautobotCoveragePanel(window.__lastStatisticsSnapshot, true);
+    };
+
+    missingCardEl.addEventListener('click', toggleMissingVms);
+    missingCardEl.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      toggleMissingVms();
     });
   }
 
@@ -535,22 +542,11 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
   }
 
   if (!isExpanded) {
-    missingListEl.innerHTML = '<button class="nautobot-missing-toggle" type="button" id="nautobotMissingToggle">Show missing VMs</button>';
-    const toggleButton = document.getElementById('nautobotMissingToggle');
-    if (toggleButton) {
-      toggleButton.addEventListener('click', () => {
-        window.__nautobotMissingExpanded = true;
-        renderNautobotCoveragePanel(window.__lastStatisticsSnapshot, true);
-      });
-    }
+    missingListEl.innerHTML = '<p class="nautobot-missing-empty">Click the <strong>Missing</strong> summary tile to view missing VM details.</p>';
     return;
   }
 
-  const visibleItems = missingVms.slice(0, maxItems);
-  const hiddenCount = Math.max(0, missingVms.length - visibleItems.length);
-
   missingListEl.innerHTML = `
-    <button class="nautobot-missing-toggle" type="button" id="nautobotMissingToggle">Hide missing VMs</button>
     <div class="nautobot-missing-title"><i class="fas fa-triangle-exclamation"></i> Missing running VMs</div>
     <div class="nautobot-missing-grid">
       ${missingVms.map(vm => {
@@ -567,14 +563,6 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
       }).join('')}
     </div>
   `;
-
-  const toggleButton = document.getElementById('nautobotMissingToggle');
-  if (toggleButton) {
-    toggleButton.addEventListener('click', () => {
-      window.__nautobotMissingExpanded = false;
-      renderNautobotCoveragePanel(window.__lastStatisticsSnapshot, true);
-    });
-  }
 }
 
 function renderCephStatus(cephStats) {
