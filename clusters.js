@@ -187,6 +187,9 @@ function createNodeHTML(node, cluster) {
   const cpuPercent = Math.round((nodeData.cpu || 0) * 100);
   const memPercent = nodeData.maxmem ? Math.round((nodeData.mem / nodeData.maxmem) * 100) : 0;
   const diskPercent = nodeData.maxdisk ? Math.round((nodeData.disk / nodeData.maxdisk) * 100) : 0;
+  const cpuCoreCount = nodeData.cpus || 0;
+  const memorySummary = `${formatBytes(nodeData.mem || 0)} / ${formatBytes(nodeData.maxmem || 0)}`;
+  const diskSummary = `${formatBytes(nodeData.disk || 0)} / ${formatBytes(nodeData.maxdisk || 0)}`;
   const ramLabel = 'RAM';
   const swapPercent = nodeData.maxswap ? Math.round((nodeData.swap / nodeData.maxswap) * 100) : 0;
   const loadAvgOneMinute = Array.isArray(nodeData.loadavg) ? Number(nodeData.loadavg[0] || 0).toFixed(2) : '0.00';
@@ -225,6 +228,7 @@ function createNodeHTML(node, cluster) {
       <div class="node-details">
         <div class="node-metric">
           <span class="metric-value">${cpuPercent}%</span>
+          <span class="metric-detail">${cpuCoreCount} cores</span>
           <span class="metric-label">CPU</span>
           <div class="progress-container">
             <div class="progress-bar cpu-progress" style="width: ${cpuPercent}%"></div>
@@ -232,6 +236,7 @@ function createNodeHTML(node, cluster) {
         </div>
         <div class="node-metric">
           <span class="metric-value">${memPercent}%</span>
+          <span class="metric-detail">${memorySummary}</span>
           <span class="metric-label">${ramLabel}</span>
           <div class="progress-container">
             <div class="progress-bar mem-progress" style="width: ${memPercent}%"></div>
@@ -239,7 +244,8 @@ function createNodeHTML(node, cluster) {
         </div>
         <div class="node-metric">
           <span class="metric-value">${diskPercent}%</span>
-          <span class="metric-label">Disk</span>
+          <span class="metric-detail">${diskSummary}</span>
+          <span class="metric-label">Storage</span>
           <div class="progress-container">
             <div class="progress-bar disk-progress" style="width: ${diskPercent}%"></div>
           </div>
