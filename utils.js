@@ -10,6 +10,18 @@ function formatBytes(bytes, decimals = 2) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
+// Format RAM capacity as rounded GB, handling both bytes and MiB input formats
+function formatRamCapacity(memoryValue) {
+  if (!memoryValue) return '0 GB';
+
+  const bytes = memoryValue > (4 * 1024 * 1024 * 1024)
+    ? memoryValue
+    : memoryValue * 1024 * 1024;
+
+  const gb = Math.round(bytes / Math.pow(1024, 3));
+  return `${gb} GB`;
+}
+
 // Format uptime in seconds to human-readable format
 function formatUptime(seconds) {
   if (!seconds) return 'N/A';

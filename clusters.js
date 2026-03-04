@@ -186,7 +186,7 @@ function createNodeHTML(node, cluster) {
   
   const cpuPercent = Math.round((nodeData.cpu || 0) * 100);
   const memPercent = nodeData.maxmem ? Math.round((nodeData.mem / nodeData.maxmem) * 100) : 0;
-  const installedRam = formatBytes(nodeData.maxmem || 0);
+  const installedRam = formatRamCapacity(nodeData.maxmem || 0);
   const diskPercent = nodeData.maxdisk ? Math.round((nodeData.disk / nodeData.maxdisk) * 100) : 0;
   const ramLabel = 'RAM';
   const swapPercent = nodeData.maxswap ? Math.round((nodeData.swap / nodeData.maxswap) * 100) : 0;
