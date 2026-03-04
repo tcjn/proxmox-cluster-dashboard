@@ -1,37 +1,30 @@
 // Main Application
 
-function refreshStatisticsModules() {
-  if (typeof window.updateStatisticsUI === 'function') {
-    window.updateStatisticsUI();
-  } else {
-    console.warn('Statistics module missing: updateStatisticsUI is not defined');
+function invokeWindowModule(fnName, warningMessage) {
+  if (typeof window[fnName] === 'function') {
+    window[fnName]();
+    return;
   }
 
-  if (typeof window.updateCharts === 'function') {
-    window.updateCharts();
-  } else {
-    console.warn('Charts module missing: updateCharts is not defined');
-  }
+  console.warn(warningMessage);
+}
+
+function refreshStatisticsModules() {
+  invokeWindowModule('updateStatisticsUI', 'Statistics module missing: updateStatisticsUI is not defined');
+  invokeWindowModule('updateCharts', 'Charts module missing: updateCharts is not defined');
 }
 
 function initializeStatisticsModules() {
-  if (typeof window.updateStatisticsUI === 'function') {
-    window.updateStatisticsUI();
-  } else {
-    console.warn('Statistics module missing: updateStatisticsUI is not defined');
-  }
-
-  if (typeof window.initializeCharts === 'function') {
-    window.initializeCharts();
-  } else {
-    console.warn('Charts module missing: initializeCharts is not defined');
-  }
+  invokeWindowModule('updateStatisticsUI', 'Statistics module missing: updateStatisticsUI is not defined');
+  invokeWindowModule('initializeCharts', 'Charts module missing: initializeCharts is not defined');
 }
 
 
 async function loadData() {
   const loadingSpinner = document.getElementById('loadingSpinner');
-  loadingSpinner.style.display = 'flex';
+  if (loadingSpinner) {
+    loadingSpinner.style.display = 'flex';
+  }
   
   try {
     // Load clusters data
@@ -90,7 +83,9 @@ async function loadData() {
       </div>
     `;
   } finally {
-    loadingSpinner.style.display = 'none';
+    if (loadingSpinner) {
+      loadingSpinner.style.display = 'none';
+    }
   }
 }
 
