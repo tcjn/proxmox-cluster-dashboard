@@ -186,7 +186,7 @@ function createNodeHTML(node, cluster) {
   
   const cpuPercent = Math.round((nodeData.cpu || 0) * 100);
   const memPercent = nodeData.maxmem ? Math.round((nodeData.mem / nodeData.maxmem) * 100) : 0;
-  const installedRamGb = nodeData.maxmem ? Math.round(nodeData.maxmem / Math.pow(1024, 3)) : 0;
+  const installedRam = formatBytes(nodeData.maxmem || 0);
   const diskPercent = nodeData.maxdisk ? Math.round((nodeData.disk / nodeData.maxdisk) * 100) : 0;
   const ramLabel = 'RAM';
   const swapPercent = nodeData.maxswap ? Math.round((nodeData.swap / nodeData.maxswap) * 100) : 0;
@@ -249,7 +249,7 @@ function createNodeHTML(node, cluster) {
       <div class="uptime">Uptime: ${formatUptime(nodeData.uptime || 0)}</div>
       <div class="node-infra-meta" title="Kernel, load average, swap and guest density">
         <span><i class="fas fa-microchip"></i> ${nodeData.cpus || 0} cores</span>
-        <span><i class="fas fa-memory"></i> RAM ${installedRamGb} GB</span>
+        <span><i class="fas fa-memory"></i> RAM ${installedRam}</span>
         <span><i class="fas fa-tachometer-alt"></i> Load ${loadAvgOneMinute}</span>
         <span><i class="fas fa-memory"></i> Swap ${swapPercent}%</span>
       </div>
