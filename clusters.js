@@ -168,7 +168,7 @@ function createNodeHTML(node, cluster) {
   const nodeNautobotMetaMarkup = nodeNautobotInfo.url
     ? `
       <div class="node-nautobot-meta" data-nautobot-meta>
-        <a href="${nodeNautobotInfo.url}" class="nautobot-link hidden" data-nautobot-link target="_blank" rel="noopener noreferrer"><i class="fas fa-link"></i> Device</a>
+        <a href="${nodeNautobotInfo.url}" class="nautobot-link hidden" data-nautobot-link target="_blank" rel="noopener noreferrer"><i class="fas fa-link"></i> Nautobot</a>
         <a href="${nodeNautobotInfo.url}" class="nautobot-presence-link hidden" data-nautobot-link-icon target="_blank" rel="noopener noreferrer" aria-label="${sanitizeHTML(nodeNautobotInfo.title)}">
         <span class="nautobot-presence-icon ${nodeNautobotInfo.state}" data-nautobot-state="${nodeNautobotInfo.state}" data-nautobot-title="${sanitizeHTML(nodeNautobotInfo.title)}" data-nautobot-link-visible="${nodeNautobotInfo.isVisible === true}" title="${sanitizeHTML(nodeNautobotInfo.title)}" aria-label="${sanitizeHTML(nodeNautobotInfo.title)}">
           <span class="nautobot-presence-letter">N</span>
