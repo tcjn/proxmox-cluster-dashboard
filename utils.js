@@ -516,9 +516,14 @@ function setNautobotLinkVisibility(iconEl, isVisible) {
   if (!metaEl) return;
 
   const linkEl = metaEl.querySelector('[data-nautobot-link]');
-  if (!linkEl) return;
+  if (linkEl) {
+    linkEl.classList.toggle('hidden', !isVisible);
+  }
 
-  linkEl.classList.toggle('hidden', !isVisible);
+  const iconLinkEl = metaEl.querySelector('[data-nautobot-link-icon]');
+  if (iconLinkEl) {
+    iconLinkEl.classList.toggle('hidden', !isVisible);
+  }
 }
 
 function refreshNautobotPresenceIndicators(root = document) {

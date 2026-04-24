@@ -1900,6 +1900,12 @@ header h1 a:hover {
   padding: 0.15rem 0.45rem;
 }
 
+.nautobot-presence-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
 .nautobot-link:hover {
   border-color: var(--link);
 }
@@ -1955,6 +1961,7 @@ header h1 a:hover {
 }
 
 .nautobot-link.hidden,
+.nautobot-presence-link.hidden,
 .btn-primary.hidden[data-nautobot-link] {
   display: none !important;
 }
@@ -2799,6 +2806,10 @@ footer {
   margin-top: 0.85rem;
   display: grid;
   gap: 0.45rem;
+}
+
+.nautobot-node-summary-grid {
+  margin-top: 0.9rem;
 }
 
 .nautobot-missing-toggle {
