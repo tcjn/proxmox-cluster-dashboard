@@ -10,7 +10,7 @@
   <title>Proxmox Cluster Dashboard</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg?v=20260223a" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <link rel="stylesheet" href="styles.css?v=20260223a" />
+  <link rel="stylesheet" href="styles.css?v=20260424a" />
 </head>
 
 <body>
@@ -345,47 +345,47 @@
         <div class="ops-insights-grid">
           <div class="ops-insight-card nautobot-card">
             <h3><i class="fas fa-diagram-project"></i> Nautobot Coverage</h3>
-            <div class="license-summary-grid">
-              <div class="license-summary-item healthy">
-                <span class="license-label">Present</span>
-                <span class="license-value" id="nautobotPresent">0</span>
-              </div>
-              <div class="license-summary-item warning" id="nautobotMissingCard" role="button" tabindex="0" aria-expanded="false" aria-controls="nautobotMissingList">
-                <span class="license-label">Missing</span>
-                <span class="license-value" id="nautobotMissing">0</span>
-              </div>
-              <div class="license-summary-item unknown">
-                <span class="license-label">Unknown</span>
-                <span class="license-value" id="nautobotUnknown">0</span>
-              </div>
-              <div class="license-summary-item total">
-                <span class="license-label">Running VMs</span>
-                <span class="license-value" id="nautobotRunningTotal">0</span>
-              </div>
-            </div>
-            <div class="license-health-score" id="nautobotCoverageScore">0% present in Nautobot</div>
-            <div class="nautobot-node-coverage-summary" id="nautobotVmCoverageSummary">VMs (running): 0/0 present (0%) · Missing 0 · Unknown 0</div>
-            <div class="nautobot-node-coverage-summary" id="nautobotNodeCoverageSummary">Devices (nodes): 0/0 present (0%) · Missing 0 · Unknown 0</div>
-            <div class="nautobot-missing-list" id="nautobotMissingList"></div>
-            <div class="license-summary-grid nautobot-node-summary-grid">
-              <div class="license-summary-item healthy">
-                <span class="license-label">Devices Present</span>
-                <span class="license-value" id="nautobotNodePresent">0</span>
-              </div>
-              <div class="license-summary-item warning" id="nautobotNodeMissingCard" role="button" tabindex="0" aria-expanded="false" aria-controls="nautobotNodeMissingList">
-                <span class="license-label">Devices Missing</span>
-                <span class="license-value" id="nautobotNodeMissing">0</span>
-              </div>
-              <div class="license-summary-item unknown">
-                <span class="license-label">Devices Unknown</span>
-                <span class="license-value" id="nautobotNodeUnknown">0</span>
-              </div>
-              <div class="license-summary-item total">
-                <span class="license-label">Total Devices</span>
-                <span class="license-value" id="nautobotNodeTotal">0</span>
+            <div class="nautobot-coverage-section">
+              <div class="license-summary-grid">
+                <div class="license-summary-item healthy">
+                  <span class="license-label">Present</span>
+                  <span class="license-value" id="nautobotPresent">0</span>
+                </div>
+                <div class="license-summary-item warning" id="nautobotMissingCard">
+                  <span class="license-label">Missing</span>
+                  <span class="license-value" id="nautobotMissing">0</span>
+                </div>
+                <div class="license-summary-item unknown">
+                  <span class="license-label">Unknown</span>
+                  <span class="license-value" id="nautobotUnknown">0</span>
+                </div>
+                <div class="license-summary-item total">
+                  <span class="license-label">Running VMs</span>
+                  <span class="license-value" id="nautobotRunningTotal">0</span>
+                </div>
               </div>
             </div>
-            <div class="nautobot-missing-list" id="nautobotNodeMissingList"></div>
+
+            <div class="nautobot-coverage-section">
+              <div class="license-summary-grid nautobot-node-summary-grid">
+                <div class="license-summary-item healthy">
+                  <span class="license-label">Devices Present</span>
+                  <span class="license-value" id="nautobotNodePresent">0</span>
+                </div>
+                <div class="license-summary-item warning" id="nautobotNodeMissingCard">
+                  <span class="license-label">Devices Missing</span>
+                  <span class="license-value" id="nautobotNodeMissing">0</span>
+                </div>
+                <div class="license-summary-item unknown">
+                  <span class="license-label">Devices Unknown</span>
+                  <span class="license-value" id="nautobotNodeUnknown">0</span>
+                </div>
+                <div class="license-summary-item total">
+                  <span class="license-label">Total Devices</span>
+                  <span class="license-value" id="nautobotNodeTotal">0</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div class="ops-insight-card">
@@ -566,11 +566,11 @@
   <script src="config.js?v=20260212a"></script>
   <script src="utils.js?v=20260304a"></script>
   <script src="cache.js?v=20260211b"></script>
-  <script src="statistics.js?v=20260223a"></script>
+  <script src="statistics.js?v=20260424a"></script>
   <script src="notifications.js?v=20260211b"></script>
   <script src="search.js?v=20260211c"></script>
   <script src="filters.js?v=20260211b"></script>
-  <script src="clusters.js?v=20260304a"></script>
+  <script src="clusters.js?v=20260424a"></script>
   <script src="charts.js?v=20260212c"></script>
   <script src="app.js?v=20260211b"></script>
 </body>

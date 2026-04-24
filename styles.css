@@ -1881,11 +1881,12 @@ header h1 a:hover {
 }
 
 .node-nautobot-meta {
-  margin-left: 0.35rem;
+  margin-top: 0.55rem;
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  flex-shrink: 0;
+  justify-content: flex-start;
+  flex-wrap: wrap;
 }
 
 .nautobot-link {
@@ -2620,10 +2621,10 @@ footer {
   border-left: 4px solid var(--link);
 }
 
-.nautobot-node-coverage-summary {
-  font-size: 0.72rem;
-  color: var(--copy);
-  font-family: 'IBM Plex Mono', monospace;
+.nautobot-coverage-section + .nautobot-coverage-section {
+  margin-top: 1rem;
+  padding-top: 0.9rem;
+  border-top: 1px dashed var(--border);
 }
 
 .victoria-card {
@@ -2809,7 +2810,7 @@ footer {
 }
 
 .nautobot-node-summary-grid {
-  margin-top: 0.9rem;
+  margin-top: 0;
 }
 
 .nautobot-missing-toggle {
