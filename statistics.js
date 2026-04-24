@@ -512,23 +512,15 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
   const missingEl = document.getElementById('nautobotMissing');
   const unknownEl = document.getElementById('nautobotUnknown');
   const totalEl = document.getElementById('nautobotRunningTotal');
-  const scoreEl = document.getElementById('nautobotCoverageScore');
-  const vmCoverageEl = document.getElementById('nautobotVmCoverageSummary');
-  const nodeCoverageEl = document.getElementById('nautobotNodeCoverageSummary');
-  const missingListEl = document.getElementById('nautobotMissingList');
-  const missingCardEl = missingEl ? missingEl.closest('.license-summary-item') : null;
   const nodePresentEl = document.getElementById('nautobotNodePresent');
   const nodeMissingEl = document.getElementById('nautobotNodeMissing');
   const nodeUnknownEl = document.getElementById('nautobotNodeUnknown');
   const nodeTotalEl = document.getElementById('nautobotNodeTotal');
-  const nodeMissingListEl = document.getElementById('nautobotNodeMissingList');
-  const nodeMissingCardEl = nodeMissingEl ? nodeMissingEl.closest('.license-summary-item') : null;
 
   if (presentEl) presentEl.textContent = stats.nautobot.present;
   if (missingEl) missingEl.textContent = stats.nautobot.missing;
   if (unknownEl) unknownEl.textContent = stats.nautobot.unknown;
   if (totalEl) totalEl.textContent = stats.nautobot.runningTotal;
-  if (scoreEl) scoreEl.textContent = `${stats.nautobot.runningPresentPercent}% present in Nautobot`;
   if (nodePresentEl) nodePresentEl.textContent = stats.nautobot.nodesPresent;
   if (nodeMissingEl) nodeMissingEl.textContent = stats.nautobot.nodesMissing;
   if (nodeUnknownEl) nodeUnknownEl.textContent = stats.nautobot.nodesUnknown;
