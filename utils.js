@@ -522,13 +522,7 @@ function setNautobotLinkVisibility(iconEl, isVisible) {
 
   const iconLinkEl = metaEl.querySelector('[data-nautobot-link-icon]');
   if (iconLinkEl) {
-    iconLinkEl.classList.toggle('is-disabled', !isVisible);
-    iconLinkEl.setAttribute('aria-disabled', String(!isVisible));
-    if (isVisible) {
-      iconLinkEl.removeAttribute('tabindex');
-    } else {
-      iconLinkEl.setAttribute('tabindex', '-1');
-    }
+    iconLinkEl.classList.toggle('hidden', !isVisible);
   }
 }
 

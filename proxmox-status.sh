@@ -262,9 +262,6 @@ enrich_nautobot_visibility() {
     vm_ui_path="${vm_ui_path#/}"
     device_ui_path="${device_ui_path#/}"
 
-    local vm_fetch_ok="true"
-    local device_fetch_ok="true"
-
     echo "INFO: Fetching VM list from Nautobot..."
 
     if ! curl -fsS --retry 2 --retry-delay 1 --connect-timeout 5 --max-time "$CURL_TIMEOUT" \
@@ -285,6 +282,18 @@ enrich_nautobot_visibility() {
         device_fetch_ok="false"
         echo "WARNING: Failed to fetch devices from Nautobot. Node/device Nautobot enrichment will be skipped." >&2
         echo '{"results":[]}' > "$nb_tmpdir/nautobot_devices.json"
+    fi
+
+    echo "INFO: Fetching device list from Nautobot..."
+
+    if ! curl -fsS --connect-timeout 5 --max-time "$CURL_TIMEOUT" \
+        -H "Authorization: Token ${NAUTOBOT_TOKEN}" \
+        -H "Accept: application/json" \
+        "${devices_api_url}?limit=0" > "$nb_tmpdir/nautobot_devices.json"; then
+        echo "WARNING: Failed to fetch devices from Nautobot. Keeping status output without Nautobot node enrichment." >&2
+        rm -rf "$nb_tmpdir"
+        [[ "$input_file" != "$output_file" ]] && cp "$input_file" "$output_file"
+        return
     fi
 
     jq '

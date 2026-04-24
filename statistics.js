@@ -529,9 +529,6 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
   if (unknownEl) unknownEl.textContent = stats.nautobot.unknown;
   if (totalEl) totalEl.textContent = stats.nautobot.runningTotal;
   if (scoreEl) scoreEl.textContent = `${stats.nautobot.runningPresentPercent}% present in Nautobot`;
-  if (coverageDescriptionEl) {
-    coverageDescriptionEl.textContent = `Coverage summary: running VMs ${stats.nautobot.present}/${stats.nautobot.runningTotal} present (${stats.nautobot.runningPresentPercent}%), devices ${stats.nautobot.nodesPresent}/${stats.nautobot.nodesTotal} present (${stats.nautobot.nodesPresentPercent}%).`;
-  }
   if (nodePresentEl) nodePresentEl.textContent = stats.nautobot.nodesPresent;
   if (nodeMissingEl) nodeMissingEl.textContent = stats.nautobot.nodesMissing;
   if (nodeUnknownEl) nodeUnknownEl.textContent = stats.nautobot.nodesUnknown;

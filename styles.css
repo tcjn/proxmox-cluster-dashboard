@@ -1906,11 +1906,6 @@ header h1 a:hover {
   text-decoration: none;
 }
 
-.nautobot-presence-link.is-disabled {
-  pointer-events: none;
-  cursor: default;
-}
-
 .nautobot-link:hover {
   border-color: var(--link);
 }
@@ -1966,6 +1961,7 @@ header h1 a:hover {
 }
 
 .nautobot-link.hidden,
+.nautobot-presence-link.hidden,
 .btn-primary.hidden[data-nautobot-link] {
   display: none !important;
 }
