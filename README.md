@@ -241,6 +241,7 @@ NAUTOBOT_TOKEN="YOUR_READ_ONLY_TOKEN" \
 
 > `nautobot-status-enrich.sh` first reads `CONFIG.nautobot.baseUrl`, `CONFIG.nautobot.apiPath`, and `CONFIG.nautobot.apiToken` from `config.js`.
 > Environment variables (`NAUTOBOT_BASE_URL`, `NAUTOBOT_API_PATH`, `NAUTOBOT_TOKEN`/`NAUTOBOT_API_KEY`) override values from `config.js`.
+> For very large Nautobot device inventories, use `NAUTOBOT_DEVICE_LOOKUP_MODE=targeted` (default) to query only node hostnames instead of paginating all devices. Set `NAUTOBOT_DEVICE_LOOKUP_MODE=full` to force the legacy full-list behavior.
 
 
 Optional VictoriaMetrics fields in `status.json`:
