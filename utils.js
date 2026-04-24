@@ -275,6 +275,9 @@ function normalizeNautobotStatus(statusValue) {
   if (['exist', 'exists', 'present', 'found'].includes(normalized)) return 'present';
   if (['missing', 'absent', 'not-found', 'not_found'].includes(normalized)) return 'missing';
   if (['unknown', 'n/a', 'na'].includes(normalized)) return 'unknown';
+  if (normalized.includes('missing') || normalized.includes('absent') || normalized.includes('not found')) return 'missing';
+  if (normalized.includes('present') || normalized.includes('exists') || normalized.includes('found')) return 'present';
+  if (normalized.includes('unknown')) return 'unknown';
 
   return null;
 }
@@ -319,6 +322,17 @@ function normalizeNautobotEntityUrl(entityType, explicitUrl) {
     const tabSuffix = entityType === 'vm' ? '?tab=main' : '';
     return `${baseUrl}${entityPath}${uuid}/${tabSuffix}`.replace(/\/\?/g, '/?');
   }
+
+  // VM values may contain Nautobot natural-key style fragments such as:
+  // virtualization.virtualmachine/<name>_<short-id>/
+  // These are not directly navigable URLs in Nautobot UI, so we intentionally
+  // ignore them and let the caller fall back to search by VM name.
+  if (entityType === 'vm' && /^virtualization\.virtualmachine\//i.test(rawUrl)) {
+    return null;
+  }
+
+  if (/^https?:\/\//i.test(rawUrl)) return rawUrl;
+  if (baseUrl && rawUrl.startsWith('/')) return `${baseUrl}${rawUrl}`;
 
   return rawUrl;
 }
