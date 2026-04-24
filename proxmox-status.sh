@@ -264,6 +264,8 @@ enrich_nautobot_visibility() {
     local device_ui_path="${NAUTOBOT_UI_DEVICE_PATH}"
     vm_ui_path="${vm_ui_path#/}"
     device_ui_path="${device_ui_path#/}"
+    vm_ui_path="${vm_ui_path%/}"
+    device_ui_path="${device_ui_path%/}"
 
     fetch_nautobot_collection() {
         local collection_url="$1"
@@ -443,29 +445,22 @@ enrich_nautobot_visibility() {
           ($raw | split(".")[0] | ascii_downcase) as $short |
           ($device.id // "") as $id |
           ($device.url // "") as $apiUrl |
-          ($device.display_url // "") as $displayUrl |
-          ($device.natural_slug // "") as $slug |
-          ($device.object_type // "") as $objType |
           ($device.uuid // "") as $uuid |
           ($device.pk // "") as $pk |
           ($device.name // "") as $name |
           ($id | if . != "" then . else ($uuid | if . != "" then . else ($pk | tostring) end) end) as $entityId |
-          ($slug | if . != "" then . else ($entityId | tostring) end) as $pathKey |
-          ($displayUrl | if . != "" then . else ("/" + $objType + "/" + $pathKey + "/") end) as $relativePath |
           if $full == "" then .
           else . + {
             ($full): {
               visible: true,
               id: $entityId,
               apiUrl: $apiUrl,
-              relativePath: $relativePath,
               name: $name
             },
             ($short): {
               visible: true,
               id: $entityId,
               apiUrl: $apiUrl,
-              relativePath: $relativePath,
               name: $name
             }
           }
@@ -503,8 +498,7 @@ enrich_nautobot_visibility() {
               end
             ),
             nautobotUrl: (
-              if ($nodeMatch.relativePath // "") != "" then ($baseUrl + $nodeMatch.relativePath)
-              elif ($nodeMatch.id // "") != "" then ($baseUrl + "/" + $deviceUiPath + "/" + ($nodeMatch.id | tostring) + "/")
+              if ($nodeMatch.id // "") != "" then ($baseUrl + "/" + $deviceUiPath + "/" + ($nodeMatch.id | tostring) + "/?tab=main")
               else ($baseUrl + "/" + $deviceUiPath + "?q=" + ($nodeShortKey | @uri))
               end
             )
