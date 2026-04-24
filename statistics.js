@@ -520,6 +520,7 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
   const missingListEl = document.getElementById('nautobotMissingList');
   const nodeMissingCardEl = document.getElementById('nautobotNodeMissingCard');
   const nodeMissingListEl = document.getElementById('nautobotNodeMissingList');
+  const coverageHintEl = document.getElementById('nautobotCoverageHint');
 
   if (presentEl) presentEl.textContent = stats.nautobot.present;
   if (missingEl) missingEl.textContent = stats.nautobot.missing;
@@ -571,7 +572,7 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
     }
 
     if (!isExpanded) {
-      missingListEl.innerHTML = '<p class="nautobot-missing-empty">Click the <strong>Missing</strong> summary tile to view missing VM details.</p>';
+      missingListEl.innerHTML = '';
     } else {
       missingListEl.innerHTML = `
         <div class="nautobot-missing-title"><i class="fas fa-triangle-exclamation"></i> Missing running VMs</div>
@@ -633,7 +634,7 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
     }
 
     if (!isNodeExpanded) {
-      nodeMissingListEl.innerHTML = '<p class="nautobot-missing-empty">Click the <strong>Devices Missing</strong> summary tile to view missing device details.</p>';
+      nodeMissingListEl.innerHTML = '';
     } else {
       nodeMissingListEl.innerHTML = `
         <div class="nautobot-missing-title"><i class="fas fa-triangle-exclamation"></i> Missing node devices</div>
@@ -652,6 +653,14 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
           }).join('')}
         </div>
       `;
+    }
+  }
+
+  if (coverageHintEl) {
+    if (hasMissingVms || hasMissingNodes) {
+      coverageHintEl.innerHTML = 'Click a <strong>Missing</strong> tile to show details.';
+    } else {
+      coverageHintEl.textContent = '';
     }
   }
 }

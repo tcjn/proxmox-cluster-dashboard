@@ -289,6 +289,46 @@ function getNautobotSearchPath() {
   return normalizedPath.startsWith('/') ? normalizedPath : `/${normalizedPath}`;
 }
 
+function getNautobotEntityPath(entityType) {
+  const configuredPath = entityType === 'device'
+    ? CONFIG?.nautobot?.devicesPath
+    : CONFIG?.nautobot?.virtualizationPath;
+  const fallbackPath = entityType === 'device'
+    ? '/dcim/devices/'
+    : '/virtualization/virtual-machines/';
+  const rawPath = String(configuredPath || fallbackPath).trim() || fallbackPath;
+  const prefixedPath = rawPath.startsWith('/') ? rawPath : `/${rawPath}`;
+  return prefixedPath.endsWith('/') ? prefixedPath : `${prefixedPath}/`;
+}
+
+function extractUuidFromValue(value) {
+  if (!value) return null;
+  const uuidMatch = String(value).match(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i);
+  return uuidMatch ? uuidMatch[0] : null;
+}
+
+function normalizeNautobotEntityUrl(entityType, explicitUrl) {
+  if (!explicitUrl) return null;
+
+  const baseUrl = getNautobotBaseUrl();
+  const entityPath = getNautobotEntityPath(entityType);
+  const rawUrl = String(explicitUrl).trim();
+  const uuid = extractUuidFromValue(rawUrl);
+
+  if (baseUrl && uuid) {
+    const tabSuffix = entityType === 'vm' ? '?tab=main' : '';
+    return `${baseUrl}${entityPath}${uuid}/${tabSuffix}`.replace(/\/\?/g, '/?');
+  }
+
+  return rawUrl;
+}
+
+function isBrokenNautobotUrl(url) {
+  if (!url) return false;
+  const normalized = String(url).trim().toLowerCase();
+  return normalized.includes('virtualization.virtualmachine/');
+}
+
 function getShortVmName(vmName) {
   if (!vmName) return '';
   return String(vmName).trim().split('.')[0];
@@ -332,10 +372,12 @@ function getVmNautobotInfo(vm) {
     .map(normalizeBoolean)
     .find(value => value !== null);
 
-  const explicitUrl = vm?.nautobotUrl || vm?.nautobot_url || vm?.nautobot?.url;
+  const rawExplicitUrl = vm?.nautobotUrl || vm?.nautobot_url || vm?.nautobot?.url;
+  const explicitUrl = normalizeNautobotEntityUrl('vm', rawExplicitUrl);
+  const hasUsableExplicitUrl = explicitUrl && !isBrokenNautobotUrl(explicitUrl);
 
   const state = firstStatusSignal || (
-    firstVisibilitySignal === true || firstBooleanStatusSignal === true || Boolean(explicitUrl)
+    firstVisibilitySignal === true || firstBooleanStatusSignal === true
       ? 'present'
       : firstVisibilitySignal === false || firstBooleanStatusSignal === false
         ? 'missing'
@@ -349,7 +391,7 @@ function getVmNautobotInfo(vm) {
 
   const isVisible = firstVisibilitySignal !== undefined && firstVisibilitySignal !== null
     ? firstVisibilitySignal
-    : state === 'present';
+    : state !== 'unknown';
 
   if (!nautobotEnabled) {
     return {
@@ -361,7 +403,7 @@ function getVmNautobotInfo(vm) {
     };
   }
 
-  if (explicitUrl) {
+  if (hasUsableExplicitUrl) {
     return {
       url: explicitUrl,
       isVisible,
@@ -431,10 +473,12 @@ function getNodeNautobotInfo(nodeName, nodeData = null) {
     .map(normalizeBoolean)
     .find(value => value !== null);
 
-  const explicitUrl = nodeData?.nautobotUrl || nodeData?.nautobot_url || nodeData?.nautobot?.url;
+  const rawExplicitUrl = nodeData?.nautobotUrl || nodeData?.nautobot_url || nodeData?.nautobot?.url;
+  const explicitUrl = normalizeNautobotEntityUrl('device', rawExplicitUrl);
+  const hasUsableExplicitUrl = explicitUrl && !isBrokenNautobotUrl(explicitUrl);
 
   const state = firstStatusSignal || (
-    firstVisibilitySignal === true || firstBooleanStatusSignal === true || Boolean(explicitUrl)
+    firstVisibilitySignal === true || firstBooleanStatusSignal === true
       ? 'present'
       : firstVisibilitySignal === false || firstBooleanStatusSignal === false
         ? 'missing'
@@ -448,7 +492,7 @@ function getNodeNautobotInfo(nodeName, nodeData = null) {
 
   const isVisible = firstVisibilitySignal !== undefined && firstVisibilitySignal !== null
     ? firstVisibilitySignal
-    : state === 'present';
+    : state !== 'unknown';
 
   if (!nautobotEnabled) {
     return {
@@ -460,7 +504,7 @@ function getNodeNautobotInfo(nodeName, nodeData = null) {
     };
   }
 
-  if (explicitUrl) {
+  if (hasUsableExplicitUrl) {
     return {
       url: explicitUrl,
       isVisible,

@@ -165,18 +165,16 @@ function createNodeHTML(node, cluster) {
   const nodeStatus = getNodeStatus(node.fullName);
   const nodeData = getNodeData(node.fullName);
   const nodeNautobotInfo = getNodeNautobotInfo(node.fullName, nodeData);
-  const nodeNautobotMetaMarkup = nodeNautobotInfo.url
-    ? `
-      <div class="node-nautobot-meta" data-nautobot-meta>
-        <a href="${nodeNautobotInfo.url}" class="nautobot-link hidden" data-nautobot-link target="_blank" rel="noopener noreferrer"><i class="fas fa-link"></i> Nautobot</a>
-        <a href="${nodeNautobotInfo.url}" class="nautobot-presence-link hidden" data-nautobot-link-icon target="_blank" rel="noopener noreferrer" aria-label="${sanitizeHTML(nodeNautobotInfo.title)}">
-        <span class="nautobot-presence-icon ${nodeNautobotInfo.state}" data-nautobot-state="${nodeNautobotInfo.state}" data-nautobot-title="${sanitizeHTML(nodeNautobotInfo.title)}" data-nautobot-link-visible="${nodeNautobotInfo.isVisible === true}" title="${sanitizeHTML(nodeNautobotInfo.title)}" aria-label="${sanitizeHTML(nodeNautobotInfo.title)}">
-          <span class="nautobot-presence-letter">N</span>
-        </span>
-        </a>
-      </div>
-    `
-    : '';
+  const nodeNautobotMetaMarkup = `
+    <div class="node-nautobot-meta" data-nautobot-meta>
+      ${nodeNautobotInfo.url ? `<a href="${nodeNautobotInfo.url}" class="nautobot-link hidden" data-nautobot-link target="_blank" rel="noopener noreferrer"><i class="fas fa-link"></i> Nautobot</a>` : ''}
+      ${nodeNautobotInfo.url ? `<a href="${nodeNautobotInfo.url}" class="nautobot-presence-link hidden" data-nautobot-link-icon target="_blank" rel="noopener noreferrer" aria-label="${sanitizeHTML(nodeNautobotInfo.title)}">` : '<span class="nautobot-presence-link">'}
+      <span class="nautobot-presence-icon ${nodeNautobotInfo.state}" data-nautobot-state="${nodeNautobotInfo.state}" data-nautobot-title="${sanitizeHTML(nodeNautobotInfo.title)}" data-nautobot-link-visible="${nodeNautobotInfo.isVisible === true}" title="${sanitizeHTML(nodeNautobotInfo.title)}" aria-label="${sanitizeHTML(nodeNautobotInfo.title)}">
+        <span class="nautobot-presence-letter">N</span>
+      </span>
+      ${nodeNautobotInfo.url ? '</a>' : '</span>'}
+    </div>
+  `;
   
   if (!nodeData || nodeStatus === 'offline') {
     const statusLabel = nodeStatus === 'offline' ? 'Offline' : 'No Data';
@@ -294,18 +292,16 @@ function createVMHTML(vm, cluster) {
   const vmUptimeMarkup = vm.uptime
     ? `<div class="vm-uptime">Uptime: ${formatUptime(vm.uptime)}</div>`
     : '';
-  const vmNautobotMetaMarkup = nautobotInfo.url
-    ? `
-      <div class="vm-nautobot-meta" data-nautobot-meta>
-        <a href="${nautobotInfo.url}" class="nautobot-link hidden" data-nautobot-link target="_blank" rel="noopener noreferrer"><i class="fas fa-link"></i> Nautobot</a>
-        <a href="${nautobotInfo.url}" class="nautobot-presence-link hidden" data-nautobot-link-icon target="_blank" rel="noopener noreferrer" aria-label="${sanitizeHTML(nautobotInfo.title)}">
-        <span class="nautobot-presence-icon ${nautobotInfo.state}" data-nautobot-vm-key="${vmNautobotKey}" data-nautobot-vm-name="${safeVmName}" data-nautobot-state="${nautobotInfo.state}" data-nautobot-title="${sanitizeHTML(nautobotInfo.title)}" data-nautobot-link-visible="${nautobotInfo.isVisible === true}" title="${sanitizeHTML(nautobotInfo.title)}" aria-label="${sanitizeHTML(nautobotInfo.title)}">
-          <span class="nautobot-presence-letter">N</span>
-        </span>
-        </a>
-      </div>
-    `
-    : '';
+  const vmNautobotMetaMarkup = `
+    <div class="vm-nautobot-meta" data-nautobot-meta>
+      ${nautobotInfo.url ? `<a href="${nautobotInfo.url}" class="nautobot-link hidden" data-nautobot-link target="_blank" rel="noopener noreferrer"><i class="fas fa-link"></i> Nautobot</a>` : ''}
+      ${nautobotInfo.url ? `<a href="${nautobotInfo.url}" class="nautobot-presence-link hidden" data-nautobot-link-icon target="_blank" rel="noopener noreferrer" aria-label="${sanitizeHTML(nautobotInfo.title)}">` : '<span class="nautobot-presence-link">'}
+      <span class="nautobot-presence-icon ${nautobotInfo.state}" data-nautobot-vm-key="${vmNautobotKey}" data-nautobot-vm-name="${safeVmName}" data-nautobot-state="${nautobotInfo.state}" data-nautobot-title="${sanitizeHTML(nautobotInfo.title)}" data-nautobot-link-visible="${nautobotInfo.isVisible === true}" title="${sanitizeHTML(nautobotInfo.title)}" aria-label="${sanitizeHTML(nautobotInfo.title)}">
+        <span class="nautobot-presence-letter">N</span>
+      </span>
+      ${nautobotInfo.url ? '</a>' : '</span>'}
+    </div>
+  `;
   
   return `
     <div class="vm-item" data-vm-id="${vm.vmid}" data-vm-name="${vmName.toLowerCase()}">
