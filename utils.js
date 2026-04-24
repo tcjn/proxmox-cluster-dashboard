@@ -323,12 +323,6 @@ function normalizeNautobotEntityUrl(entityType, explicitUrl) {
   return rawUrl;
 }
 
-function isBrokenNautobotUrl(url) {
-  if (!url) return false;
-  const normalized = String(url).trim().toLowerCase();
-  return normalized.includes('virtualization.virtualmachine/');
-}
-
 function getShortVmName(vmName) {
   if (!vmName) return '';
   return String(vmName).trim().split('.')[0];
@@ -372,9 +366,7 @@ function getVmNautobotInfo(vm) {
     .map(normalizeBoolean)
     .find(value => value !== null);
 
-  const rawExplicitUrl = vm?.nautobotUrl || vm?.nautobot_url || vm?.nautobot?.url;
-  const explicitUrl = normalizeNautobotEntityUrl('vm', rawExplicitUrl);
-  const hasUsableExplicitUrl = explicitUrl && !isBrokenNautobotUrl(explicitUrl);
+  const explicitUrl = normalizeNautobotEntityUrl('vm', vm?.nautobotUrl || vm?.nautobot_url || vm?.nautobot?.url);
 
   const state = firstStatusSignal || (
     firstVisibilitySignal === true || firstBooleanStatusSignal === true
@@ -473,9 +465,7 @@ function getNodeNautobotInfo(nodeName, nodeData = null) {
     .map(normalizeBoolean)
     .find(value => value !== null);
 
-  const rawExplicitUrl = nodeData?.nautobotUrl || nodeData?.nautobot_url || nodeData?.nautobot?.url;
-  const explicitUrl = normalizeNautobotEntityUrl('device', rawExplicitUrl);
-  const hasUsableExplicitUrl = explicitUrl && !isBrokenNautobotUrl(explicitUrl);
+  const explicitUrl = normalizeNautobotEntityUrl('device', nodeData?.nautobotUrl || nodeData?.nautobot_url || nodeData?.nautobot?.url);
 
   const state = firstStatusSignal || (
     firstVisibilitySignal === true || firstBooleanStatusSignal === true
