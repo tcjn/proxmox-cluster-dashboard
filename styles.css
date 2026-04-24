@@ -2626,6 +2626,12 @@ footer {
   font-family: 'IBM Plex Mono', monospace;
 }
 
+.nautobot-coverage-description {
+  margin-top: 0.35rem;
+  font-size: 0.74rem;
+  color: var(--copy);
+}
+
 .victoria-card {
   border-left: 4px solid var(--link);
 }

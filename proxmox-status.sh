@@ -264,14 +264,24 @@ enrich_nautobot_visibility() {
 
     echo "INFO: Fetching VM list from Nautobot..."
 
-    if ! curl -fsS --connect-timeout 5 --max-time "$CURL_TIMEOUT" \
+    if ! curl -fsS --retry 2 --retry-delay 1 --connect-timeout 5 --max-time "$CURL_TIMEOUT" \
         -H "Authorization: Token ${NAUTOBOT_TOKEN}" \
         -H "Accept: application/json" \
         "${api_url}?limit=0" > "$nb_tmpdir/nautobot_vms.json"; then
-        echo "WARNING: Failed to fetch VMs from Nautobot. Keeping status output without Nautobot enrichment." >&2
-        rm -rf "$nb_tmpdir"
-        [[ "$input_file" != "$output_file" ]] && cp "$input_file" "$output_file"
-        return
+        vm_fetch_ok="false"
+        echo "WARNING: Failed to fetch VMs from Nautobot. VM Nautobot enrichment will be skipped." >&2
+        echo '{"results":[]}' > "$nb_tmpdir/nautobot_vms.json"
+    fi
+
+    echo "INFO: Fetching device list from Nautobot..."
+
+    if ! curl -fsS --retry 2 --retry-delay 1 --connect-timeout 5 --max-time "$CURL_TIMEOUT" \
+        -H "Authorization: Token ${NAUTOBOT_TOKEN}" \
+        -H "Accept: application/json" \
+        "${devices_api_url}?limit=0" > "$nb_tmpdir/nautobot_devices.json"; then
+        device_fetch_ok="false"
+        echo "WARNING: Failed to fetch devices from Nautobot. Node/device Nautobot enrichment will be skipped." >&2
+        echo '{"results":[]}' > "$nb_tmpdir/nautobot_devices.json"
     fi
 
     echo "INFO: Fetching device list from Nautobot..."
@@ -434,7 +444,13 @@ enrich_nautobot_visibility() {
 
     mv "$nb_tmpdir/status_enriched.json" "$output_file"
     rm -rf "$nb_tmpdir"
-    echo "INFO: Nautobot visibility check completed."
+    if [[ "$vm_fetch_ok" == "false" && "$device_fetch_ok" == "false" ]]; then
+        echo "INFO: Nautobot visibility check finished with no remote data (both VM and device API calls failed)."
+    elif [[ "$vm_fetch_ok" == "false" || "$device_fetch_ok" == "false" ]]; then
+        echo "INFO: Nautobot visibility check completed with partial enrichment."
+    else
+        echo "INFO: Nautobot visibility check completed."
+    fi
 }
 
 enrich_nautobot_visibility "$OUTPUT_FILE" "$OUTPUT_FILE"

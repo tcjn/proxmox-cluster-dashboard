@@ -513,6 +513,7 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
   const unknownEl = document.getElementById('nautobotUnknown');
   const totalEl = document.getElementById('nautobotRunningTotal');
   const scoreEl = document.getElementById('nautobotCoverageScore');
+  const coverageDescriptionEl = document.getElementById('nautobotCoverageDescription');
   const nodeCoverageEl = document.getElementById('nautobotNodeCoverageSummary');
   const missingListEl = document.getElementById('nautobotMissingList');
   const missingCardEl = missingEl ? missingEl.closest('.license-summary-item') : null;
