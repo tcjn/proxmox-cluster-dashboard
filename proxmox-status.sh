@@ -10,6 +10,9 @@ NAUTOBOT_CHECK_ENABLED="${NAUTOBOT_CHECK_ENABLED:-true}"
 NAUTOBOT_BASE_URL="${NAUTOBOT_BASE_URL:-}"
 NAUTOBOT_TOKEN="${NAUTOBOT_TOKEN:-}"
 NAUTOBOT_API_PATH="${NAUTOBOT_API_PATH:-/api/virtualization/virtual-machines/}"
+NAUTOBOT_DEVICES_API_PATH="${NAUTOBOT_DEVICES_API_PATH:-/api/dcim/devices/}"
+NAUTOBOT_UI_VM_PATH="${NAUTOBOT_UI_VM_PATH:-/virtualization/virtual-machines/}"
+NAUTOBOT_UI_DEVICE_PATH="${NAUTOBOT_UI_DEVICE_PATH:-/dcim/devices/}"
 
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
@@ -252,6 +255,13 @@ enrich_nautobot_visibility() {
     local normalized_api_path="${NAUTOBOT_API_PATH#/}"
     local api_url="${normalized_base_url}/${normalized_api_path}"
 
+    local normalized_devices_api_path="${NAUTOBOT_DEVICES_API_PATH#/}"
+    local devices_api_url="${normalized_base_url}/${normalized_devices_api_path}"
+    local vm_ui_path="${NAUTOBOT_UI_VM_PATH}"
+    local device_ui_path="${NAUTOBOT_UI_DEVICE_PATH}"
+    vm_ui_path="${vm_ui_path#/}"
+    device_ui_path="${device_ui_path#/}"
+
     echo "INFO: Fetching VM list from Nautobot..."
 
     if ! curl -fsS --connect-timeout 5 --max-time "$CURL_TIMEOUT" \
@@ -264,42 +274,159 @@ enrich_nautobot_visibility() {
         return
     fi
 
+    echo "INFO: Fetching device list from Nautobot..."
+
+    if ! curl -fsS --connect-timeout 5 --max-time "$CURL_TIMEOUT" \
+        -H "Authorization: Token ${NAUTOBOT_TOKEN}" \
+        -H "Accept: application/json" \
+        "${devices_api_url}?limit=0" > "$nb_tmpdir/nautobot_devices.json"; then
+        echo "WARNING: Failed to fetch devices from Nautobot. Keeping status output without Nautobot node enrichment." >&2
+        rm -rf "$nb_tmpdir"
+        [[ "$input_file" != "$output_file" ]] && cp "$input_file" "$output_file"
+        return
+    fi
+
     jq '
       (.results // [])
       | reduce .[] as $vm ({};
           ($vm.name // "") as $raw |
           ($raw | ascii_downcase) as $full |
           ($raw | split(".")[0] | ascii_downcase) as $short |
+          ($vm.id // "") as $id |
+          ($vm.url // "") as $apiUrl |
+          ($vm.display_url // "") as $displayUrl |
+          ($vm.natural_slug // "") as $slug |
+          ($vm.object_type // "") as $objType |
+          ($vm.uuid // "") as $uuid |
+          ($vm.pk // "") as $pk |
+          ($vm.name // "") as $name |
+          ($id | if . != "" then . else ($uuid | if . != "" then . else ($pk | tostring) end) end) as $entityId |
+          ($slug | if . != "" then . else ($entityId | tostring) end) as $pathKey |
+          ($displayUrl | if . != "" then . else ("/" + $objType + "/" + $pathKey + "/")) as $relativePath |
           if $full == "" then .
-          else . + {($full):true, ($short):true}
+          else . + {
+            ($full): {
+              visible: true,
+              id: $entityId,
+              apiUrl: $apiUrl,
+              relativePath: $relativePath,
+              name: $name
+            },
+            ($short): {
+              visible: true,
+              id: $entityId,
+              apiUrl: $apiUrl,
+              relativePath: $relativePath,
+              name: $name
+            }
+          }
           end
         )
     ' "$nb_tmpdir/nautobot_vms.json" > "$nb_tmpdir/nautobot_vm_map.json"
 
-    jq --slurpfile vmMap "$nb_tmpdir/nautobot_vm_map.json" '
-      ($vmMap[0]) as $lookup |
+    jq '
+      (.results // [])
+      | reduce .[] as $device ({};
+          ($device.name // "") as $raw |
+          ($raw | ascii_downcase) as $full |
+          ($raw | split(".")[0] | ascii_downcase) as $short |
+          ($device.id // "") as $id |
+          ($device.url // "") as $apiUrl |
+          ($device.display_url // "") as $displayUrl |
+          ($device.natural_slug // "") as $slug |
+          ($device.object_type // "") as $objType |
+          ($device.uuid // "") as $uuid |
+          ($device.pk // "") as $pk |
+          ($device.name // "") as $name |
+          ($id | if . != "" then . else ($uuid | if . != "" then . else ($pk | tostring) end) end) as $entityId |
+          ($slug | if . != "" then . else ($entityId | tostring) end) as $pathKey |
+          ($displayUrl | if . != "" then . else ("/" + $objType + "/" + $pathKey + "/")) as $relativePath |
+          if $full == "" then .
+          else . + {
+            ($full): {
+              visible: true,
+              id: $entityId,
+              apiUrl: $apiUrl,
+              relativePath: $relativePath,
+              name: $name
+            },
+            ($short): {
+              visible: true,
+              id: $entityId,
+              apiUrl: $apiUrl,
+              relativePath: $relativePath,
+              name: $name
+            }
+          }
+          end
+        )
+    ' "$nb_tmpdir/nautobot_devices.json" > "$nb_tmpdir/nautobot_device_map.json"
+
+    jq --arg baseUrl "$normalized_base_url" \
+      --arg vmUiPath "$vm_ui_path" \
+      --arg deviceUiPath "$device_ui_path" \
+      --slurpfile vmMap "$nb_tmpdir/nautobot_vm_map.json" \
+      --slurpfile deviceMap "$nb_tmpdir/nautobot_device_map.json" '
+      ($vmMap[0]) as $vmLookup |
+      ($deviceMap[0]) as $deviceLookup |
       .nodeData |= with_entries(
-        .value.vms |= (
-          (. // []) | map(
-            if ((.vmid // -1) >= 500 and (.vmid // -1) <= 510) then
-              . + {
-                nautobotStatus: "unknown",
-                nautobotVisible: false,
-                nautobotMatchedBy: "excluded-vmid"
-              }
-            elif .status == "running" then
-              . as $vm |
-              (($vm.name // "") | ascii_downcase) as $name |
-              (($vm.name // "") | split(".")[0] | ascii_downcase) as $shortName |
-              (($lookup[$name] == true) or ($lookup[$shortName] == true)) as $visible |
-              . + {
-                nautobotStatus: (if $visible then "exist" else "missing" end),
-                nautobotVisible: $visible,
-                nautobotMatchedBy: (if ($lookup[$name] == true) then "exact" elif ($lookup[$shortName] == true) then "short-name" else "none" end)
-              }
-            else
-              .
-            end
+        . as $nodeEntry |
+        (.key | ascii_downcase) as $nodeKey |
+        ((.key | split(".")[0] | ascii_downcase)) as $nodeShortKey |
+        (
+          ($deviceLookup[$nodeKey] // $deviceLookup[$nodeShortKey] // null)
+        ) as $nodeMatch |
+        .value |= (
+          . + {
+            nautobotStatus: (
+              if ($nodeMatch.visible == true) then "exist"
+              elif ($nodeMatch == null) then "missing"
+              else "unknown"
+              end
+            ),
+            nautobotVisible: ($nodeMatch.visible == true),
+            nautobotMatchedBy: (
+              if ($deviceLookup[$nodeKey] != null) then "exact"
+              elif ($deviceLookup[$nodeShortKey] != null) then "short-name"
+              else "none"
+              end
+            ),
+            nautobotUrl: (
+              if ($nodeMatch.relativePath // "") != "" then ($baseUrl + $nodeMatch.relativePath)
+              elif ($nodeMatch.id // "") != "" then ($baseUrl + "/" + $deviceUiPath + "/" + ($nodeMatch.id | tostring) + "/")
+              else ($baseUrl + "/" + $deviceUiPath + "?q=" + ($nodeShortKey | @uri))
+              end
+            )
+          }
+          | .vms |= (
+            (. // []) | map(
+              if ((.vmid // -1) >= 500 and (.vmid // -1) <= 510) then
+                . + {
+                  nautobotStatus: "unknown",
+                  nautobotVisible: false,
+                  nautobotMatchedBy: "excluded-vmid"
+                }
+              elif .status == "running" then
+                . as $vm |
+                (($vm.name // "") | ascii_downcase) as $name |
+                (($vm.name // "") | split(".")[0] | ascii_downcase) as $shortName |
+                (($vmLookup[$name] // $vmLookup[$shortName] // null)) as $vmMatch |
+                ($vmMatch.visible == true) as $visible |
+                . + {
+                  nautobotStatus: (if $visible then "exist" else "missing" end),
+                  nautobotVisible: $visible,
+                  nautobotMatchedBy: (if ($vmLookup[$name] != null) then "exact" elif ($vmLookup[$shortName] != null) then "short-name" else "none" end),
+                  nautobotUrl: (
+                    if ($vmMatch.relativePath // "") != "" then ($baseUrl + $vmMatch.relativePath)
+                    elif ($vmMatch.id // "") != "" then ($baseUrl + "/" + $vmUiPath + "/" + ($vmMatch.id | tostring) + "/")
+                    else ($baseUrl + "/" + $vmUiPath + "?q=" + ($shortName | @uri))
+                    end
+                  )
+                }
+              else
+                .
+              end
+            )
           )
         )
       )

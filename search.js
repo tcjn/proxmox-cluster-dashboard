@@ -204,9 +204,11 @@ function createVMSearchCard(vmResult) {
         ${nautobotInfo.url ? `<a href="${nautobotInfo.url}" class="btn-primary hidden" data-nautobot-link target="_blank" rel="noopener noreferrer" style="flex: 1; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: transparent; border-color: var(--link); color: var(--link);">
           <i class="fas fa-link"></i> Nautobot
         </a>
-        <span class="nautobot-presence-icon ${nautobotInfo.state}" data-nautobot-vm-key="${vmNautobotKey}" data-nautobot-vm-name="${safeVmName}" data-nautobot-state="${nautobotInfo.state}" data-nautobot-title="${sanitizeHTML(nautobotInfo.title)}" data-nautobot-link-visible="${nautobotInfo.isVisible === true}" title="${sanitizeHTML(nautobotInfo.title)}" aria-label="${sanitizeHTML(nautobotInfo.title)}" style="align-self: center; font-size: 0.95rem;">
+        <a href="${nautobotInfo.url}" class="nautobot-presence-link hidden" data-nautobot-link-icon target="_blank" rel="noopener noreferrer" aria-label="${sanitizeHTML(nautobotInfo.title)}" style="align-self: center;">
+        <span class="nautobot-presence-icon ${nautobotInfo.state}" data-nautobot-vm-key="${vmNautobotKey}" data-nautobot-vm-name="${safeVmName}" data-nautobot-state="${nautobotInfo.state}" data-nautobot-title="${sanitizeHTML(nautobotInfo.title)}" data-nautobot-link-visible="${nautobotInfo.isVisible === true}" title="${sanitizeHTML(nautobotInfo.title)}" aria-label="${sanitizeHTML(nautobotInfo.title)}" style="font-size: 0.95rem;">
           <span class="nautobot-presence-letter">N</span>
-        </span>` : ''}
+        </span>
+        </a>` : ''}
       </div>
     </div>
   `;
