@@ -26,6 +26,7 @@ const CONFIG = {
   nautobot: {
     enabled: true,
     baseUrl: 'https://nautobot.expereocloud.com',
+    searchPath: '/search/',
     virtualizationPath: '/virtualization/virtual-machines/',
     devicesPath: '/dcim/devices/',
     apiPath: '/api/virtualization/virtual-machines/',

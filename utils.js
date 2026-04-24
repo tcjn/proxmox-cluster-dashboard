@@ -283,6 +283,12 @@ function getNautobotBaseUrl() {
   return (CONFIG?.nautobot?.baseUrl || '').trim().replace(/\/$/, '');
 }
 
+function getNautobotSearchPath() {
+  const configuredPath = CONFIG?.nautobot?.searchPath || '/search/';
+  const normalizedPath = String(configuredPath).trim() || '/search/';
+  return normalizedPath.startsWith('/') ? normalizedPath : `/${normalizedPath}`;
+}
+
 function getShortVmName(vmName) {
   if (!vmName) return '';
   return String(vmName).trim().split('.')[0];
@@ -366,8 +372,6 @@ function getVmNautobotInfo(vm) {
   }
 
   const baseUrl = getNautobotBaseUrl();
-  const virtualizationPath = CONFIG?.nautobot?.virtualizationPath || '/virtualization/virtual-machines/';
-  const cleanPath = virtualizationPath.startsWith('/') ? virtualizationPath : `/${virtualizationPath}`;
   if (!baseUrl) {
     return {
       url: null,
@@ -378,11 +382,11 @@ function getVmNautobotInfo(vm) {
     };
   }
 
+  const searchPath = getNautobotSearchPath();
   const encodedName = encodeURIComponent(vmLookupName);
-  const queryParam = `q=${encodedName}`;
 
   return {
-    url: `${baseUrl}${cleanPath}?${queryParam}`,
+    url: `${baseUrl}${searchPath}?q=${encodedName}`,
     isVisible,
     hasExplicitUrl: false,
     state,
@@ -467,8 +471,6 @@ function getNodeNautobotInfo(nodeName, nodeData = null) {
   }
 
   const baseUrl = getNautobotBaseUrl();
-  const devicesPath = CONFIG?.nautobot?.devicesPath || '/dcim/devices/';
-  const cleanPath = devicesPath.startsWith('/') ? devicesPath : `/${devicesPath}`;
   if (!baseUrl || !lookupName) {
     return {
       url: null,
@@ -479,8 +481,9 @@ function getNodeNautobotInfo(nodeName, nodeData = null) {
     };
   }
 
+  const searchPath = getNautobotSearchPath();
   return {
-    url: `${baseUrl}${cleanPath}?q=${encodeURIComponent(lookupName)}`,
+    url: `${baseUrl}${searchPath}?q=${encodeURIComponent(lookupName)}`,
     isVisible,
     hasExplicitUrl: false,
     state,
