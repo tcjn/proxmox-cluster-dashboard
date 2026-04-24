@@ -512,169 +512,19 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
   const missingEl = document.getElementById('nautobotMissing');
   const unknownEl = document.getElementById('nautobotUnknown');
   const totalEl = document.getElementById('nautobotRunningTotal');
-  const scoreEl = document.getElementById('nautobotCoverageScore');
-  const vmCoverageEl = document.getElementById('nautobotVmCoverageSummary');
-  const nodeCoverageEl = document.getElementById('nautobotNodeCoverageSummary');
-  const missingListEl = document.getElementById('nautobotMissingList');
-  const missingCardEl = missingEl ? missingEl.closest('.license-summary-item') : null;
   const nodePresentEl = document.getElementById('nautobotNodePresent');
   const nodeMissingEl = document.getElementById('nautobotNodeMissing');
   const nodeUnknownEl = document.getElementById('nautobotNodeUnknown');
   const nodeTotalEl = document.getElementById('nautobotNodeTotal');
-  const nodeMissingListEl = document.getElementById('nautobotNodeMissingList');
-  const nodeMissingCardEl = nodeMissingEl ? nodeMissingEl.closest('.license-summary-item') : null;
 
   if (presentEl) presentEl.textContent = stats.nautobot.present;
   if (missingEl) missingEl.textContent = stats.nautobot.missing;
   if (unknownEl) unknownEl.textContent = stats.nautobot.unknown;
   if (totalEl) totalEl.textContent = stats.nautobot.runningTotal;
-  if (scoreEl) scoreEl.textContent = `${stats.nautobot.runningPresentPercent}% present in Nautobot`;
   if (nodePresentEl) nodePresentEl.textContent = stats.nautobot.nodesPresent;
   if (nodeMissingEl) nodeMissingEl.textContent = stats.nautobot.nodesMissing;
   if (nodeUnknownEl) nodeUnknownEl.textContent = stats.nautobot.nodesUnknown;
   if (nodeTotalEl) nodeTotalEl.textContent = stats.nautobot.nodesTotal;
-  if (vmCoverageEl) {
-    vmCoverageEl.textContent = `VMs (running): ${stats.nautobot.present}/${stats.nautobot.runningTotal} present (${stats.nautobot.runningPresentPercent}%) · Missing ${stats.nautobot.missing} · Unknown ${stats.nautobot.unknown}`;
-  }
-  if (nodeCoverageEl) {
-    nodeCoverageEl.textContent = `Devices (nodes): ${stats.nautobot.nodesPresent}/${stats.nautobot.nodesTotal} present (${stats.nautobot.nodesPresentPercent}%) · Missing ${stats.nautobot.nodesMissing} · Unknown ${stats.nautobot.nodesUnknown}`;
-  }
-
-  if (!missingListEl || !nodeMissingListEl) return;
-
-  const missingVms = Array.isArray(stats?.nautobot?.missingVms) ? stats.nautobot.missingVms : [];
-  const hasMissingVms = missingVms.length > 0;
-  const unknownVmCount = Number(stats?.nautobot?.unknown || 0);
-
-  if (missingCardEl && !missingCardEl.dataset.toggleBound) {
-    missingCardEl.dataset.toggleBound = 'true';
-    missingCardEl.classList.add('nautobot-missing-toggle-target');
-    const toggleMissingVms = () => {
-      if (!Array.isArray(window.__nautobotMissingVms) || window.__nautobotMissingVms.length === 0) return;
-      window.__nautobotMissingExpanded = !window.__nautobotMissingExpanded;
-      renderNautobotCoveragePanel(window.__lastStatisticsSnapshot, true);
-    };
-
-    missingCardEl.addEventListener('click', toggleMissingVms);
-    missingCardEl.addEventListener('keydown', (event) => {
-      if (event.key !== 'Enter' && event.key !== ' ') return;
-      event.preventDefault();
-      toggleMissingVms();
-    });
-  }
-
-  window.__nautobotMissingVms = missingVms;
-
-  if (!hasMissingVms) {
-    window.__nautobotMissingExpanded = false;
-    if (missingCardEl) {
-      missingCardEl.classList.remove('is-expandable');
-      missingCardEl.removeAttribute('title');
-      missingCardEl.setAttribute('aria-expanded', 'false');
-    }
-    if (unknownVmCount > 0) {
-      missingListEl.innerHTML = `<p class="nautobot-missing-empty">No running VMs are confirmed missing, but ${unknownVmCount} VM${unknownVmCount === 1 ? '' : 's'} have unknown Nautobot status.</p>`;
-    } else {
-      missingListEl.innerHTML = '<p class="nautobot-missing-empty">Great news — no running VMs are missing from Nautobot.</p>';
-    }
-  } else {
-    const isExpanded = Boolean(window.__nautobotMissingExpanded);
-
-    if (missingCardEl) {
-      missingCardEl.classList.add('is-expandable');
-      missingCardEl.setAttribute('title', 'Click to toggle missing VM details');
-      missingCardEl.setAttribute('aria-expanded', String(isExpanded));
-    }
-
-    if (!isExpanded) {
-      missingListEl.innerHTML = '<p class="nautobot-missing-empty">Click the <strong>Missing</strong> summary tile to view missing VM details.</p>';
-    } else {
-      missingListEl.innerHTML = `
-        <div class="nautobot-missing-title"><i class="fas fa-triangle-exclamation"></i> Missing running VMs</div>
-        <div class="nautobot-missing-grid">
-          ${missingVms.map(vm => {
-            const label = sanitizeHTML(vm.name || `VM ${vm.vmid}`);
-            const location = sanitizeHTML(`${vm.cluster} · ${vm.node}`);
-            const vmid = sanitizeHTML(String(vm.vmid ?? '-'));
-
-            if (vm.url) {
-              const safeUrl = sanitizeHTML(vm.url);
-              return `<a class="nautobot-missing-item" href="${safeUrl}" target="_blank" rel="noopener noreferrer"><span class="nautobot-missing-name">${label}</span><span class="nautobot-missing-meta">VM ${vmid} · ${location}</span></a>`;
-            }
-
-            return `<div class="nautobot-missing-item"><span class="nautobot-missing-name">${label}</span><span class="nautobot-missing-meta">VM ${vmid} · ${location}</span></div>`;
-          }).join('')}
-        </div>
-      `;
-    }
-  }
-
-  const missingNodes = Array.isArray(stats?.nautobot?.missingNodes) ? stats.nautobot.missingNodes : [];
-  const hasMissingNodes = missingNodes.length > 0;
-  const unknownNodeCount = Number(stats?.nautobot?.nodesUnknown || 0);
-
-  if (nodeMissingCardEl && !nodeMissingCardEl.dataset.toggleBound) {
-    nodeMissingCardEl.dataset.toggleBound = 'true';
-    nodeMissingCardEl.classList.add('nautobot-missing-toggle-target');
-    const toggleMissingNodes = () => {
-      if (!Array.isArray(window.__nautobotMissingNodes) || window.__nautobotMissingNodes.length === 0) return;
-      window.__nautobotNodeMissingExpanded = !window.__nautobotNodeMissingExpanded;
-      renderNautobotCoveragePanel(window.__lastStatisticsSnapshot, true);
-    };
-
-    nodeMissingCardEl.addEventListener('click', toggleMissingNodes);
-    nodeMissingCardEl.addEventListener('keydown', (event) => {
-      if (event.key !== 'Enter' && event.key !== ' ') return;
-      event.preventDefault();
-      toggleMissingNodes();
-    });
-  }
-
-  window.__nautobotMissingNodes = missingNodes;
-
-  if (!hasMissingNodes) {
-    window.__nautobotNodeMissingExpanded = false;
-    if (nodeMissingCardEl) {
-      nodeMissingCardEl.classList.remove('is-expandable');
-      nodeMissingCardEl.removeAttribute('title');
-      nodeMissingCardEl.setAttribute('aria-expanded', 'false');
-    }
-    if (unknownNodeCount > 0) {
-      nodeMissingListEl.innerHTML = `<p class="nautobot-missing-empty">No nodes are confirmed missing, but ${unknownNodeCount} node${unknownNodeCount === 1 ? '' : 's'} have unknown Nautobot device status.</p>`;
-    } else {
-      nodeMissingListEl.innerHTML = '<p class="nautobot-missing-empty">Great news — no nodes are missing from Nautobot devices.</p>';
-    }
-  } else {
-    const isNodeExpanded = Boolean(window.__nautobotNodeMissingExpanded);
-
-    if (nodeMissingCardEl) {
-      nodeMissingCardEl.classList.add('is-expandable');
-      nodeMissingCardEl.setAttribute('title', 'Click to toggle missing device details');
-      nodeMissingCardEl.setAttribute('aria-expanded', String(isNodeExpanded));
-    }
-
-    if (!isNodeExpanded) {
-      nodeMissingListEl.innerHTML = '<p class="nautobot-missing-empty">Click the <strong>Devices Missing</strong> summary tile to view missing device details.</p>';
-    } else {
-      nodeMissingListEl.innerHTML = `
-        <div class="nautobot-missing-title"><i class="fas fa-triangle-exclamation"></i> Missing node devices</div>
-        <div class="nautobot-missing-grid">
-          ${missingNodes.map(node => {
-            const label = sanitizeHTML(node.name || node.fullName || 'Unknown node');
-            const location = sanitizeHTML(node.cluster || '-');
-            const fullName = sanitizeHTML(node.fullName || '-');
-
-            if (node.url) {
-              const safeUrl = sanitizeHTML(node.url);
-              return `<a class="nautobot-missing-item" href="${safeUrl}" target="_blank" rel="noopener noreferrer"><span class="nautobot-missing-name">${label}</span><span class="nautobot-missing-meta">${fullName} · ${location}</span></a>`;
-            }
-
-            return `<div class="nautobot-missing-item"><span class="nautobot-missing-name">${label}</span><span class="nautobot-missing-meta">${fullName} · ${location}</span></div>`;
-          }).join('')}
-        </div>
-      `;
-    }
-  }
 }
 
 function renderCephStatus(cephStats) {
