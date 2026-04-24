@@ -516,9 +516,20 @@ function setNautobotLinkVisibility(iconEl, isVisible) {
   if (!metaEl) return;
 
   const linkEl = metaEl.querySelector('[data-nautobot-link]');
-  if (!linkEl) return;
+  if (linkEl) {
+    linkEl.classList.toggle('hidden', !isVisible);
+  }
 
-  linkEl.classList.toggle('hidden', !isVisible);
+  const iconLinkEl = metaEl.querySelector('[data-nautobot-link-icon]');
+  if (iconLinkEl) {
+    iconLinkEl.classList.toggle('is-disabled', !isVisible);
+    iconLinkEl.setAttribute('aria-disabled', String(!isVisible));
+    if (isVisible) {
+      iconLinkEl.removeAttribute('tabindex');
+    } else {
+      iconLinkEl.setAttribute('tabindex', '-1');
+    }
+  }
 }
 
 function refreshNautobotPresenceIndicators(root = document) {
