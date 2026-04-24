@@ -189,11 +189,11 @@ function createNodeHTML(node, cluster) {
           <div class="node-name">
             <span class="node-indicator ${nodeStatus}"></span>
             <a href="https://${node.fullName}:8006" target="_blank">${displayName}</a>
-            ${nodeNautobotMetaMarkup}
           </div>
           <span class="node-status ${nodeStatus}">${statusLabel}</span>
         </div>
         <div class="node-offline">${offlineMessage}</div>
+        ${nodeNautobotMetaMarkup}
       </div>
     `;
   }
@@ -234,7 +234,6 @@ function createNodeHTML(node, cluster) {
         <div class="node-name">
           <span class="node-indicator ${nodeStatus}"></span>
           <a href="https://${node.fullName}:8006" target="_blank">${displayName}</a>
-          ${nodeNautobotMetaMarkup}
         </div>
         <span class="node-status ${nodeStatus}">${nodeStatus}</span>
       </div>
@@ -278,6 +277,7 @@ function createNodeHTML(node, cluster) {
         ${isVersionOutdated ? '<i class="fas fa-exclamation-triangle"></i>' : ''}
       </div>
       ${vmsHTML}
+      ${nodeNautobotMetaMarkup}
     </div>
   `;
 }
