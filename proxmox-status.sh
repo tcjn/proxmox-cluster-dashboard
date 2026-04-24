@@ -413,7 +413,7 @@ enrich_nautobot_visibility() {
           ($vm.name // "") as $name |
           ($id | if . != "" then . else ($uuid | if . != "" then . else ($pk | tostring) end) end) as $entityId |
           ($slug | if . != "" then . else ($entityId | tostring) end) as $pathKey |
-          ($displayUrl | if . != "" then . else ("/" + $objType + "/" + $pathKey + "/")) as $relativePath |
+          ($displayUrl | if . != "" then . else ("/" + $objType + "/" + $pathKey + "/") end) as $relativePath |
           if $full == "" then .
           else . + {
             ($full): {
@@ -451,7 +451,7 @@ enrich_nautobot_visibility() {
           ($device.name // "") as $name |
           ($id | if . != "" then . else ($uuid | if . != "" then . else ($pk | tostring) end) end) as $entityId |
           ($slug | if . != "" then . else ($entityId | tostring) end) as $pathKey |
-          ($displayUrl | if . != "" then . else ("/" + $objType + "/" + $pathKey + "/")) as $relativePath |
+          ($displayUrl | if . != "" then . else ("/" + $objType + "/" + $pathKey + "/") end) as $relativePath |
           if $full == "" then .
           else . + {
             ($full): {
