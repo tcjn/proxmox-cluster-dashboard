@@ -346,7 +346,7 @@
           <div class="ops-insight-card nautobot-card">
             <h3><i class="fas fa-diagram-project"></i> Nautobot Coverage</h3>
             <div class="nautobot-coverage-section">
-              <h4 class="nautobot-coverage-heading">VM Section</h4>
+              <h4 class="nautobot-coverage-heading">VM</h4>
               <div class="license-summary-grid">
                 <div class="license-summary-item healthy">
                   <span class="license-label">Present</span>
@@ -369,27 +369,28 @@
             </div>
 
             <div class="nautobot-coverage-section">
-              <h4 class="nautobot-coverage-heading">Devices Section</h4>
+              <h4 class="nautobot-coverage-heading">Devices</h4>
               <div class="license-summary-grid nautobot-node-summary-grid">
                 <div class="license-summary-item healthy">
-                  <span class="license-label">Devices Present</span>
+                  <span class="license-label">Present</span>
                   <span class="license-value" id="nautobotNodePresent">0</span>
                 </div>
                 <div class="license-summary-item warning" id="nautobotNodeMissingCard" role="button" tabindex="0" aria-expanded="false" aria-controls="nautobotNodeMissingList">
-                  <span class="license-label">Devices Missing</span>
+                  <span class="license-label">Missing</span>
                   <span class="license-value" id="nautobotNodeMissing">0</span>
                 </div>
                 <div class="license-summary-item unknown">
-                  <span class="license-label">Devices Unknown</span>
+                  <span class="license-label">Unknown</span>
                   <span class="license-value" id="nautobotNodeUnknown">0</span>
                 </div>
                 <div class="license-summary-item total">
-                  <span class="license-label">Total Devices</span>
+                  <span class="license-label">Total</span>
                   <span class="license-value" id="nautobotNodeTotal">0</span>
                 </div>
               </div>
               <div class="nautobot-missing-list" id="nautobotNodeMissingList"></div>
             </div>
+            <p class="nautobot-missing-empty" id="nautobotCoverageHint"></p>
           </div>
 
           <div class="ops-insight-card">
