@@ -6,6 +6,8 @@ CLUSTERS_FILE="/var/www/html/pve-console.expereo.com/clusters.json"
 OUTPUT_FILE="/var/www/html/pve-console.expereo.com/status.json"
 MAX_PARALLEL=10
 CURL_TIMEOUT=10
+NAUTOBOT_TIMEOUT="${NAUTOBOT_TIMEOUT:-30}"
+NAUTOBOT_PAGE_LIMIT="${NAUTOBOT_PAGE_LIMIT:-200}"
 NAUTOBOT_CHECK_ENABLED="${NAUTOBOT_CHECK_ENABLED:-true}"
 NAUTOBOT_BASE_URL="${NAUTOBOT_BASE_URL:-}"
 NAUTOBOT_TOKEN="${NAUTOBOT_TOKEN:-}"
@@ -262,12 +264,47 @@ enrich_nautobot_visibility() {
     vm_ui_path="${vm_ui_path#/}"
     device_ui_path="${device_ui_path#/}"
 
-    echo "INFO: Fetching VM list from Nautobot..."
+    fetch_nautobot_collection() {
+        local collection_url="$1"
+        local output_json="$2"
+        local collection_label="$3"
+        local page_url="${collection_url}?limit=${NAUTOBOT_PAGE_LIMIT}"
+        local aggregated_results="$nb_tmpdir/${collection_label}_results.json"
+        local page_file="$nb_tmpdir/${collection_label}_page.json"
+        local next_url=""
 
-    if ! curl -fsS --connect-timeout 5 --max-time "$CURL_TIMEOUT" \
-        -H "Authorization: Token ${NAUTOBOT_TOKEN}" \
-        -H "Accept: application/json" \
-        "${api_url}?limit=0" > "$nb_tmpdir/nautobot_vms.json"; then
+        echo '[]' > "$aggregated_results"
+
+        while [[ -n "$page_url" ]]; do
+            if ! curl -fsS --connect-timeout 5 --max-time "$NAUTOBOT_TIMEOUT" \
+                -H "Authorization: Token ${NAUTOBOT_TOKEN}" \
+                -H "Accept: application/json" \
+                "$page_url" > "$page_file"; then
+                echo "WARNING: Failed to fetch ${collection_label} page from Nautobot (${page_url})." >&2
+                return 1
+            fi
+
+            if ! jq -e '.results | type == "array"' "$page_file" > /dev/null; then
+                echo "WARNING: Invalid ${collection_label} response from Nautobot (${page_url})." >&2
+                return 1
+            fi
+
+            jq -s '.[0] + (.[1].results // [])' "$aggregated_results" "$page_file" > "$nb_tmpdir/${collection_label}_results.next.json"
+            mv "$nb_tmpdir/${collection_label}_results.next.json" "$aggregated_results"
+
+            next_url=$(jq -r '.next // empty' "$page_file")
+            if [[ -n "$next_url" && "$next_url" != http* ]]; then
+                page_url="${normalized_base_url}/${next_url#/}"
+            else
+                page_url="$next_url"
+            fi
+        done
+
+        jq -n --slurpfile results "$aggregated_results" '{results: ($results[0] // [])}' > "$output_json"
+    }
+
+    echo "INFO: Fetching VM list from Nautobot..."
+    if ! fetch_nautobot_collection "$api_url" "$nb_tmpdir/nautobot_vms.json" "nautobot_vms"; then
         echo "WARNING: Failed to fetch VMs from Nautobot. Keeping status output without Nautobot enrichment." >&2
         rm -rf "$nb_tmpdir"
         [[ "$input_file" != "$output_file" ]] && cp "$input_file" "$output_file"
@@ -275,11 +312,7 @@ enrich_nautobot_visibility() {
     fi
 
     echo "INFO: Fetching device list from Nautobot..."
-
-    if ! curl -fsS --connect-timeout 5 --max-time "$CURL_TIMEOUT" \
-        -H "Authorization: Token ${NAUTOBOT_TOKEN}" \
-        -H "Accept: application/json" \
-        "${devices_api_url}?limit=0" > "$nb_tmpdir/nautobot_devices.json"; then
+    if ! fetch_nautobot_collection "$devices_api_url" "$nb_tmpdir/nautobot_devices.json" "nautobot_devices"; then
         echo "WARNING: Failed to fetch devices from Nautobot. Keeping status output without Nautobot node enrichment." >&2
         rm -rf "$nb_tmpdir"
         [[ "$input_file" != "$output_file" ]] && cp "$input_file" "$output_file"
