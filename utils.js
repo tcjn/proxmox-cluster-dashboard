@@ -367,6 +367,7 @@ function getVmNautobotInfo(vm) {
     .find(value => value !== null);
 
   const explicitUrl = normalizeNautobotEntityUrl('vm', vm?.nautobotUrl || vm?.nautobot_url || vm?.nautobot?.url);
+  const hasUsableExplicitUrl = Boolean(explicitUrl);
 
   const state = firstStatusSignal || (
     firstVisibilitySignal === true || firstBooleanStatusSignal === true
@@ -466,6 +467,7 @@ function getNodeNautobotInfo(nodeName, nodeData = null) {
     .find(value => value !== null);
 
   const explicitUrl = normalizeNautobotEntityUrl('device', nodeData?.nautobotUrl || nodeData?.nautobot_url || nodeData?.nautobot?.url);
+  const hasUsableExplicitUrl = Boolean(explicitUrl);
 
   const state = firstStatusSignal || (
     firstVisibilitySignal === true || firstBooleanStatusSignal === true
