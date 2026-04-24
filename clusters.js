@@ -164,6 +164,17 @@ function createNodeHTML(node, cluster) {
   const displayName = getDisplayNodeName(node.fullName);
   const nodeStatus = getNodeStatus(node.fullName);
   const nodeData = getNodeData(node.fullName);
+  const nodeNautobotInfo = getNodeNautobotInfo(node.fullName, nodeData);
+  const nodeNautobotMetaMarkup = nodeNautobotInfo.url
+    ? `
+      <div class="node-nautobot-meta" data-nautobot-meta>
+        <a href="${nodeNautobotInfo.url}" class="nautobot-link hidden" data-nautobot-link target="_blank" rel="noopener noreferrer"><i class="fas fa-link"></i> Device</a>
+        <span class="nautobot-presence-icon ${nodeNautobotInfo.state}" data-nautobot-state="${nodeNautobotInfo.state}" data-nautobot-title="${sanitizeHTML(nodeNautobotInfo.title)}" data-nautobot-link-visible="${nodeNautobotInfo.isVisible === true}" title="${sanitizeHTML(nodeNautobotInfo.title)}" aria-label="${sanitizeHTML(nodeNautobotInfo.title)}">
+          <span class="nautobot-presence-letter">N</span>
+        </span>
+      </div>
+    `
+    : '';
   
   if (!nodeData || nodeStatus === 'offline') {
     const statusLabel = nodeStatus === 'offline' ? 'Offline' : 'No Data';
@@ -176,6 +187,7 @@ function createNodeHTML(node, cluster) {
           <div class="node-name">
             <span class="node-indicator ${nodeStatus}"></span>
             <a href="https://${node.fullName}:8006" target="_blank">${displayName}</a>
+            ${nodeNautobotMetaMarkup}
           </div>
           <span class="node-status ${nodeStatus}">${statusLabel}</span>
         </div>
@@ -220,6 +232,7 @@ function createNodeHTML(node, cluster) {
         <div class="node-name">
           <span class="node-indicator ${nodeStatus}"></span>
           <a href="https://${node.fullName}:8006" target="_blank">${displayName}</a>
+          ${nodeNautobotMetaMarkup}
         </div>
         <span class="node-status ${nodeStatus}">${nodeStatus}</span>
       </div>

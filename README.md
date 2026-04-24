@@ -217,6 +217,12 @@ Optional per-VM fields for Nautobot integration:
 - `nautobotVisible`: `true`/`false` compatibility flag (optional, derived from `nautobotStatus` when omitted).
 - `nautobotUrl`: direct URL for the VM record in Nautobot (optional, fallback URL is generated from VM name).
 
+Optional per-node fields for Nautobot device lookup (from `status.json.nodeData.<node>`):
+- `nautobotStatus`: `exist`, `missing`, or `unknown`.
+- `nautobotVisible`: `true`/`false` compatibility flag (optional, derived from `nautobotStatus` when omitted).
+- `nautobotUrl`: direct URL for the Nautobot device record (optional).
+- When no explicit URL is present, the dashboard links to Nautobot device search using the short hostname (for example, `node01.example.local` → `node01`).
+
 To avoid client-side Nautobot API calls on each dashboard refresh, run `nautobot-status-enrich.sh` after your Proxmox collection step:
 
 ```bash
@@ -328,6 +334,7 @@ const CONFIG = {
     enabled: true,
     baseUrl: 'https://nautobot.example.com',
     virtualizationPath: '/virtualization/virtual-machines/',
+    devicesPath: '/dcim/devices/',
     apiPath: '/api/virtualization/virtual-machines/',
     apiToken: '' // Optional; only needed by external enrichment scripts
   },

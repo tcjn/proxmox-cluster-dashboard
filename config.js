@@ -27,6 +27,7 @@ const CONFIG = {
     enabled: true,
     baseUrl: 'https://nautobot.expereocloud.com',
     virtualizationPath: '/virtualization/virtual-machines/',
+    devicesPath: '/dcim/devices/',
     apiPath: '/api/virtualization/virtual-machines/',
     apiToken: '' // Optional; used by external status enrichment scripts
   },
