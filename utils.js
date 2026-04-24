@@ -369,7 +369,7 @@ function getVmNautobotInfo(vm) {
   const explicitUrl = normalizeNautobotEntityUrl('vm', vm?.nautobotUrl || vm?.nautobot_url || vm?.nautobot?.url);
 
   const state = firstStatusSignal || (
-    firstVisibilitySignal === true || firstBooleanStatusSignal === true || Boolean(explicitUrl)
+    firstVisibilitySignal === true || firstBooleanStatusSignal === true
       ? 'present'
       : firstVisibilitySignal === false || firstBooleanStatusSignal === false
         ? 'missing'
@@ -395,7 +395,7 @@ function getVmNautobotInfo(vm) {
     };
   }
 
-  if (explicitUrl) {
+  if (hasUsableExplicitUrl) {
     return {
       url: explicitUrl,
       isVisible,
@@ -468,7 +468,7 @@ function getNodeNautobotInfo(nodeName, nodeData = null) {
   const explicitUrl = normalizeNautobotEntityUrl('device', nodeData?.nautobotUrl || nodeData?.nautobot_url || nodeData?.nautobot?.url);
 
   const state = firstStatusSignal || (
-    firstVisibilitySignal === true || firstBooleanStatusSignal === true || Boolean(explicitUrl)
+    firstVisibilitySignal === true || firstBooleanStatusSignal === true
       ? 'present'
       : firstVisibilitySignal === false || firstBooleanStatusSignal === false
         ? 'missing'
@@ -494,7 +494,7 @@ function getNodeNautobotInfo(nodeName, nodeData = null) {
     };
   }
 
-  if (explicitUrl) {
+  if (hasUsableExplicitUrl) {
     return {
       url: explicitUrl,
       isVisible,
