@@ -537,7 +537,7 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
     vmCoverageEl.textContent = `VMs (running): ${stats.nautobot.present}/${stats.nautobot.runningTotal} present (${stats.nautobot.runningPresentPercent}%) · Missing ${stats.nautobot.missing} · Unknown ${stats.nautobot.unknown}`;
   }
   if (nodeCoverageEl) {
-    nodeCoverageEl.textContent = `Devices (nodes): ${stats.nautobot.nodesPresent}/${stats.nautobot.nodesTotal} present (${stats.nautobot.nodesPresentPercent}%) · Missing ${stats.nautobot.nodesMissing} · Unknown ${stats.nautobot.nodesUnknown}`;
+    nodeCoverageEl.textContent = `Devices (nodes): ${stats.nautobot.nodesPresent}/${stats.nautobot.nodesTotal} present (${stats.nautobot.nodesPresentPercent}%) · Missing ${stats.nautobot.nodesMissing}`;
   }
 
   if (!missingListEl || !nodeMissingListEl) return;

@@ -2620,7 +2620,22 @@ footer {
   border-left: 4px solid var(--link);
 }
 
+.nautobot-coverage-section + .nautobot-coverage-section {
+  margin-top: 1rem;
+  padding-top: 0.9rem;
+  border-top: 1px dashed var(--border);
+}
+
+.nautobot-coverage-heading {
+  margin: 0 0 0.6rem;
+  font-size: 0.76rem;
+  color: var(--copy);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
 .nautobot-node-coverage-summary {
+  margin-top: 0.55rem;
   font-size: 0.72rem;
   color: var(--copy);
   font-family: 'IBM Plex Mono', monospace;
@@ -2809,7 +2824,7 @@ footer {
 }
 
 .nautobot-node-summary-grid {
-  margin-top: 0.9rem;
+  margin-top: 0;
 }
 
 .nautobot-missing-toggle {
