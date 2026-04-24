@@ -1880,6 +1880,14 @@ header h1 a:hover {
   white-space: nowrap;
 }
 
+.node-nautobot-meta {
+  margin-left: 0.35rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
 .nautobot-link {
   display: inline-flex;
   align-items: center;
@@ -2603,6 +2611,12 @@ footer {
 
 .nautobot-card {
   border-left: 4px solid var(--link);
+}
+
+.nautobot-node-coverage-summary {
+  font-size: 0.72rem;
+  color: var(--copy);
+  font-family: 'IBM Plex Mono', monospace;
 }
 
 .victoria-card {

@@ -76,7 +76,11 @@ function calculateStatistics() {
       present: 0,
       missing: 0,
       unknown: 0,
-      missingVms: []
+      missingVms: [],
+      nodesTotal: 0,
+      nodesPresent: 0,
+      nodesMissing: 0,
+      nodesUnknown: 0
     },
   };
   
@@ -127,6 +131,7 @@ function calculateStatistics() {
 
       nodes.forEach(node => {
         stats.totalNodes++;
+        stats.nautobot.nodesTotal++;
         if (stats.regionStats[clusterRegion]) {
           stats.regionStats[clusterRegion].nodes++;
         }
@@ -137,6 +142,15 @@ function calculateStatistics() {
         else if (nodeStatus === 'degraded') stats.degradedNodes++;
         
         const nodeData = getNodeData(node);
+        const nodeNautobotInfo = getNodeNautobotInfo(node, nodeData);
+        if (nodeNautobotInfo.state === 'present') {
+          stats.nautobot.nodesPresent++;
+        } else if (nodeNautobotInfo.state === 'missing') {
+          stats.nautobot.nodesMissing++;
+        } else {
+          stats.nautobot.nodesUnknown++;
+        }
+
         if (nodeData) {
           const subscriptionStatus = classifySubscription(nodeData.subscription);
           stats.subscription.total++;
@@ -250,6 +264,9 @@ function calculateStatistics() {
 
   stats.nautobot.runningPresentPercent = stats.nautobot.runningTotal > 0
     ? Math.round((stats.nautobot.present / stats.nautobot.runningTotal) * 100)
+    : 0;
+  stats.nautobot.nodesPresentPercent = stats.nautobot.nodesTotal > 0
+    ? Math.round((stats.nautobot.nodesPresent / stats.nautobot.nodesTotal) * 100)
     : 0;
 
   stats.networkUsageClusters.sort((a, b) => b.totalBytesPerSec - a.totalBytesPerSec);
@@ -489,6 +506,7 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
   const unknownEl = document.getElementById('nautobotUnknown');
   const totalEl = document.getElementById('nautobotRunningTotal');
   const scoreEl = document.getElementById('nautobotCoverageScore');
+  const nodeCoverageEl = document.getElementById('nautobotNodeCoverageSummary');
   const missingListEl = document.getElementById('nautobotMissingList');
   const missingCardEl = missingEl ? missingEl.closest('.license-summary-item') : null;
 
@@ -497,6 +515,9 @@ function renderNautobotCoveragePanel(stats, nautobotEnabled) {
   if (unknownEl) unknownEl.textContent = stats.nautobot.unknown;
   if (totalEl) totalEl.textContent = stats.nautobot.runningTotal;
   if (scoreEl) scoreEl.textContent = `${stats.nautobot.runningPresentPercent}% present in Nautobot`;
+  if (nodeCoverageEl) {
+    nodeCoverageEl.textContent = `Nodes: ${stats.nautobot.nodesPresent}/${stats.nautobot.nodesTotal} present (${stats.nautobot.nodesPresentPercent}%) · Missing ${stats.nautobot.nodesMissing} · Unknown ${stats.nautobot.nodesUnknown}`;
+  }
 
   if (!missingListEl) return;
 

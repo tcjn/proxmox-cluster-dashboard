@@ -390,6 +390,104 @@ function getVmNautobotInfo(vm) {
   };
 }
 
+function getNodeNautobotInfo(nodeName, nodeData = null) {
+  const nautobotEnabled = CONFIG?.nautobot?.enabled !== false;
+  const lookupName = getShortNodeName(nodeName || '');
+
+  const visibilitySignals = [
+    nodeData?.nautobotVisible,
+    nodeData?.nautobot_visibility,
+    nodeData?.inNautobot,
+    nodeData?.in_nautobot,
+    nodeData?.nautobot?.visible,
+    nodeData?.nautobot?.exists,
+    nodeData?.nautobot?.found
+  ];
+
+  const firstVisibilitySignal = visibilitySignals
+    .map(normalizeBoolean)
+    .find(value => value !== null);
+
+  const statusSignals = [
+    nodeData?.nautobotStatus,
+    nodeData?.nautobot_status,
+    nodeData?.nautobot?.status,
+    nodeData?.nautobot,
+    nodeData?.nautobotExists,
+    nodeData?.nautobot_exists,
+    nodeData?.existsInNautobot,
+    nodeData?.exists_in_nautobot
+  ];
+
+  const firstStatusSignal = statusSignals
+    .map(normalizeNautobotStatus)
+    .find(value => value !== null);
+
+  const firstBooleanStatusSignal = statusSignals
+    .map(normalizeBoolean)
+    .find(value => value !== null);
+
+  const explicitUrl = nodeData?.nautobotUrl || nodeData?.nautobot_url || nodeData?.nautobot?.url;
+
+  const state = firstStatusSignal || (
+    firstVisibilitySignal === true || firstBooleanStatusSignal === true || Boolean(explicitUrl)
+      ? 'present'
+      : firstVisibilitySignal === false || firstBooleanStatusSignal === false
+        ? 'missing'
+        : 'unknown'
+  );
+  const title = {
+    present: 'Node device found in Nautobot.',
+    missing: 'No matching node device in Nautobot.',
+    unknown: 'Node Nautobot status unknown.'
+  }[state] || 'Node Nautobot status unknown.';
+
+  const isVisible = firstVisibilitySignal !== undefined && firstVisibilitySignal !== null
+    ? firstVisibilitySignal
+    : state === 'present';
+
+  if (!nautobotEnabled) {
+    return {
+      url: null,
+      isVisible,
+      hasExplicitUrl: false,
+      state,
+      title
+    };
+  }
+
+  if (explicitUrl) {
+    return {
+      url: explicitUrl,
+      isVisible,
+      hasExplicitUrl: true,
+      state,
+      title
+    };
+  }
+
+  const baseUrl = getNautobotBaseUrl();
+  const devicesPath = CONFIG?.nautobot?.devicesPath || '/dcim/devices/';
+  const cleanPath = devicesPath.startsWith('/') ? devicesPath : `/${devicesPath}`;
+  if (!baseUrl || !lookupName) {
+    return {
+      url: null,
+      isVisible,
+      hasExplicitUrl: false,
+      state,
+      title
+    };
+  }
+
+  return {
+    url: `${baseUrl}${cleanPath}?q=${encodeURIComponent(lookupName)}`,
+    isVisible,
+    hasExplicitUrl: false,
+    state,
+    title
+  };
+}
+
 function getNautobotVmKey(vmName) {
   return (vmName || '').trim().toLowerCase();
 }
@@ -426,7 +524,7 @@ function setNautobotLinkVisibility(iconEl, isVisible) {
 function refreshNautobotPresenceIndicators(root = document) {
   if (CONFIG?.nautobot?.enabled === false) return;
 
-  const iconElements = Array.from(root.querySelectorAll('[data-nautobot-vm-key]'));
+  const iconElements = Array.from(root.querySelectorAll('[data-nautobot-state]'));
   if (iconElements.length === 0) return;
 
   iconElements.forEach(iconEl => {
