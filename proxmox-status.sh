@@ -15,6 +15,7 @@ NAUTOBOT_API_PATH="${NAUTOBOT_API_PATH:-/api/virtualization/virtual-machines/}"
 NAUTOBOT_DEVICES_API_PATH="${NAUTOBOT_DEVICES_API_PATH:-/api/dcim/devices/}"
 NAUTOBOT_UI_VM_PATH="${NAUTOBOT_UI_VM_PATH:-/virtualization/virtual-machines/}"
 NAUTOBOT_UI_DEVICE_PATH="${NAUTOBOT_UI_DEVICE_PATH:-/dcim/devices/}"
+NAUTOBOT_DEVICE_LOOKUP_MODE="${NAUTOBOT_DEVICE_LOOKUP_MODE:-targeted}"
 
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
@@ -303,6 +304,68 @@ enrich_nautobot_visibility() {
         jq -n --slurpfile results "$aggregated_results" '{results: ($results[0] // [])}' > "$output_json"
     }
 
+    fetch_nautobot_devices_for_nodes() {
+        local collection_url="$1"
+        local output_json="$2"
+        local node_names_file="$3"
+        local aggregated_results="$nb_tmpdir/nautobot_devices_results.json"
+        local page_file="$nb_tmpdir/nautobot_device_lookup_page.json"
+        local seen_query_file="$nb_tmpdir/nautobot_devices_seen_queries.txt"
+        local response_ok=0
+
+        echo '[]' > "$aggregated_results"
+        : > "$seen_query_file"
+
+        while IFS= read -r node_name; do
+            [[ -z "$node_name" ]] && continue
+
+            local short_name="${node_name%%.*}"
+            local query_name=""
+
+            for query_name in "$node_name" "$short_name"; do
+                local trimmed_query
+                trimmed_query="$(echo "$query_name" | xargs)"
+                [[ -z "$trimmed_query" ]] && continue
+
+                local query_key="${trimmed_query,,}"
+                if grep -Fxq "$query_key" "$seen_query_file"; then
+                    continue
+                fi
+                echo "$query_key" >> "$seen_query_file"
+
+                local encoded_query
+                encoded_query=$(jq -nr --arg value "$trimmed_query" '$value|@uri')
+                local page_url="${collection_url}?name=${encoded_query}&limit=50"
+
+                if ! curl -fsS --connect-timeout 5 --max-time "$NAUTOBOT_TIMEOUT" \
+                    -H "Authorization: Token ${NAUTOBOT_TOKEN}" \
+                    -H "Accept: application/json" \
+                    "$page_url" > "$page_file"; then
+                    echo "WARNING: Failed to lookup Nautobot device (${trimmed_query})." >&2
+                    continue
+                fi
+
+                if ! jq -e '.results | type == "array"' "$page_file" > /dev/null; then
+                    echo "WARNING: Invalid Nautobot device lookup response (${trimmed_query})." >&2
+                    continue
+                fi
+
+                jq -s '
+                  (.[0] + (.[1].results // []))
+                  | unique_by((.id // .uuid // .pk // .name))
+                ' "$aggregated_results" "$page_file" > "$nb_tmpdir/nautobot_devices_results.next.json"
+                mv "$nb_tmpdir/nautobot_devices_results.next.json" "$aggregated_results"
+                response_ok=1
+            done
+        done < "$node_names_file"
+
+        if [[ "$response_ok" -eq 0 ]]; then
+            return 1
+        fi
+
+        jq -n --slurpfile results "$aggregated_results" '{results: ($results[0] // [])}' > "$output_json"
+    }
+
     echo "INFO: Fetching VM list from Nautobot..."
     if ! fetch_nautobot_collection "$api_url" "$nb_tmpdir/nautobot_vms.json" "nautobot_vms"; then
         echo "WARNING: Failed to fetch VMs from Nautobot. Keeping status output without Nautobot enrichment." >&2
@@ -311,12 +374,27 @@ enrich_nautobot_visibility() {
         return
     fi
 
-    echo "INFO: Fetching device list from Nautobot..."
-    if ! fetch_nautobot_collection "$devices_api_url" "$nb_tmpdir/nautobot_devices.json" "nautobot_devices"; then
-        echo "WARNING: Failed to fetch devices from Nautobot. Keeping status output without Nautobot node enrichment." >&2
-        rm -rf "$nb_tmpdir"
-        [[ "$input_file" != "$output_file" ]] && cp "$input_file" "$output_file"
-        return
+    jq -r '.nodeData // {} | keys[]' "$input_file" | sed '/^[[:space:]]*$/d' | sort -u > "$nb_tmpdir/node_names.txt"
+
+    if [[ "${NAUTOBOT_DEVICE_LOOKUP_MODE,,}" == "full" ]]; then
+        echo "INFO: Fetching full device list from Nautobot..."
+        if ! fetch_nautobot_collection "$devices_api_url" "$nb_tmpdir/nautobot_devices.json" "nautobot_devices"; then
+            echo "WARNING: Failed to fetch devices from Nautobot. Keeping status output without Nautobot node enrichment." >&2
+            rm -rf "$nb_tmpdir"
+            [[ "$input_file" != "$output_file" ]] && cp "$input_file" "$output_file"
+            return
+        fi
+    else
+        echo "INFO: Fetching Nautobot devices in targeted mode (set NAUTOBOT_DEVICE_LOOKUP_MODE=full to restore full pagination)..."
+        if ! fetch_nautobot_devices_for_nodes "$devices_api_url" "$nb_tmpdir/nautobot_devices.json" "$nb_tmpdir/node_names.txt"; then
+            echo "WARNING: Targeted Nautobot device lookups failed. Falling back to full device pagination." >&2
+            if ! fetch_nautobot_collection "$devices_api_url" "$nb_tmpdir/nautobot_devices.json" "nautobot_devices"; then
+                echo "WARNING: Failed to fetch devices from Nautobot. Keeping status output without Nautobot node enrichment." >&2
+                rm -rf "$nb_tmpdir"
+                [[ "$input_file" != "$output_file" ]] && cp "$input_file" "$output_file"
+                return
+            fi
+        fi
     fi
 
     jq '
