@@ -399,7 +399,7 @@ enrich_nautobot_visibility() {
         fi
     fi
 
-    jq '
+    jq --arg vmUiPath "$vm_ui_path" '
       (.results // [])
       | reduce .[] as $vm ({};
           ($vm.name // "") as $raw |
@@ -408,28 +408,34 @@ enrich_nautobot_visibility() {
           ($vm.id // "") as $id |
           ($vm.url // "") as $apiUrl |
           ($vm.display_url // "") as $displayUrl |
-          ($vm.natural_slug // "") as $slug |
-          ($vm.object_type // "") as $objType |
           ($vm.uuid // "") as $uuid |
           ($vm.pk // "") as $pk |
           ($vm.name // "") as $name |
+          (
+            ($displayUrl + " " + $apiUrl + " " + ($id | tostring) + " " + ($uuid | tostring))
+            | match("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"; "i")?.string // ""
+          ) as $detectedUuid |
           ($id | if . != "" then . else ($uuid | if . != "" then . else ($pk | tostring) end) end) as $entityId |
-          ($slug | if . != "" then . else ($entityId | tostring) end) as $pathKey |
-          ($displayUrl | if . != "" then . else ("/" + $objType + "/" + $pathKey + "/") end) as $relativePath |
+          (
+            if $detectedUuid != "" then "/" + $vmUiPath + "/" + $detectedUuid + "/?tab=main"
+            elif ($entityId | tostring) != "" then "/" + $vmUiPath + "/" + ($entityId | tostring) + "/?tab=main"
+            else ""
+            end
+          ) as $uiPath |
           if $full == "" then .
           else . + {
             ($full): {
               visible: true,
               id: $entityId,
               apiUrl: $apiUrl,
-              relativePath: $relativePath,
+              uiPath: $uiPath,
               name: $name
             },
             ($short): {
               visible: true,
               id: $entityId,
               apiUrl: $apiUrl,
-              relativePath: $relativePath,
+              uiPath: $uiPath,
               name: $name
             }
           }
@@ -522,8 +528,8 @@ enrich_nautobot_visibility() {
                   nautobotVisible: $visible,
                   nautobotMatchedBy: (if ($vmLookup[$name] != null) then "exact" elif ($vmLookup[$shortName] != null) then "short-name" else "none" end),
                   nautobotUrl: (
-                    if ($vmMatch.relativePath // "") != "" then ($baseUrl + $vmMatch.relativePath)
-                    elif ($vmMatch.id // "") != "" then ($baseUrl + "/" + $vmUiPath + "/" + ($vmMatch.id | tostring) + "/")
+                    if ($vmMatch.uiPath // "") != "" then ($baseUrl + $vmMatch.uiPath)
+                    elif ($vmMatch.id // "") != "" then ($baseUrl + "/" + $vmUiPath + "/" + ($vmMatch.id | tostring) + "/?tab=main")
                     else ($baseUrl + "/" + $vmUiPath + "?q=" + ($shortName | @uri))
                     end
                   )
