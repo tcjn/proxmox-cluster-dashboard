@@ -327,7 +327,7 @@ function normalizeNautobotEntityUrl(entityType, explicitUrl) {
   // virtualization.virtualmachine/<name>_<short-id>/
   // These are not directly navigable URLs in Nautobot UI, so we intentionally
   // ignore them and let the caller fall back to search by VM name.
-  if (entityType === 'vm' && /^virtualization\.virtualmachine\//i.test(rawUrl)) {
+  if (entityType === 'vm' && /^\/?virtualization\.virtualmachine\//i.test(rawUrl)) {
     return null;
   }
 
