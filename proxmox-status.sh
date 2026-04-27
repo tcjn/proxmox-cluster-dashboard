@@ -416,7 +416,7 @@ enrich_nautobot_visibility() {
           ($vm.name // "") as $name |
           (
             ($displayUrl + " " + $apiUrl + " " + ($id | tostring) + " " + ($uuid | tostring))
-            | match("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"; "i")?.string // ""
+            | (try match("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"; "i").string catch "")
           ) as $detectedUuid |
           ($id | if . != "" then . else ($uuid | if . != "" then . else ($pk | tostring) end) end) as $entityId |
           (
@@ -458,7 +458,12 @@ enrich_nautobot_visibility() {
           }
           end
         )
-    ' "$nb_tmpdir/nautobot_vms.json" > "$nb_tmpdir/nautobot_vm_map.json"
+    ' "$nb_tmpdir/nautobot_vms.json" > "$nb_tmpdir/nautobot_vm_map.json"; then
+        echo "WARNING: Failed to build Nautobot VM lookup map. Keeping status output without Nautobot enrichment." >&2
+        rm -rf "$nb_tmpdir"
+        [[ "$input_file" != "$output_file" ]] && cp "$input_file" "$output_file"
+        return
+    fi
 
     jq '
       def compact_key: ascii_downcase | gsub("[^a-z0-9]"; "");
@@ -504,9 +509,14 @@ enrich_nautobot_visibility() {
           }
           end
         )
-    ' "$nb_tmpdir/nautobot_devices.json" > "$nb_tmpdir/nautobot_device_map.json"
+    ' "$nb_tmpdir/nautobot_devices.json" > "$nb_tmpdir/nautobot_device_map.json"; then
+        echo "WARNING: Failed to build Nautobot device lookup map. Keeping status output without Nautobot enrichment." >&2
+        rm -rf "$nb_tmpdir"
+        [[ "$input_file" != "$output_file" ]] && cp "$input_file" "$output_file"
+        return
+    fi
 
-    jq --arg baseUrl "$normalized_base_url" \
+    if ! jq --arg baseUrl "$normalized_base_url" \
       --arg vmUiPath "$vm_ui_path" \
       --arg deviceUiPath "$device_ui_path" \
       --slurpfile vmMap "$nb_tmpdir/nautobot_vm_map.json" \
@@ -608,8 +618,13 @@ enrich_nautobot_visibility() {
             )
           )
         )
-      )
-    ' "$input_file" > "$nb_tmpdir/status_enriched.json"
+      ))
+    ' "$input_file" > "$nb_tmpdir/status_enriched.json"; then
+        echo "WARNING: Failed to enrich status.json with Nautobot data. Keeping original status output." >&2
+        rm -rf "$nb_tmpdir"
+        [[ "$input_file" != "$output_file" ]] && cp "$input_file" "$output_file"
+        return
+    fi
 
     mv "$nb_tmpdir/status_enriched.json" "$output_file"
     rm -rf "$nb_tmpdir"
