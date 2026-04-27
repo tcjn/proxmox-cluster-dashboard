@@ -400,7 +400,6 @@ enrich_nautobot_visibility() {
     fi
 
     jq --arg vmUiPath "$vm_ui_path" '
-      def compact_key: ascii_downcase | gsub("[^a-z0-9]"; "");
       (.results // [])
       | reduce .[] as $vm ({};
           ($vm.name // "") as $raw |
@@ -415,11 +414,8 @@ enrich_nautobot_visibility() {
           ($vm.pk // "") as $pk |
           ($vm.name // "") as $name |
           (
-            try (
-              ($displayUrl + " " + $apiUrl + " " + ($id | tostring) + " " + ($uuid | tostring))
-              | capture("(?<uuid>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})"; "i")
-              | .uuid
-            ) catch ""
+            ($displayUrl + " " + $apiUrl + " " + ($id | tostring) + " " + ($uuid | tostring))
+            | match("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"; "i")?.string // ""
           ) as $detectedUuid |
           ($id | if . != "" then . else ($uuid | if . != "" then . else ($pk | tostring) end) end) as $entityId |
           (
@@ -428,7 +424,7 @@ enrich_nautobot_visibility() {
             else ""
             end
           ) as $uiPath |
-          if ($full == "" and $fullCompact == "") then .
+          if $full == "" then .
           else . + {
             ($full): {
               visible: true,
@@ -438,20 +434,6 @@ enrich_nautobot_visibility() {
               name: $name
             },
             ($short): {
-              visible: true,
-              id: $entityId,
-              apiUrl: $apiUrl,
-              uiPath: $uiPath,
-              name: $name
-            },
-            ($fullCompact): {
-              visible: true,
-              id: $entityId,
-              apiUrl: $apiUrl,
-              uiPath: $uiPath,
-              name: $name
-            },
-            ($shortCompact): {
               visible: true,
               id: $entityId,
               apiUrl: $apiUrl,
@@ -560,7 +542,7 @@ enrich_nautobot_visibility() {
                   nautobotUrl: (
                     if ($vmMatch.uiPath // "") != "" then ($baseUrl + $vmMatch.uiPath)
                     elif ($vmMatch.id // "") != "" then ($baseUrl + "/" + $vmUiPath + "/" + ($vmMatch.id | tostring) + "/?tab=main")
-                    else ($baseUrl + "/" + $vmUiPath + "/")
+                    else ($baseUrl + "/" + $vmUiPath + "?q=" + ($shortName | @uri))
                     end
                   )
                 }
