@@ -514,6 +514,22 @@ enrich_nautobot_visibility() {
       ($vmMap[0]) as $vmLookup |
       ($deviceMap[0]) as $deviceLookup |
       def compact_key: ascii_downcase | gsub("[^a-z0-9]"; "");
+      def fuzzy_lookup($lookup; $key):
+        if ($key | length) == 0 then null
+        else
+          (
+            $lookup
+            | to_entries
+            | map(select(
+                (.key | length) > 0 and (
+                  (.key | endswith($key)) or
+                  ($key | endswith(.key))
+                )
+              ))
+            | map(.value)
+            | first
+          )
+        end;
       .nodeData |= with_entries(
         . as $nodeEntry |
         (.key | ascii_downcase) as $nodeKey |
@@ -556,7 +572,15 @@ enrich_nautobot_visibility() {
                 (($vm.name // "") | split(".")[0] | ascii_downcase) as $shortName |
                 ($name | compact_key) as $nameCompact |
                 ($shortName | compact_key) as $shortNameCompact |
-                (($vmLookup[$name] // $vmLookup[$shortName] // $vmLookup[$nameCompact] // $vmLookup[$shortNameCompact] // null)) as $vmMatch |
+                (
+                  $vmLookup[$name]
+                  // $vmLookup[$shortName]
+                  // $vmLookup[$nameCompact]
+                  // $vmLookup[$shortNameCompact]
+                  // fuzzy_lookup($vmLookup; $nameCompact)
+                  // fuzzy_lookup($vmLookup; $shortNameCompact)
+                  // null
+                ) as $vmMatch |
                 ($vmMatch.visible == true) as $visible |
                 . + {
                   nautobotStatus: (if $visible then "exist" else "missing" end),
@@ -566,6 +590,8 @@ enrich_nautobot_visibility() {
                     elif ($vmLookup[$shortName] != null) then "short-name"
                     elif ($vmLookup[$nameCompact] != null) then "compact-exact"
                     elif ($vmLookup[$shortNameCompact] != null) then "compact-short-name"
+                    elif (fuzzy_lookup($vmLookup; $nameCompact) != null) then "fuzzy-compact"
+                    elif (fuzzy_lookup($vmLookup; $shortNameCompact) != null) then "fuzzy-compact-short"
                     else "none"
                     end
                   ),
