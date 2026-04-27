@@ -399,7 +399,7 @@ enrich_nautobot_visibility() {
         fi
     fi
 
-    if ! jq --arg vmUiPath "$vm_ui_path" '
+    jq --arg vmUiPath "$vm_ui_path" '
       def compact_key: ascii_downcase | gsub("[^a-z0-9]"; "");
       (.results // [])
       | reduce .[] as $vm ({};
@@ -465,7 +465,7 @@ enrich_nautobot_visibility() {
         return
     fi
 
-    if ! jq '
+    jq '
       def compact_key: ascii_downcase | gsub("[^a-z0-9]"; "");
       (.results // [])
       | reduce .[] as $device ({};
@@ -540,7 +540,7 @@ enrich_nautobot_visibility() {
             | first
           )
         end;
-      .nodeData |= ((. // {}) | with_entries(
+      .nodeData |= with_entries(
         . as $nodeEntry |
         (.key | ascii_downcase) as $nodeKey |
         ((.key | split(".")[0] | ascii_downcase)) as $nodeShortKey |
