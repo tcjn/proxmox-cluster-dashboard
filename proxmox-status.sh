@@ -412,11 +412,8 @@ enrich_nautobot_visibility() {
           ($vm.pk // "") as $pk |
           ($vm.name // "") as $name |
           (
-            try (
-              ($displayUrl + " " + $apiUrl + " " + ($id | tostring) + " " + ($uuid | tostring))
-              | capture("(?<uuid>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})"; "i")
-              | .uuid
-            ) catch ""
+            ($displayUrl + " " + $apiUrl + " " + ($id | tostring) + " " + ($uuid | tostring))
+            | match("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"; "i")?.string // ""
           ) as $detectedUuid |
           ($id | if . != "" then . else ($uuid | if . != "" then . else ($pk | tostring) end) end) as $entityId |
           (
