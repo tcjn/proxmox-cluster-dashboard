@@ -400,6 +400,7 @@ enrich_nautobot_visibility() {
     fi
 
     jq --arg vmUiPath "$vm_ui_path" '
+      def compact_key: ascii_downcase | gsub("[^a-z0-9]"; "");
       (.results // [])
       | reduce .[] as $vm ({};
           ($vm.name // "") as $raw |
@@ -439,6 +440,20 @@ enrich_nautobot_visibility() {
               apiUrl: $apiUrl,
               uiPath: $uiPath,
               name: $name
+            },
+            ($fullCompact): {
+              visible: true,
+              id: $entityId,
+              apiUrl: $apiUrl,
+              uiPath: $uiPath,
+              name: $name
+            },
+            ($shortCompact): {
+              visible: true,
+              id: $entityId,
+              apiUrl: $apiUrl,
+              uiPath: $uiPath,
+              name: $name
             }
           }
           end
@@ -446,11 +461,14 @@ enrich_nautobot_visibility() {
     ' "$nb_tmpdir/nautobot_vms.json" > "$nb_tmpdir/nautobot_vm_map.json"
 
     jq '
+      def compact_key: ascii_downcase | gsub("[^a-z0-9]"; "");
       (.results // [])
       | reduce .[] as $device ({};
           ($device.name // "") as $raw |
           ($raw | ascii_downcase) as $full |
           ($raw | split(".")[0] | ascii_downcase) as $short |
+          ($full | compact_key) as $fullCompact |
+          ($short | compact_key) as $shortCompact |
           ($device.id // "") as $id |
           ($device.url // "") as $apiUrl |
           ($device.uuid // "") as $uuid |
@@ -466,6 +484,18 @@ enrich_nautobot_visibility() {
               name: $name
             },
             ($short): {
+              visible: true,
+              id: $entityId,
+              apiUrl: $apiUrl,
+              name: $name
+            },
+            ($fullCompact): {
+              visible: true,
+              id: $entityId,
+              apiUrl: $apiUrl,
+              name: $name
+            },
+            ($shortCompact): {
               visible: true,
               id: $entityId,
               apiUrl: $apiUrl,
