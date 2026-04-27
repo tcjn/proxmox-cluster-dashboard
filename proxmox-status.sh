@@ -405,6 +405,8 @@ enrich_nautobot_visibility() {
           ($vm.name // "") as $raw |
           ($raw | ascii_downcase) as $full |
           ($raw | split(".")[0] | ascii_downcase) as $short |
+          ($full | compact_key) as $fullCompact |
+          ($short | compact_key) as $shortCompact |
           ($vm.id // "") as $id |
           ($vm.url // "") as $apiUrl |
           ($vm.display_url // "") as $displayUrl |
@@ -481,6 +483,7 @@ enrich_nautobot_visibility() {
       --slurpfile deviceMap "$nb_tmpdir/nautobot_device_map.json" '
       ($vmMap[0]) as $vmLookup |
       ($deviceMap[0]) as $deviceLookup |
+      def compact_key: ascii_downcase | gsub("[^a-z0-9]"; "");
       .nodeData |= with_entries(
         . as $nodeEntry |
         (.key | ascii_downcase) as $nodeKey |
@@ -521,12 +524,21 @@ enrich_nautobot_visibility() {
                 . as $vm |
                 (($vm.name // "") | ascii_downcase) as $name |
                 (($vm.name // "") | split(".")[0] | ascii_downcase) as $shortName |
-                (($vmLookup[$name] // $vmLookup[$shortName] // null)) as $vmMatch |
+                ($name | compact_key) as $nameCompact |
+                ($shortName | compact_key) as $shortNameCompact |
+                (($vmLookup[$name] // $vmLookup[$shortName] // $vmLookup[$nameCompact] // $vmLookup[$shortNameCompact] // null)) as $vmMatch |
                 ($vmMatch.visible == true) as $visible |
                 . + {
                   nautobotStatus: (if $visible then "exist" else "missing" end),
                   nautobotVisible: $visible,
-                  nautobotMatchedBy: (if ($vmLookup[$name] != null) then "exact" elif ($vmLookup[$shortName] != null) then "short-name" else "none" end),
+                  nautobotMatchedBy: (
+                    if ($vmLookup[$name] != null) then "exact"
+                    elif ($vmLookup[$shortName] != null) then "short-name"
+                    elif ($vmLookup[$nameCompact] != null) then "compact-exact"
+                    elif ($vmLookup[$shortNameCompact] != null) then "compact-short-name"
+                    else "none"
+                    end
+                  ),
                   nautobotUrl: (
                     if ($vmMatch.uiPath // "") != "" then ($baseUrl + $vmMatch.uiPath)
                     elif ($vmMatch.id // "") != "" then ($baseUrl + "/" + $vmUiPath + "/" + ($vmMatch.id | tostring) + "/?tab=main")
